@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory — Royal Motors Sierra Leone</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .page-hero { background: var(--black); padding: 60px 60px 40px; border-bottom: 3px solid var(--red); }
+    .inventory-hero-label { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: 8px; }
+    .inventory-hero-title { font-family: var(--font-display); font-size: 64px; color: var(--white); letter-spacing: 2px; line-height: 1; margin-bottom: 12px; }
+    .inventory-hero-title span { color: var(--red); }
+    .inventory-hero-sub { color: #888; font-size: 15px; font-weight: 300; max-width: 500px; }
+    .inventory-count { display: inline-block; background: var(--red); color: var(--white); font-size: 13px; font-weight: 600; padding: 4px 14px; margin-top: 16px; letter-spacing: 1px; }
+    .filter-bar { background: var(--off-white); padding: 24px 60px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--light-gray); position: sticky; top: 64px; z-index: 50; }
+    .filter-search { flex: 1; min-width: 200px; display: flex; align-items: center; background: var(--white); border: 1px solid var(--light-gray); padding: 0 14px; gap: 10px; }
+    .filter-search i { color: var(--gray); font-size: 14px; }
+    .filter-search input { border: none; outline: none; width: 100%; font-family: var(--font-body); font-size: 14px; padding: 10px 0; background: transparent; }
+    .filter-select { padding: 10px 14px; border: 1px solid var(--light-gray); background: var(--white); font-family: var(--font-body); font-size: 13px; color: var(--black); outline: none; cursor: pointer; min-width: 140px; transition: border-color .2s; }
+    .filter-select:focus { border-color: var(--red); }
+    .filter-reset { background: transparent; border: 1.5px solid var(--red); color: var(--red); padding: 10px 18px; font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .2s; }
+    .filter-reset:hover { background: var(--red); color: var(--white); }
+    .inventory-section { padding: 40px 60px 80px; }
+    .inventory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .no-results { grid-column: 1 / -1; text-align: center; padding: 80px 20px; }
+    .no-results i { font-size: 48px; color: var(--light-gray); margin-bottom: 16px; display: block; }
+    .no-results p { font-size: 18px; color: var(--gray); }
+    .modal-gallery { position: relative; background: #000; }
+    .modal-main-photo { width: 100%; height: 320px; object-fit: cover; display: block; }
+    .gallery-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; width: 40px; height: 40px; font-size: 28px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: background .2s; }
+    .gallery-arrow:hover { background: var(--red); }
+    .gallery-prev { left: 10px; }
+    .gallery-next { right: 10px; }
+    .modal-thumbnails { display: flex; gap: 6px; padding: 8px; background: #000; overflow-x: auto; }
+    .modal-thumbnails img { width: 72px; height: 52px; object-fit: cover; cursor: pointer; opacity: 0.6; transition: opacity .2s; flex-shrink: 0; border: 2px solid transparent; }
+    .modal-thumbnails img:hover { opacity: 1; }
+    .modal-thumbnails img.active { opacity: 1; border-color: var(--red); }
+    @media (max-width: 900px) {
+      .page-hero { padding: 40px 20px 30px; }
+      .inventory-hero-title { font-size: 48px; }
+      .filter-bar { padding: 16px 20px; }
+      .inventory-section { padding: 30px 20px 60px; }
+      .inventory-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .inventory-hero-title { font-size: 38px; }
+      .filter-bar { flex-direction: row; overflow-x: auto; flex-wrap: nowrap; gap: 10px; padding: 12px 16px; }
+      .filter-search { min-width: 160px; flex: 0 0 auto; }
+      .filter-select { min-width: 130px; flex: 0 0 auto; }
+      .filter-reset { flex: 0 0 auto; white-space: nowrap; }
+      .inventory-grid { grid-template-columns: 1fr; }
+      .modal-main-photo { height: 220px; }
+      .modal-thumbnails img { width: 56px; height: 42px; }
+      .gallery-arrow { width: 32px; height: 32px; font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo-link">
+    <div class="nav-logo">
+      <img src="Images/Logo-removebg-preview.png"  class="nav-logo-img">
+      ROYAL <span>MOTORS</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="inventory.html" class="active">Inventory</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+    <li><a href="rentals.html">Rentals</a></li>
+  </ul>
+  <button class="nav-cta">Book a Test Drive</button>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</nav>
+
+<!-- INVENTORY HERO -->
+<div class="page-hero">
+  <div class="inventory-hero-label">Browse Our Fleet</div>
+  <h1 class="inventory-hero-title">Full <span>Inventory</span></h1>
+  <p class="inventory-hero-sub">Explore our complete collection of quality vehicles. Use the filters to find your perfect match.</p>
+  <div class="inventory-count" id="car-count">Showing 6 vehicles</div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filter-search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="search-input" placeholder="Search by brand or model..." oninput="filterCars()">
+  </div>
+  <select class="filter-select" id="filter-brand" onchange="filterCars()">
+    <option value="">All Brands</option>
+    <option value="Tesla">Tesla</option>
+    <option value="Honda">Honda</option>
+    <option value="Hyundai">Hyundai</option>
+    <option value="Toyota">Toyota</option>
+    <option value="Mercedes">Mercedes</option>
+  </select>
+  <select class="filter-select" id="filter-fuel" onchange="filterCars()">
+    <option value="">All Fuel Types</option>
+    <option value="Petrol">Petrol</option>
+    <option value="Diesel">Diesel</option>
+    <option value="Electric">Electric</option>
+    <option value="Hybrid">Hybrid</option>
+  </select>
+  <select class="filter-select" id="filter-price" onchange="filterCars()">
+    <option value="">All Prices</option>
+    <option value="0-20000">Under $20,000</option>
+    <option value="20000-35000">$20,000 - $35,000</option>
+    <option value="35000-60000">$35,000 - $60,000</option>
+    <option value="60000-999999">Above $60,000</option>
+  </select>
+  <select class="filter-select" id="filter-sort" onchange="filterCars()">
+    <option value="">Sort By</option>
+    <option value="price-low">Price: Low to High</option>
+    <option value="price-high">Price: High to Low</option>
+    <option value="year-new">Newest First</option>
+    <option value="year-old">Oldest First</option>
+  </select>
+  <button class="filter-reset" onclick="resetFilters()">
+    <i class="fa-solid fa-rotate-left"></i> Reset
+  </button>
+</div>
+
+<!-- INVENTORY GRID -->
+<section class="inventory-section">
+  <div class="inventory-grid" id="inventory-grid">
+
+    <!-- CAR 1 — Tesla CyberTruck -->
+    <div class="car-card"
+      data-make="Tesla" data-fuel="Electric" data-price="38500" data-year="2025"
+      onclick="openCarModal('Tesla','CyberTruck','$38,500',
+        ['images/inventory/Cybertruck.webp',
+         'images/inventory/Cybertruck-interior.webp',
+         'images/inventory/Cybertruck-side.webp',
+         'images/inventory/Cybertruck-rear.webp',
+         'images/inventory/Cybertruck-engine.webp'],
+        '2025','26K km','Electric','Silver','4.0L V8','5',
+        'The Tesla CyberTruck is a revolutionary all-electric pickup truck. Built with ultra-hard stainless steel, it combines futuristic design with incredible performance. Perfect for both city driving and off-road adventures in Sierra Leone.')">
+      <div class="car-img">
+        <div class="car-tag">New Arrival</div>
+        <img src="images/inventory/Cybertruck.webp" alt="Tesla CyberTruck" class="car-photo">
+      </div>
+      <div class="car-info">
+        <div class="car-make">Tesla</div>
+        <div class="car-model">CyberTruck</div>
+        <div class="car-specs">
+          <div class="car-spec"><strong>2025</strong> Year</div>
+          <div class="car-spec"><strong>26K</strong> km</div>
+          <div class="car-spec"><strong>Electric</strong></div>
+        </div>
+        <div class="car-bottom">
+          <div class="car-price">$38,500</div>
+          <button class="car-btn" onclick="event.stopPropagation(); enquireCar('Tesla CyberTruck','$38,500')">Enquire</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAR 2 — Honda CR-V -->
+    <div class="car-card"
+      data-make="Honda" data-fuel="Petrol" data-price="22000" data-year="2021"
+      onclick="openCarModal('Honda','CR-V','$22,000',
+        ['images/inventory/CR-V.webp',
+         'images/inventory/CR-V-interior.webp',
+         'images/inventory/CR-V-side.webp',
+         'images/inventory/CR-V-rear.webp',
+         'images/inventory/CR-V-engine.webp'],
+        '2021','38K km','Petrol','Gray','1.5L Turbo','5',
+        'The Honda CR-V is one of the most reliable and popular SUVs in the world. Spacious interior, excellent fuel economy and a smooth comfortable ride make it perfect for families in Sierra Leone.')">
+      <div class="car-img">
+        <div class="car-tag" style="background:#111;">Best Seller</div>
+        <img src="images/inventory/CR-V.webp" alt="Honda CR-V" class="car-photo">
+      </div>
+      <div class="car-info">
+        <div class="car-make">Honda</div>
+        <div class="car-model">CR-V</div>
+        <div class="car-specs">
+          <div class="car-spec"><strong>2021</strong> Year</div>
+          <div class="car-spec"><strong>38K</strong> km</div>
+          <div class="car-spec"><strong>Petrol</strong></div>
+        </div>
+        <div class="car-bottom">
+          <div class="car-price">$22,000</div>
+          <button class="car-btn" onclick="event.stopPropagation(); enquireCar('Honda CR-V','$22,000')">Enquire</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAR 3 — Hyundai Tucson -->
+    <div class="car-card"
+      data-make="Hyundai" data-fuel="Hybrid" data-price="29900" data-year="2023"
+      onclick="openCarModal('Hyundai','Tucson','$29,900',
+        ['images/inventory/Tucson.webp',
+         'images/inventory/Tucson-interior.webp',
+         'images/inventory/Tucson-side.webp',
+         'images/inventory/Tucson-rear.webp',
+         'images/inventory/Tucson-engine.webp'],
+        '2023','12K km','Hybrid','Blue','1.6L Hybrid','5',
+        'The Hyundai Tucson Hybrid combines style, technology and fuel efficiency. Nearly brand new with only 12K km, this is an excellent opportunity to own a modern hybrid SUV at a great price.')">
+      <div class="car-img">
+        <div class="car-tag" style="background:#2d6a4f;">Finance Deal</div>
+        <img src="images/inventory/Tucson.webp" alt="Hyundai Tucson" class="car-photo">
+      </div>
+      <div class="car-info">
+        <div class="car-make">Hyundai</div>
+        <div class="car-model">Tucson</div>
+        <div class="car-specs">
+          <div class="car-spec"><strong>2023</strong> Year</div>
+          <div class="car-spec"><strong>12K</strong> km</div>
+          <div class="car-spec"><strong>Hybrid</strong></div>
+        </div>
+        <div class="car-bottom">
+          <div class="car-price">$29,900</div>
+          <button class="car-btn" onclick="event.stopPropagation(); enquireCar('Hyundai Tucson','$29,900')">Enquire</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAR 4 — Toyota Land Cruiser Prado -->
+    <div class="car-card"
+      data-make="Toyota" data-fuel="Diesel" data-price="38500" data-year="2022"
+      onclick="openCarModal('Toyota','Land Cruiser Prado','$38,500',
+        ['images/inventory/prado.jpg',
+         'images/inventory/prado-interior.jpg',
+         'images/inventory/prado-side.jpg',
+         'images/inventory/prado-rear.jpg',
+         'images/inventory/prado-engine.jpg'],
+        '2022','45K km','Diesel','White','4.0L V6','7',
+        'The Toyota Land Cruiser Prado is the ultimate Sierra Leone vehicle. Powerful, reliable and built for tough roads. With 7 seats and legendary Toyota reliability, this is a top choice for families and businesses alike.')">
+      <div class="car-img">
+        <div class="car-tag">Hot Deal</div>
+        <img src="images/inventory/prado.jpg" alt="Toyota Land Cruiser Prado" class="car-photo">
+      </div>
+      <div class="car-info">
+        <div class="car-make">Toyota</div>
+        <div class="car-model">Land Cruiser Prado</div>
+        <div class="car-specs">
+          <div class="car-spec"><strong>2022</strong> Year</div>
+          <div class="car-spec"><strong>45K</strong> km</div>
+          <div class="car-spec"><strong>Diesel</strong></div>
+        </div>
+        <div class="car-bottom">
+          <div class="car-price">$38,500</div>
+          <button class="car-btn" onclick="event.stopPropagation(); enquireCar('Toyota Land Cruiser Prado','$38,500')">Enquire</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAR 5 — Mercedes C-Class -->
+    <div class="car-card"
+      data-make="Mercedes" data-fuel="Petrol" data-price="65000" data-year="2023"
+      onclick="openCarModal('Mercedes','C-Class','$65,000',
+        ['images/inventory/mercedes.jpg',
+         'images/inventory/mercedes-interior.jpg',
+         'images/inventory/mercedes-side.jpg',
+         'images/inventory/mercedes-rear.jpg',
+         'images/inventory/mercedes-engine.jpg'],
+        '2023','8K km','Petrol','Black','2.0L Turbo','5',
+        'The Mercedes-Benz C-Class represents luxury, performance and sophistication. Nearly brand new with only 8K km, featuring premium leather interior, advanced safety systems and a powerful turbocharged engine.')">
+      <div class="car-img">
+        <div class="car-tag" style="background:#c0a060;">Luxury</div>
+        <img src="images/inventory/mercedes.jpg" alt="Mercedes C-Class" class="car-photo">
+      </div>
+      <div class="car-info">
+        <div class="car-make">Mercedes</div>
+        <div class="car-model">C-Class</div>
+        <div class="car-specs">
+          <div class="car-spec"><strong>2023</strong> Year</div>
+          <div class="car-spec"><strong>8K</strong> km</div>
+          <div class="car-spec"><strong>Petrol</strong></div>
+        </div>
+        <div class="car-bottom">
+          <div class="car-price">$65,000</div>
+          <button class="car-btn" onclick="event.stopPropagation(); enquireCar('Mercedes C-Class','$65,000')">Enquire</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAR 6 — Toyota Corolla -->
+    <div class="car-card"
+      data-make="Toyota" data-fuel="Petrol" data-price="18500" data-year="2020"
+      onclick="openCarModal('Toyota','Corolla','$18,500',
+        ['images/inventory/corolla.jpg',
+         'images/inventory/corolla-interior.jpg',
+         'images/inventory/corolla-side.jpg',
+         'images/inventory/corolla-rear.jpg',
+         'images/inventory/corolla-engine.jpg'],
+        '2020','52K km','Petrol','Silver','1.8L','5',
+        'The Toyota Corolla is the world best-selling car for a reason. Reliable, fuel-efficient and easy to maintain. A perfect everyday vehicle for Freetown and beyond, with low running costs and great resale value.')">
+      <div class="car-img">
+        <div class="car-tag" style="background:#555;">Great Value</div>
+        <img src="images/inventory/corolla.jpg" alt="Toyota Corolla" class="car-photo">
+      </div>
+      <div class="car-info">
+        <div class="car-make">Toyota</div>
+        <div class="car-model">Corolla</div>
+        <div class="car-specs">
+          <div class="car-spec"><strong>2020</strong> Year</div>
+          <div class="car-spec"><strong>52K</strong> km</div>
+          <div class="car-spec"><strong>Petrol</strong></div>
+        </div>
+        <div class="car-bottom">
+          <div class="car-price">$18,500</div>
+          <button class="car-btn" onclick="event.stopPropagation(); enquireCar('Toyota Corolla','$18,500')">Enquire</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Royal <span>Motors</span></div>
+  <div class="footer-text">© 2026 Royal Motors Sierra Leone. All rights reserved.</div>
+  <div class="footer-location">Freetown, Sierra Leone</div>
+</footer>
+
+<!-- WHATSAPP BUTTON -->
+<a class="wa-btn" href="https://wa.me/23276784937" target="_blank" title="Chat on WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.531 5.845L.057 23.428a.75.75 0 00.921.921l5.582-1.474A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.712 9.712 0 01-4.953-1.354l-.355-.211-3.682.972.987-3.598-.232-.371A9.712 9.712 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/>
+  </svg>
+</a>
+
+<!-- CAR DETAIL MODAL -->
+<div id="carModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeCarModal()">✕</button>
+    <div class="modal-gallery">
+      <button class="gallery-arrow gallery-prev" onclick="changePhoto(-1)">&#8249;</button>
+      <img id="modal-main-img" src="" alt="Car" class="modal-main-photo">
+      <button class="gallery-arrow gallery-next" onclick="changePhoto(1)">&#8250;</button>
+    </div>
+    <div class="modal-thumbnails" id="modal-thumbnails"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <p id="modal-make" class="modal-make"></p>
+          <h2 id="modal-model" class="modal-model"></h2>
+        </div>
+        <div class="modal-price-box">
+          <p id="modal-price" class="modal-price"></p>
+          <p class="modal-finance">Finance available</p>
+        </div>
+      </div>
+      <div class="modal-specs-grid">
+        <div class="modal-spec-item"><i class="fa-solid fa-calendar"></i><p id="modal-year"></p><span>Year</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-gauge"></i><p id="modal-mileage"></p><span>Mileage</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-gas-pump"></i><p id="modal-fuel"></p><span>Fuel</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-palette"></i><p id="modal-color"></p><span>Color</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-car-side"></i><p id="modal-engine"></p><span>Engine</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-user-group"></i><p id="modal-seats"></p><span>Seats</span></div>
+      </div>
+      <p id="modal-description" class="modal-description"></p>
+      <button class="modal-whatsapp" id="modal-wa-btn">
+        <i class="fa-brands fa-whatsapp"></i> Enquire on WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ALL JAVASCRIPT -->
+<script>
+  function toggleMenu() {
+    document.querySelector('.nav-links').classList.toggle('open');
+  }
+
+  function enquireCar(carName, price) {
+    const text = `Hello Royal Motors! 🚗%0A%0A`
+      + `I am interested in the *${carName}* priced at *${price}*%0A%0A`
+      + `Please send me more information!`;
+    window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+  }
+
+  let currentPhotos = [];
+  let currentPhotoIndex = 0;
+
+  function openCarModal(make, model, price, photos, year, mileage, fuel, color, engine, seats, description) {
+    document.getElementById('modal-make').textContent        = make;
+    document.getElementById('modal-model').textContent       = model;
+    document.getElementById('modal-price').textContent       = price;
+    document.getElementById('modal-year').textContent        = year;
+    document.getElementById('modal-mileage').textContent     = mileage;
+    document.getElementById('modal-fuel').textContent        = fuel;
+    document.getElementById('modal-color').textContent       = color;
+    document.getElementById('modal-engine').textContent      = engine;
+    document.getElementById('modal-seats').textContent       = seats;
+    document.getElementById('modal-description').textContent = description;
+    currentPhotos = Array.isArray(photos) ? photos : [photos];
+    currentPhotoIndex = 0;
+    updateMainPhoto();
+    const thumbsContainer = document.getElementById('modal-thumbnails');
+    thumbsContainer.innerHTML = '';
+    if (currentPhotos.length > 1) {
+      currentPhotos.forEach((src, i) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = `Photo ${i + 1}`;
+        if (i === 0) img.classList.add('active');
+        img.onclick = () => { currentPhotoIndex = i; updateMainPhoto(); };
+        thumbsContainer.appendChild(img);
+      });
+    }
+    document.getElementById('modal-wa-btn').onclick = function() {
+      const text = `Hello Royal Motors! 🚗%0A%0A`
+        + `I am interested in the *${make} ${model}* priced at *${price}*%0A%0A`
+        + `Please send me more information!`;
+      window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+    };
+    document.getElementById('carModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function updateMainPhoto() {
+    document.getElementById('modal-main-img').src = currentPhotos[currentPhotoIndex];
+    document.querySelectorAll('.modal-thumbnails img').forEach((img, i) => {
+      img.classList.toggle('active', i === currentPhotoIndex);
+    });
+  }
+
+  function changePhoto(direction) {
+    currentPhotoIndex = (currentPhotoIndex + direction + currentPhotos.length) % currentPhotos.length;
+    updateMainPhoto();
+  }
+
+  function closeCarModal() {
+    document.getElementById('carModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  function closeModal(event) {
+    if (event.target === document.getElementById('carModal')) closeCarModal();
+  }
+
+  function filterCars() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const brand  = document.getElementById('filter-brand').value;
+    const fuel   = document.getElementById('filter-fuel').value;
+    const price  = document.getElementById('filter-price').value;
+    const sort   = document.getElementById('filter-sort').value;
+    const cards  = Array.from(document.querySelectorAll('#inventory-grid .car-card'));
+    let visible  = 0;
+    cards.forEach(card => {
+      const cardMake  = card.dataset.make || '';
+      const cardFuel  = card.dataset.fuel || '';
+      const cardPrice = parseInt(card.dataset.price) || 0;
+      const cardText  = card.innerText.toLowerCase();
+      let show = true;
+      if (search && !cardText.includes(search)) show = false;
+      if (brand && cardMake !== brand) show = false;
+      if (fuel && cardFuel !== fuel) show = false;
+      if (price) {
+        const [min, max] = price.split('-').map(Number);
+        if (cardPrice < min || cardPrice > max) show = false;
+      }
+      card.style.display = show ? 'block' : 'none';
+      if (show) visible++;
+    });
+    if (sort) {
+      const grid = document.getElementById('inventory-grid');
+      const sorted = cards.filter(c => c.style.display !== 'none').sort((a, b) => {
+        const pa = parseInt(a.dataset.price), pb = parseInt(b.dataset.price);
+        const ya = parseInt(a.dataset.year),  yb = parseInt(b.dataset.year);
+        if (sort === 'price-low')  return pa - pb;
+        if (sort === 'price-high') return pb - pa;
+        if (sort === 'year-new')   return yb - ya;
+        if (sort === 'year-old')   return ya - yb;
+        return 0;
+      });
+      sorted.forEach(card => grid.appendChild(card));
+    }
+    document.getElementById('car-count').textContent = `Showing ${visible} vehicle${visible !== 1 ? 's' : ''}`;
+    let noResults = document.getElementById('no-results-msg');
+    if (visible === 0) {
+      if (!noResults) {
+        noResults = document.createElement('div');
+        noResults.id = 'no-results-msg';
+        noResults.className = 'no-results';
+        noResults.innerHTML = '<i class="fa-solid fa-car"></i><p>No vehicles match your search. Try adjusting the filters.</p>';
+        document.getElementById('inventory-grid').appendChild(noResults);
+      }
+    } else if (noResults) {
+      noResults.remove();
+    }
+  }
+
+  function resetFilters() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('filter-brand').value = '';
+    document.getElementById('filter-fuel').value  = '';
+    document.getElementById('filter-price').value = '';
+    document.getElementById('filter-sort').value  = '';
+    filterCars();
+  }
+</script>
+
+</body>
+</html>

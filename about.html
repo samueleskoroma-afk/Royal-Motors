@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us — Royal Motors Sierra Leone</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .page-hero {
+      background: var(--black);
+      padding: 70px 60px 50px;
+      border-bottom: 3px solid var(--red);
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center;
+    }
+    .page-hero-label { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: 8px; }
+    .page-hero-title { font-family: var(--font-display); font-size: 64px; color: var(--white); letter-spacing: 2px; line-height: 1; margin-bottom: 16px; }
+    .page-hero-title span { color: var(--red); }
+    .page-hero-sub { color: #888; font-size: 15px; font-weight: 300; line-height: 1.8; }
+    .page-hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .about-stat { text-align: center; border-left: 3px solid var(--red); padding-left: 16px; }
+    .about-stat-num { font-family: var(--font-display); font-size: 48px; color: var(--white); line-height: 1; }
+    .about-stat-num span { color: var(--red); }
+    .about-stat-label { font-size: 11px; color: #777; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 4px; }
+
+    /* STORY */
+    .story-section { padding: 80px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .story-img-wrap { position: relative; }
+    .story-img { width: 100%; height: 420px; object-fit: cover; display: block; }
+    .story-img-placeholder { width: 100%; height: 420px; background: var(--light-gray); display: flex; align-items: center; justify-content: center; }
+    .story-img-placeholder i { font-size: 80px; color: #ccc; }
+    .story-badge {
+      position: absolute; bottom: -20px; right: -20px;
+      background: var(--red); color: var(--white);
+      padding: 20px 24px; text-align: center;
+    }
+    .story-badge-num { font-family: var(--font-display); font-size: 48px; line-height: 1; }
+    .story-badge-text { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; }
+    .story-content {}
+    .story-content p { color: var(--gray); font-size: 15px; line-height: 1.9; font-weight: 300; margin-bottom: 20px; }
+    .story-content p strong { color: var(--black); font-weight: 600; }
+
+    /* VALUES */
+    .values-section { background: var(--black); padding: 80px 60px; }
+    .values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 48px; }
+    .value-card { border-top: 3px solid var(--red); padding-top: 24px; }
+    .value-icon { font-size: 32px; color: var(--red); margin-bottom: 16px; display: block; }
+    .value-title { font-size: 18px; font-weight: 600; color: var(--white); margin-bottom: 10px; }
+    .value-text { font-size: 14px; color: #888; line-height: 1.7; font-weight: 300; }
+
+    /* TEAM */
+    .team-section { padding: 80px 60px; background: var(--off-white); }
+    .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 48px; }
+    .team-card { background: var(--white); text-align: center; overflow: hidden; transition: transform .2s; }
+    .team-card:hover { transform: translateY(-4px); }
+    .team-img-wrap { height: 220px; background: var(--light-gray); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .team-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .team-img-wrap i { font-size: 60px; color: #ccc; }
+    .team-info { padding: 20px; }
+    .team-name { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+    .team-role { font-size: 12px; color: var(--red); letter-spacing: 1px; text-transform: uppercase; font-weight: 600; margin-bottom: 10px; }
+    .team-bio { font-size: 13px; color: var(--gray); line-height: 1.6; font-weight: 300; }
+
+    /* MILESTONES */
+    .milestones-section { padding: 80px 60px; }
+    .milestones-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; margin-top: 48px; }
+    .milestone { display: flex; gap: 20px; align-items: flex-start; }
+    .milestone-year {
+      font-family: var(--font-display); font-size: 32px;
+      color: var(--red); letter-spacing: 1px;
+      min-width: 90px; line-height: 1;
+    }
+    .milestone-content {}
+    .milestone-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .milestone-text { font-size: 14px; color: var(--gray); line-height: 1.6; font-weight: 300; }
+
+    /* CTA */
+    .about-cta { background: var(--red); padding: 70px 60px; text-align: center; }
+    .about-cta h2 { font-family: var(--font-display); font-size: 52px; color: var(--white); letter-spacing: 2px; margin-bottom: 16px; }
+    .about-cta p { color: rgba(255,255,255,0.85); font-size: 16px; font-weight: 300; max-width: 500px; margin: 0 auto 32px; line-height: 1.7; }
+    .about-cta-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .cta-btn-white {
+      background: var(--white); color: var(--red);
+      border: none; padding: 14px 36px;
+      font-family: var(--font-body); font-size: 14px;
+      font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+      cursor: pointer; transition: all .2s; text-decoration: none; display: inline-block;
+    }
+    .cta-btn-white:hover { background: var(--black); color: var(--white); }
+    .cta-btn-outline-white {
+      background: transparent; color: var(--white);
+      border: 2px solid rgba(255,255,255,0.6); padding: 14px 36px;
+      font-family: var(--font-body); font-size: 14px;
+      font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+      cursor: pointer; transition: all .2s; text-decoration: none; display: inline-block;
+    }
+    .cta-btn-outline-white:hover { border-color: var(--white); background: rgba(255,255,255,0.1); }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .page-hero { grid-template-columns: 1fr; padding: 50px 20px 40px; gap: 32px; }
+      .page-hero-title { font-size: 48px; }
+      .story-section { grid-template-columns: 1fr; padding: 50px 20px; gap: 40px; }
+      .story-badge { bottom: 10px; right: 10px; }
+      .values-section { padding: 50px 20px; }
+      .values-grid { grid-template-columns: 1fr 1fr; }
+      .team-section { padding: 50px 20px; }
+      .team-grid { grid-template-columns: 1fr 1fr; }
+      .milestones-section { padding: 50px 20px; }
+      .milestones-grid { grid-template-columns: 1fr; }
+      .about-cta { padding: 50px 20px; }
+      .about-cta h2 { font-size: 40px; }
+    }
+    @media (max-width: 600px) {
+      .page-hero-title { font-size: 38px; }
+      .page-hero-stats { grid-template-columns: 1fr; }
+      .values-grid { grid-template-columns: 1fr; }
+      .team-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===================== NAV ===================== -->
+<nav>
+  <a href="index.html" class="nav-logo-link">
+    <div class="nav-logo">
+      <img src="images/Logo-removebg-preview.png" alt="Royal Motors Logo" class="nav-logo-img">
+      ROYAL <span>MOTORS</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="inventory.html">Inventory</a></li>
+    <li><a href="about.html" class="active">About</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+    <li><a href="rentals.html">Rentals</a></li>
+  </ul>
+  <button class="nav-cta">Book a Test Drive</button>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</nav>
+
+<!-- ===================== PAGE HERO ===================== -->
+<div class="page-hero">
+  <div>
+    <div class="page-hero-label">Our Story</div>
+    <h1 class="page-hero-title">About <span>Royal Motors</span></h1>
+    <p class="page-hero-sub">We are Sierra Leone's most trusted car dealership, built on a foundation of quality, integrity and a genuine passion for putting the right car in the right hands. Since our founding we have served thousands of satisfied customers across the country.</p>
+  </div>
+  <div class="page-hero-stats">
+    <div class="about-stat">
+      <div class="about-stat-num">10<span>+</span></div>
+      <div class="about-stat-label">Years in Business</div>
+    </div>
+    <div class="about-stat">
+      <div class="about-stat-num">5K<span>+</span></div>
+      <div class="about-stat-label">Happy Customers</div>
+    </div>
+    <div class="about-stat">
+      <div class="about-stat-num">200<span>+</span></div>
+      <div class="about-stat-label">Cars in Stock</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== STORY ===================== -->
+<section class="story-section">
+  <div class="story-img-wrap">
+    <!-- EDIT: Replace with a real showroom photo -->
+<img src="images/show room.jpg" alt="Royal Motors Showroom" class="story-img">    <div class="story-badge">
+      <div class="story-badge-num">10</div>
+      <div class="story-badge-text">Years of Excellence</div>
+    </div>
+  </div>
+  <div class="story-content">
+    <div class="section-label">Who We Are</div>
+    <div class="section-title" style="margin-bottom:24px;">Built on Trust, Driven by Passion</div>
+    <!-- EDIT: Update with the real Royal Motors story -->
+    <p>Royal Motors was founded with a single vision — to give the people of Sierra Leone access to quality, reliable vehicles at fair and transparent prices. What started as a small operation in Freetown has grown into one of the country's most recognised car dealerships.</p>
+    <p>Over the years we have built lasting relationships with our customers, many of whom come back to us time and again for their next vehicle. <strong>Trust, transparency and after-sales care</strong> are at the heart of everything we do.</p>
+    <p>Whether you are looking for a family SUV, a luxury sedan, a rugged 4x4 or a reliable everyday car, our experienced team is here to guide you every step of the way — from choosing the right vehicle to driving it off the lot.</p>
+  </div>
+</section>
+
+<!-- ===================== VALUES ===================== -->
+<section class="values-section">
+  <div class="section-label" style="color:var(--red);">What We Stand For</div>
+  <div class="section-title" style="color:#fff;">Our Core Values</div>
+  <div class="values-grid">
+    <div class="value-card">
+      <i class="fa-solid fa-handshake value-icon"></i>
+      <div class="value-title">Integrity</div>
+      <div class="value-text">We are honest and transparent in everything we do. No hidden charges, no misleading information. What you see is what you get.</div>
+    </div>
+    <div class="value-card">
+      <i class="fa-solid fa-star value-icon"></i>
+      <div class="value-title">Quality</div>
+      <div class="value-text">Every vehicle on our lot goes through a thorough inspection process. We only sell cars we would be proud to drive ourselves.</div>
+    </div>
+    <div class="value-card">
+      <i class="fa-solid fa-heart value-icon"></i>
+      <div class="value-title">Customer First</div>
+      <div class="value-text">Our customers are the reason we exist. We go above and beyond to make sure every person who walks through our doors leaves satisfied.</div>
+    </div>
+    <div class="value-card">
+      <i class="fa-solid fa-leaf value-icon"></i>
+      <div class="value-title">Community</div>
+      <div class="value-text">We are proud to be a Sierra Leonean business serving Sierra Leonean people. We invest in our community and celebrate local growth.</div>
+    </div>
+    <div class="value-card">
+      <i class="fa-solid fa-bolt value-icon"></i>
+      <div class="value-title">Innovation</div>
+      <div class="value-text">We constantly evolve our services, offerings and technology to give our customers the best possible experience every time.</div>
+    </div>
+    <div class="value-card">
+      <i class="fa-solid fa-screwdriver-wrench value-icon"></i>
+      <div class="value-title">After-Sales Care</div>
+      <div class="value-text">Our relationship does not end at the sale. We provide ongoing support, servicing advice and assistance to every customer.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TEAM ===================== -->
+<section class="team-section">
+  <div class="section-label">The People Behind Royal Motors</div>
+  <div class="section-title">Meet Our Team</div>
+  <div class="team-grid">
+
+    <!-- EDIT: Add real team member photos and details -->
+    <div class="team-card">
+      <div class="team-img-wrap">
+        <i class="fa-solid fa-user"></i>
+      </div>
+      <div class="team-info">
+        <!-- EDIT: Real name -->
+        <div class="team-name">John Koroma</div>
+        <div class="team-role">Founder & CEO</div>
+        <div class="team-bio">With over 15 years in the automotive industry, John founded Royal Motors with a vision to transform car buying in Sierra Leone.</div>
+      </div>
+    </div>
+
+    <div class="team-card">
+      <div class="team-img-wrap">
+        <i class="fa-solid fa-user"></i>
+      </div>
+      <div class="team-info">
+        <!-- EDIT: Real name -->
+        <div class="team-name">Aminata Bangura</div>
+        <div class="team-role">Sales Manager</div>
+        <div class="team-bio">Aminata leads our sales team with energy and dedication, ensuring every customer finds their perfect vehicle at the right price.</div>
+      </div>
+    </div>
+
+    <div class="team-card">
+      <div class="team-img-wrap">
+        <i class="fa-solid fa-user"></i>
+      </div>
+      <div class="team-info">
+        <!-- EDIT: Real name -->
+        <div class="team-name">Ibrahim Sesay</div>
+        <div class="team-role">Head Mechanic</div>
+        <div class="team-bio">Ibrahim oversees all vehicle inspections and ensures every car meets Royal Motors' high quality standards before it goes on sale.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================== MILESTONES ===================== -->
+<section class="milestones-section">
+  <div class="section-label">Our Journey</div>
+  <div class="section-title">Key Milestones</div>
+  <div class="milestones-grid">
+    <!-- EDIT: Update with real company history -->
+    <div class="milestone">
+      <div class="milestone-year">2014</div>
+      <div class="milestone-content">
+        <div class="milestone-title">Royal Motors Founded</div>
+        <div class="milestone-text">Started with a small lot of 10 vehicles on Wilkinson Road, Freetown. First month sold out completely.</div>
+      </div>
+    </div>
+    <div class="milestone">
+      <div class="milestone-year">2016</div>
+      <div class="milestone-content">
+        <div class="milestone-title">Expanded Showroom</div>
+        <div class="milestone-text">Moved to a larger premises to accommodate growing inventory and customer demand across Sierra Leone.</div>
+      </div>
+    </div>
+    <div class="milestone">
+      <div class="milestone-year">2019</div>
+      <div class="milestone-content">
+        <div class="milestone-title">Launched Rental Service</div>
+        <div class="milestone-text">Introduced our car rental service to meet the growing demand for short and long term vehicle hire in Freetown.</div>
+      </div>
+    </div>
+    <div class="milestone">
+      <div class="milestone-year">2022</div>
+      <div class="milestone-content">
+        <div class="milestone-title">1000th Customer</div>
+        <div class="milestone-text">A proud milestone — celebrated serving our 1000th satisfied customer, a testament to the trust Sierra Leoneans place in Royal Motors.</div>
+      </div>
+    </div>
+    <div class="milestone">
+      <div class="milestone-year">2024</div>
+      <div class="milestone-content">
+        <div class="milestone-title">Finance Partnership</div>
+        <div class="milestone-text">Launched flexible vehicle financing options making car ownership more accessible to more Sierra Leoneans than ever before.</div>
+      </div>
+    </div>
+    <div class="milestone">
+      <div class="milestone-year">2026</div>
+      <div class="milestone-content">
+        <div class="milestone-title">Launched Online Presence</div>
+        <div class="milestone-text">Took Royal Motors digital with our new website, making it easier than ever to browse inventory and enquire from anywhere in Sierra Leone.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CTA ===================== -->
+<section class="about-cta">
+  <h2>Come Visit Us Today</h2>
+  <p>Experience the Royal Motors difference for yourself. Our team is ready to welcome you to our Freetown showroom.</p>
+  <div class="about-cta-btns">
+    <a href="inventory.html" class="cta-btn-white">Browse Inventory</a>
+    <a href="index.html#contact" class="cta-btn-outline-white">Get In Touch</a>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="footer-logo">Royal <span>Motors</span></div>
+  <div class="footer-text">© 2026 Royal Motors Sierra Leone. All rights reserved.</div>
+  <div class="footer-location">Freetown, Sierra Leone</div>
+</footer>
+
+<!-- WhatsApp Floating Button -->
+<a class="wa-btn" href="https://wa.me/23276784937" target="_blank" title="Chat on WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.531 5.845L.057 23.428a.75.75 0 00.921.921l5.582-1.474A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.712 9.712 0 01-4.953-1.354l-.355-.211-3.682.972.987-3.598-.232-.371A9.712 9.712 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/>
+  </svg>
+</a>
+
+<script>
+  function toggleMenu() {
+    document.querySelector('.nav-links').classList.toggle('open');
+  }
+</script>
+</body>
+</html>
