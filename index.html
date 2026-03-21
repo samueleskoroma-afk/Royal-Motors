@@ -226,45 +226,60 @@
       const cars = await res.json();
       const featured = cars.filter(c => c.Make).slice(0, 3);
       const grid = document.getElementById('featured-grid');
+      grid.innerHTML = '';
+
       if (featured.length === 0) {
         grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray);">No vehicles available yet. Check back soon!</div>';
         return;
       }
-      grid.innerHTML = featured.map(car => {
-        const photos = car.Photos ? car.Photos.split(',').map(p => p.trim()) : [];
+
+      featured.forEach(car => {
+        const photos    = car.Photos ? car.Photos.split(',').map(p => p.trim()).filter(p => p) : [];
         const mainPhoto = photos[0] || '';
-        return `
-          <div class="car-card" onclick="openCarModal(
-            '${escQ(car.Make)}','${escQ(car.Model)}','${escQ(car.Price)}',
-            ${JSON.stringify(photos)},
-            '${escQ(car.Year)}','${escQ(car.Mileage)}','${escQ(car.Fuel)}',
-            '${escQ(car.Color)}','${escQ(car.Engine)}','${escQ(car.Seats)}',
-            '${escQ(car.Description)}')">
-            <div class="car-img">
-              <div class="car-tag">${car.Badge || 'In Stock'}</div>
-              ${mainPhoto ? `<img src="${mainPhoto}" alt="${car.Make} ${car.Model}" class="car-photo">` : ''}
+
+        const card = document.createElement('div');
+        card.className = 'car-card';
+        card.innerHTML = `
+          <div class="car-img">
+            <div class="car-tag">${car.Badge || 'In Stock'}</div>
+            ${mainPhoto ? `<img src="${mainPhoto}" alt="${car.Make} ${car.Model}" class="car-photo">` : ''}
+          </div>
+          <div class="car-info">
+            <div class="car-make">${car.Make || ''}</div>
+            <div class="car-model">${car.Model || ''}</div>
+            <div class="car-specs">
+              <div class="car-spec"><strong>${car.Year || '—'}</strong> Year</div>
+              <div class="car-spec"><strong>${car.Mileage || '—'}</strong></div>
+              <div class="car-spec"><strong>${car.Fuel || '—'}</strong></div>
             </div>
-            <div class="car-info">
-              <div class="car-make">${car.Make}</div>
-              <div class="car-model">${car.Model}</div>
-              <div class="car-specs">
-                <div class="car-spec"><strong>${car.Year || '—'}</strong> Year</div>
-                <div class="car-spec"><strong>${car.Mileage || '—'}</strong></div>
-                <div class="car-spec"><strong>${car.Fuel || '—'}</strong></div>
-              </div>
-              <div class="car-bottom">
-                <div class="car-price">${car.Price || '—'}</div>
-                <button class="car-btn" onclick="event.stopPropagation(); enquireCar('${escQ(car.Make)} ${escQ(car.Model)}','${escQ(car.Price)}')">Enquire</button>
-              </div>
+            <div class="car-bottom">
+              <div class="car-price">${car.Price || '—'}</div>
+              <button class="car-btn enquire-btn">Enquire</button>
             </div>
           </div>`;
-      }).join('');
+
+        card.addEventListener('click', function() {
+          openCarModal(
+            car.Make || '', car.Model || '', car.Price || '',
+            photos,
+            car.Year || '', car.Mileage || '', car.Fuel || '',
+            car.Color || '', car.Engine || '', car.Seats || '',
+            car.Description || ''
+          );
+        });
+
+        card.querySelector('.enquire-btn').addEventListener('click', function(e) {
+          e.stopPropagation();
+          enquireCar(`${car.Make} ${car.Model}`, car.Price);
+        });
+
+        grid.appendChild(card);
+      });
+
     } catch(err) {
       document.getElementById('featured-grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--gray);">Could not load vehicles. Please refresh.</div>';
     }
   }
-
-  function escQ(str) { return (str || '').toString().replace(/'/g, "\\'"); }
 
   /* --- CONTACT FORM → WHATSAPP --- */
   function sendToWhatsApp() {
