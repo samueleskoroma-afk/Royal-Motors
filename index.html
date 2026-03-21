@@ -21,13 +21,17 @@
   <ul class="nav-links">
     <li><a href="index.html" class="active">Home</a></li>
     <li><a href="inventory.html">Inventory</a></li>
-    <li><a href="about.html">About</a></li>
-    <li><a href="#contact">Contact</a></li>
+    <li><a href="about.html" >About</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
     <li><a href="rentals.html">Rentals</a></li>
   </ul>
-  <button class="nav-cta">Book a Test Drive</button>
-  <div class="hamburger" onclick="toggleMenu()">
-    <span></span><span></span><span></span>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="index.html" class="mobile-home-btn" title="Home">
+      <i class="fa-solid fa-house"></i>
+    </a>
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
   </div>
 </nav>
 
@@ -289,13 +293,13 @@
     const interest  = document.querySelector('select').value;
     const message   = document.querySelector('textarea').value;
     if (!firstName || !phone) { alert('Please fill in your name and phone number!'); return; }
-    const text = `Hello Royal Motors! 🚗%0A%0AName: ${firstName} ${lastName}%0APhone: ${phone}%0AInterested In: ${interest}%0AMessage: ${message}`;
+    const text = `Hello Royal Motors!%0A%0AName: ${firstName} ${lastName}%0APhone: ${phone}%0AInterested In: ${interest}%0AMessage: ${message}`;
     window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
   }
 
   /* --- CAR ENQUIRE → WHATSAPP --- */
   function enquireCar(name, price) {
-    const text = `Hello Royal Motors! 🚗%0A%0AI am interested in the *${name}* priced at *${price}*%0A%0APlease send me more information!`;
+    const text = `Hello Royal Motors!%0A%0AI am interested in the *${name}* priced at *${price}*%0A%0APlease send me more information!`;
     window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
   }
 
@@ -326,7 +330,7 @@
       });
     }
     document.getElementById('modal-wa-btn').onclick = function() {
-      const text = `Hello Royal Motors! 🚗%0A%0AI am interested in the *${make} ${model}* priced at *${price}*%0A%0APlease send me more information!`;
+      const text = `Hello Royal Motors!%0A%0AI am interested in the *${make} ${model}* priced at *${price}*%0A%0APlease send me more information!`;
       window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
     };
     document.getElementById('carModal').classList.add('active');
