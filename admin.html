@@ -134,33 +134,58 @@
       .admin-sidebar { display: none; }
       .mobile-nav.visible { display: block; }
       .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-      .stat-card { padding: 14px; }
+      .form-grid { grid-template-columns: 1fr; gap: 10px; }
+      .admin-main { padding: 14px; padding-bottom: 80px; }
+      .photos-preview-grid { grid-template-columns: repeat(3, 1fr); }
+      .admin-nav { padding: 0 12px; }
+      .admin-nav-logo { font-size: 16px; }
+      .admin-nav-right { gap: 8px; }
+      .admin-nav-right a { font-size: 11px; }
+      .logout-btn { padding: 5px 10px; font-size: 11px; }
+    }
+
+    @media (max-width: 600px) {
+      .admin-nav { height: 52px; padding: 0 10px; }
+      .admin-nav-logo { font-size: 14px; letter-spacing: 1px; }
+      .admin-nav-right { gap: 6px; }
+      .admin-nav-right a { font-size: 10px; }
+      .logout-btn { padding: 4px 8px; font-size: 10px; }
+      .login-box { padding: 28px 20px; }
+      .login-logo { font-size: 22px; }
+      .login-sub { font-size: 12px; margin-bottom: 20px; }
+      .login-field input { padding: 10px 12px; font-size: 13px; }
+      .login-btn { padding: 12px; font-size: 13px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+      .stat-card { padding: 14px 12px; }
       .stat-card-num { font-size: 28px; }
       .stat-card-label { font-size: 10px; }
+      .admin-main { padding: 10px; padding-bottom: 75px; }
+      .section-header { margin-bottom: 12px; }
+      .section-header h2 { font-size: 22px; }
+      .form-card { padding: 16px 12px; margin-bottom: 16px; }
+      .form-card h3 { font-size: 14px; margin-bottom: 14px; padding-bottom: 8px; }
       .form-grid { grid-template-columns: 1fr; gap: 10px; }
-      .admin-main { padding: 12px; padding-bottom: 80px; }
-      .photos-preview-grid { grid-template-columns: repeat(3, 1fr); }
-      .admin-nav { padding: 0 12px; height: 50px; }
-      .admin-nav-logo { font-size: 15px; }
-      .admin-nav-right a { display: none; }
-      .logout-btn { padding: 4px 10px; font-size: 11px; }
-      .form-card { padding: 16px; margin-bottom: 16px; }
-      .form-card h3 { font-size: 14px; margin-bottom: 14px; }
-      .form-group input, .form-group select, .form-group textarea { padding: 8px 10px; font-size: 13px; }
       .form-group label { font-size: 10px; }
+      .form-group input, .form-group select, .form-group textarea { padding: 9px 10px; font-size: 13px; }
       .form-group textarea { min-height: 60px; }
-      .upload-area { padding: 16px 10px; }
-      .upload-area i { font-size: 22px; margin-bottom: 6px; }
+      .form-actions { gap: 8px; margin-top: 14px; }
+      .submit-btn { padding: 10px 18px; font-size: 12px; }
+      .clear-btn { padding: 10px 14px; font-size: 12px; }
+      .upload-area { padding: 18px 12px; }
+      .upload-area i { font-size: 24px; margin-bottom: 6px; }
       .upload-area p { font-size: 12px; }
       .upload-area span { font-size: 10px; }
-      .submit-btn { padding: 10px 20px; font-size: 12px; }
-      .clear-btn { padding: 10px 16px; font-size: 12px; }
-      .section-header h2 { font-size: 22px; }
+      .photos-preview-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+      .photo-preview-item img { height: 52px; }
+      .form-card p { font-size: 13px; line-height: 1.7; }
       .cars-table th { padding: 8px 10px; font-size: 10px; }
       .cars-table td { padding: 8px 10px; font-size: 12px; }
+      .cars-table img { width: 46px; height: 34px; }
       .delete-btn { padding: 4px 8px; font-size: 10px; }
-      .admin-layout { min-height: calc(100vh - 50px); }
-      .login-box { padding: 24px 20px; }
+      .badge { font-size: 9px; padding: 2px 5px; }
+      .mobile-nav-item { font-size: 9px; padding: 8px 4px; }
+      .mobile-nav-item i { font-size: 16px; }
+      .message { padding: 10px 14px; font-size: 12px; }
     }
   </style>
 </head>
@@ -182,7 +207,7 @@
     <button class="login-btn" onclick="doLogin()">
       <i class="fa-solid fa-lock"></i> Login
     </button>
-    <p class="login-error" id="login-error">❌ Incorrect username or password!</p>
+    <p class="login-error" id="login-error">Incorrect username or password!</p>
   </div>
 </div>
 
@@ -191,11 +216,16 @@
 
   <div class="admin-nav">
     <div class="admin-nav-logo">Royal <span>Motors</span> <span style="font-size:13px;color:#555;font-family:var(--font-body);letter-spacing:0;">Admin</span></div>
-    <div class="admin-nav-right">
-      <a href="index.html" target="_blank" style="color:#888;font-size:13px;text-decoration:none;"><i class="fa-solid fa-arrow-up-right-from-square"></i> View Site</a>
-      <button class="logout-btn" onclick="doLogout()">Logout</button>
-    </div>
-  </div>
+<div class="admin-nav-right">
+
+  <!-- VIEW SITE BUTTON -->
+  <a href="index.html" target="_blank" style="color:#888;font-size:13px;text-decoration:none;">
+    <i class="fa-solid fa-arrow-up-right-from-square"></i> View Site
+  </a>
+
+
+  <button class="logout-btn" onclick="doLogout()">Logout</button>
+</div>  </div>
 
   <div class="admin-layout">
     <div class="admin-sidebar">
@@ -228,13 +258,13 @@
           </div>
         </div>
         <div class="form-card">
-          <h3>👋 Welcome to Royal Motors Admin Panel</h3>
+          <h3>Welcome to Royal Motors Admin Panel</h3>
           <p style="color:var(--gray);font-size:14px;line-height:1.9;">
             Use the sidebar to navigate:<br>
             • <strong>Add New Car</strong> — Upload photos and add a car to inventory<br>
             • <strong>Manage Cars</strong> — View, or delete existing cars<br>
             • <strong>Add Rental Car</strong> — Add a car to the rental fleet<br><br>
-            Photos are uploaded automatically to the cloud — no file paths needed! 📸
+            Photos are uploaded automatically to the cloud — no file paths needed!
           </p>
         </div>
       </div>
@@ -245,7 +275,7 @@
           <h2>Add New Car</h2>
         </div>
         <div class="form-card">
-          <h3>📸 Car Photos</h3>
+          <h3>Car Photos</h3>
 
           <!-- MAIN PHOTO UPLOAD -->
           <div class="form-group full" style="margin-bottom:16px;">
@@ -279,7 +309,7 @@
         </div>
 
         <div class="form-card">
-          <h3>🚗 Car Details</h3>
+          <h3>Car Details</h3>
           <div class="form-grid">
             <div class="form-group">
               <label>Brand / Make</label>
@@ -385,23 +415,39 @@
           <h2>Add Rental Car</h2>
         </div>
         <div class="form-card">
-          <h3>📸 Rental Car Photo</h3>
+          <h3> Rental Car Photo</h3>
           <div class="form-group full">
             <label>Main Photo</label>
             <div class="upload-area">
               <input type="file" accept="image/*" onchange="uploadPhoto(this, 'rental')">
               <i class="fa-solid fa-camera"></i>
               <p>Click to upload rental car photo</p>
-              <span>JPG, PNG, WEBP — Max 10MB</span>
+              <span>JPG, PNG, WEBP  Max 10MB</span>
             </div>
             <div class="upload-progress" id="rental-progress">
               <div class="upload-progress-bar" id="rental-progress-bar"></div>
             </div>
             <div id="rental-preview" style="margin-top:8px;"></div>
           </div>
+          
+          <!-- EXTRA PHOTOS -->
+          <div class="form-group full">
+            <label>Extra Photos — Interior, Side, Rear, Engine (up to 4)</label>
+            <div class="upload-area" id="extra-upload-area">
+              <input type="file" accept="image/*" multiple onchange="uploadExtraPhotos(this)">
+              <i class="fa-solid fa-images"></i>
+              <p>Click to upload extra photos</p>
+              <span>Select up to 4 photos at once</span>
+            </div>
+            <div class="upload-progress" id="extra-progress">
+              <div class="upload-progress-bar" id="extra-progress-bar"></div>
+            </div>
+            <div class="photos-preview-grid" id="extra-previews"></div>
+          </div>
         </div>
+
         <div class="form-card">
-          <h3>🔑 Rental Car Details</h3>
+          <h3> Rental Car Details</h3>
           <div class="form-grid">
             <div class="form-group">
               <label>Brand / Make</label>
@@ -551,13 +597,13 @@
         mainPhotoUrl = url;
         document.getElementById('main-preview').innerHTML =
           `<img src="${url}" style="width:120px;height:80px;object-fit:cover;border:2px solid var(--red);">
-           <p style="font-size:11px;color:var(--gray);margin-top:4px;">✅ Main photo uploaded!</p>`;
+           <p style="font-size:11px;color:var(--gray);margin-top:4px;">Main photo uploaded!</p>`;
       } else if (type === 'rental') {
         const url = await uploadToCloudinary(file, 'rental-progress', 'rental-progress-bar');
         rentalPhotoUrl = url;
         document.getElementById('rental-preview').innerHTML =
           `<img src="${url}" style="width:120px;height:80px;object-fit:cover;border:2px solid var(--red);">
-           <p style="font-size:11px;color:var(--gray);margin-top:4px;">✅ Photo uploaded!</p>`;
+           <p style="font-size:11px;color:var(--gray);margin-top:4px;">Photo uploaded!</p>`;
       }
     } catch(err) {
       alert('Upload failed. Check your internet connection.');
@@ -608,11 +654,11 @@
     const description = document.getElementById('car-description').value.trim();
 
     if (!make || !model || !price) {
-      showMessage('car-message', 'error', '❌ Please fill in at least Brand, Model and Price!');
+      showMessage('car-message', 'error', 'Please fill in at least Brand, Model and Price!');
       return;
     }
     if (!mainPhotoUrl) {
-      showMessage('car-message', 'error', '❌ Please upload a main photo first!');
+      showMessage('car-message', 'error', 'Please upload a main photo first!');
       return;
     }
 
@@ -628,10 +674,10 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'car', make, model, price, year, mileage, fuel, color, engine, seats, badge, description, photos: allPhotos })
       });
-      showMessage('car-message', 'success', '✅ Car added successfully! It will appear on the website shortly.');
+      showMessage('car-message', 'success', 'Car added successfully! It will appear on the website shortly.');
       clearCarForm();
     } catch(err) {
-      showMessage('car-message', 'error', '❌ Something went wrong. Please try again.');
+      showMessage('car-message', 'error', 'Something went wrong. Please try again.');
     }
 
     btn.textContent = 'Add Car to Inventory';
@@ -649,11 +695,11 @@
     const description = document.getElementById('rental-description').value.trim();
 
     if (!make || !model || !price) {
-      showMessage('rental-message', 'error', '❌ Please fill in at least Brand, Model and Rate!');
+      showMessage('rental-message', 'error', 'Please fill in at least Brand, Model and Rate!');
       return;
     }
     if (!rentalPhotoUrl) {
-      showMessage('rental-message', 'error', '❌ Please upload a photo first!');
+      showMessage('rental-message', 'error', 'Please upload a photo first!');
       return;
     }
 
@@ -668,10 +714,10 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'rental', make, model, price, seats, fuel, trans, photo: rentalPhotoUrl, description })
       });
-      showMessage('rental-message', 'success', '✅ Rental car added successfully!');
+      showMessage('rental-message', 'success', 'Rental car added successfully!');
       clearRentalForm();
     } catch(err) {
-      showMessage('rental-message', 'error', '❌ Something went wrong. Please try again.');
+      showMessage('rental-message', 'error', 'Something went wrong. Please try again.');
     }
 
     btn.textContent = 'Add Rental Car';
@@ -763,6 +809,7 @@ async function deleteCar(row) {
     rentalPhotoUrl = '';
   }
 </script>
-
+  
 </body>
 </html>
+
