@@ -149,12 +149,12 @@
     <p class="form-title">Send an Enquiry</p>
     <div class="contact-form">
       <div class="form-row">
-        <div class="form-field"><input type="text" placeholder="First Name"></div>
-        <div class="form-field"><input type="text" placeholder="Last Name"></div>
+        <div class="form-field"><input type="text" id="fname" placeholder="First Name"></div>
+        <div class="form-field"><input type="text" id="lname" placeholder="Last Name"></div>
       </div>
-      <div class="form-field"><input type="tel" placeholder="Phone Number"></div>
+      <div class="form-field"><input type="tel" id="phone" placeholder="Phone Number"></div>
       <div class="form-field">
-        <select>
+        <select id="interest">
           <option value="">Interested In...</option>
           <option>New Car Purchase</option>
           <option>Car Rental</option>
@@ -162,7 +162,7 @@
           <option>Other</option>
         </select>
       </div>
-      <div class="form-field"><textarea placeholder="Your message..."></textarea></div>
+      <div class="form-field"><textarea id="message" placeholder="Your message..."></textarea></div>
       <button class="form-submit" onclick="sendToWhatsApp()">Send Enquiry →</button>
     </div>
   </div>
@@ -223,60 +223,76 @@
   let currentPhotos = [];
   let currentPhotoIndex = 0;
 
-  /* --- LOAD FEATURED CARS FROM GOOGLE SHEET --- */
+  /* --- LOAD FEATURED CARS --- */
   async function loadFeatured() {
     try {
-      const res = await fetch(SCRIPT_URL);
+      const res  = await fetch(SCRIPT_URL);
       const cars = await res.json();
       const featured = cars.filter(c => c.Make).slice(0, 3);
       const grid = document.getElementById('featured-grid');
+      grid.innerHTML = '';
+
       if (featured.length === 0) {
         grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray);">No vehicles available yet. Check back soon!</div>';
         return;
       }
-      grid.innerHTML = featured.map(car => {
-        const photos = car.Photos ? car.Photos.split(',').map(p => p.trim()) : [];
+
+      featured.forEach(car => {
+        const photos    = car.Photos ? car.Photos.split(',').map(p => p.trim()).filter(p => p) : [];
         const mainPhoto = photos[0] || '';
-        return `
-          <div class="car-card" onclick="openCarModal(
-            '${escQ(car.Make)}','${escQ(car.Model)}','${escQ(car.Price)}',
-            ${JSON.stringify(photos)},
-            '${escQ(car.Year)}','${escQ(car.Mileage)}','${escQ(car.Fuel)}',
-            '${escQ(car.Color)}','${escQ(car.Engine)}','${escQ(car.Seats)}',
-            '${escQ(car.Description)}')">
-            <div class="car-img">
-              <div class="car-tag">${car.Badge || 'In Stock'}</div>
-              ${mainPhoto ? `<img src="${mainPhoto}" alt="${car.Make} ${car.Model}" class="car-photo">` : ''}
+
+        const card = document.createElement('div');
+        card.className = 'car-card';
+        card.innerHTML = `
+          <div class="car-img">
+            <div class="car-tag">${car.Badge || 'In Stock'}</div>
+            ${mainPhoto ? `<img src="${mainPhoto}" alt="${car.Make} ${car.Model}" class="car-photo">` : ''}
+          </div>
+          <div class="car-info">
+            <div class="car-make">${car.Make || ''}</div>
+            <div class="car-model">${car.Model || ''}</div>
+            <div class="car-specs">
+              <div class="car-spec"><strong>${car.Year || '—'}</strong> Year</div>
+              <div class="car-spec"><strong>${car.Mileage || '—'}</strong></div>
+              <div class="car-spec"><strong>${car.Fuel || '—'}</strong></div>
             </div>
-            <div class="car-info">
-              <div class="car-make">${car.Make}</div>
-              <div class="car-model">${car.Model}</div>
-              <div class="car-specs">
-                <div class="car-spec"><strong>${car.Year || '—'}</strong> Year</div>
-                <div class="car-spec"><strong>${car.Mileage || '—'}</strong></div>
-                <div class="car-spec"><strong>${car.Fuel || '—'}</strong></div>
-              </div>
-              <div class="car-bottom">
-                <div class="car-price">${car.Price || '—'}</div>
-                <button class="car-btn" onclick="event.stopPropagation(); enquireCar('${escQ(car.Make)} ${escQ(car.Model)}','${escQ(car.Price)}')">Enquire</button>
-              </div>
+            <div class="car-bottom">
+              <div class="car-price">${car.Price || '—'}</div>
+              <button class="car-btn enquire-btn">Enquire</button>
             </div>
           </div>`;
-      }).join('');
+
+        card.addEventListener('click', function() {
+          openCarModal(
+            car.Make || '', car.Model || '', car.Price || '',
+            photos,
+            car.Year || '', car.Mileage || '', car.Fuel || '',
+            car.Color || '', car.Engine || '', car.Seats || '',
+            car.Description || ''
+          );
+        });
+
+        card.querySelector('.enquire-btn').addEventListener('click', function(e) {
+          e.stopPropagation();
+          enquireCar(`${car.Make} ${car.Model}`, car.Price);
+        });
+
+        grid.appendChild(card);
+      });
+
     } catch(err) {
-      document.getElementById('featured-grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--gray);">Could not load vehicles. Please refresh.</div>';
+      document.getElementById('featured-grid').innerHTML =
+        '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--gray);">Could not load vehicles. Please refresh.</div>';
     }
   }
 
-  function escQ(str) { return (str || '').toString().replace(/'/g, "\\'"); }
-
   /* --- CONTACT FORM → WHATSAPP --- */
   function sendToWhatsApp() {
-    const firstName = document.querySelector('input[placeholder="First Name"]').value;
-    const lastName  = document.querySelector('input[placeholder="Last Name"]').value;
-    const phone     = document.querySelector('input[placeholder="Phone Number"]').value;
-    const interest  = document.querySelector('select').value;
-    const message   = document.querySelector('textarea').value;
+    const firstName = document.getElementById('fname').value;
+    const lastName  = document.getElementById('lname').value;
+    const phone     = document.getElementById('phone').value;
+    const interest  = document.getElementById('interest').value;
+    const message   = document.getElementById('message').value;
     if (!firstName || !phone) { alert('Please fill in your name and phone number!'); return; }
     const text = `Hello Royal Motors! 🚗%0A%0AName: ${firstName} ${lastName}%0APhone: ${phone}%0AInterested In: ${interest}%0AMessage: ${message}`;
     window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
@@ -345,7 +361,8 @@
     document.querySelector('.nav-links').classList.toggle('open');
   }
 
-  /* --- INIT --- */
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   loadFeatured();
 </script>
 
