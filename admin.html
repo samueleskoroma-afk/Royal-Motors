@@ -121,13 +121,24 @@
     .loading i { font-size: 32px; color: var(--red); display: block; margin-bottom: 12px; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* MOBILE BOTTOM NAV */
+    .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--black); border-top: 3px solid var(--red); z-index: 200; padding: 0; }
+    .mobile-nav-items { display: flex; justify-content: space-around; align-items: center; }
+    .mobile-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 8px; cursor: pointer; color: #666; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; transition: color .2s; flex: 1; text-align: center; border-top: 3px solid transparent; }
+    .mobile-nav-item i { font-size: 18px; }
+    .mobile-nav-item.active { color: var(--red); border-top-color: var(--red); }
+    .mobile-nav-item:hover { color: var(--red); }
+
     @media (max-width: 900px) {
       .admin-layout { grid-template-columns: 1fr; }
       .admin-sidebar { display: none; }
+      .mobile-nav.visible { display: block; }
       .stats-grid { grid-template-columns: 1fr 1fr; }
       .form-grid { grid-template-columns: 1fr; }
-      .admin-main { padding: 20px; }
+      .admin-main { padding: 20px; padding-bottom: 80px; }
       .photos-preview-grid { grid-template-columns: repeat(3, 1fr); }
+      .admin-nav { padding: 0 16px; }
+      .admin-nav-logo { font-size: 18px; }
     }
   </style>
 </head>
@@ -421,6 +432,28 @@
   </div>
 </div>
 
+<!-- MOBILE BOTTOM NAV -->
+<div class="mobile-nav" id="mobile-nav">
+  <div class="mobile-nav-items">
+    <div class="mobile-nav-item active" id="mob-dashboard" onclick="showSection('dashboard', this)">
+      <i class="fa-solid fa-gauge"></i>
+      Dashboard
+    </div>
+    <div class="mobile-nav-item" id="mob-add-car" onclick="showSection('add-car', this)">
+      <i class="fa-solid fa-plus"></i>
+      Add Car
+    </div>
+    <div class="mobile-nav-item" id="mob-manage" onclick="showSection('manage-cars', this)">
+      <i class="fa-solid fa-list"></i>
+      Manage
+    </div>
+    <div class="mobile-nav-item" id="mob-rental" onclick="showSection('add-rental', this)">
+      <i class="fa-solid fa-key"></i>
+      Rental
+    </div>
+  </div>
+</div>
+
 <script>
   const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbwVdgPoVABiD9F7npOtS8KaxKVoRFxoV6PZ6tdBAamT0VMvjW-sdTm_8XyiusFcbZ8-/exec';
   const CLOUD_NAME   = 'dukqrrhsi';
@@ -439,6 +472,7 @@
     if (user === ADMIN_USER && pass === ADMIN_PASS) {
       document.getElementById('login-page').style.display = 'none';
       document.getElementById('admin-page').style.display = 'block';
+      document.getElementById('mobile-nav').classList.add('visible');
       loadCarsCount();
     } else {
       document.getElementById('login-error').style.display = 'block';
@@ -448,6 +482,7 @@
   function doLogout() {
     document.getElementById('login-page').style.display = 'flex';
     document.getElementById('admin-page').style.display = 'none';
+    document.getElementById('mobile-nav').classList.remove('visible');
     document.getElementById('login-user').value = '';
     document.getElementById('login-pass').value = '';
   }
@@ -456,6 +491,7 @@
   function showSection(name, el) {
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.mobile-nav-item').forEach(s => s.classList.remove('active'));
     document.getElementById(`section-${name}`).classList.add('active');
     if (el) el.classList.add('active');
     if (name === 'manage-cars') loadCars();

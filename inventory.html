@@ -69,7 +69,7 @@
 <nav>
   <a href="index.html" class="nav-logo-link">
     <div class="nav-logo">
-      <img src="Images/logo.png" alt="Royal Motors Logo" class="nav-logo-img">
+      <img src="images/Logo-removebg-preview.png"Royal Motors Logo" class="nav-logo-img">
       ROYAL <span>MOTORS</span>
     </div>
   </a>
@@ -234,64 +234,78 @@
   }
 
   /* --- RENDER CAR CARDS --- */
-  function renderCars(cars) {
-    const grid = document.getElementById('inventory-grid');
-    if (cars.length === 0) {
-      grid.innerHTML = `
-        <div class="no-results">
-          <i class="fa-solid fa-car"></i>
-          <p>No vehicles match your search. Try adjusting the filters.</p>
-        </div>`;
-      return;
-    }
-
-    grid.innerHTML = cars.map((car, i) => {
-      const photos = car.Photos ? car.Photos.split(',').map(p => p.trim()) : [];
-      const mainPhoto = photos[0] || '';
-      const photosJson = JSON.stringify(photos).replace(/"/g, '&quot;');
-      const price = car.Price || '';
-      const priceNum = parseFloat(price.replace(/[^0-9.]/g, '')) || 0;
-
-      return `
-        <div class="car-card"
-          data-make="${car.Make || ''}"
-          data-fuel="${car.Fuel || ''}"
-          data-price="${priceNum}"
-          data-year="${car.Year || ''}"
-          onclick="openCarModal(
-            '${escapeQ(car.Make)}',
-            '${escapeQ(car.Model)}',
-            '${escapeQ(car.Price)}',
-            ${JSON.stringify(photos)},
-            '${escapeQ(car.Year)}',
-            '${escapeQ(car.Mileage)}',
-            '${escapeQ(car.Fuel)}',
-            '${escapeQ(car.Color)}',
-            '${escapeQ(car.Engine)}',
-            '${escapeQ(car.Seats)}',
-            '${escapeQ(car.Description)}'
-          )">
-          <div class="car-img">
-            <div class="car-tag">${car.Badge || 'In Stock'}</div>
-            ${mainPhoto ? `<img src="${mainPhoto}" alt="${car.Make} ${car.Model}" class="car-photo" onerror="this.style.display='none'">` : ''}
-          </div>
-          <div class="car-info">
-            <div class="car-make">${car.Make || ''}</div>
-            <div class="car-model">${car.Model || ''}</div>
-            <div class="car-specs">
-              <div class="car-spec"><strong>${car.Year || '—'}</strong> Year</div>
-              <div class="car-spec"><strong>${car.Mileage || '—'}</strong></div>
-              <div class="car-spec"><strong>${car.Fuel || '—'}</strong></div>
-            </div>
-            <div class="car-bottom">
-              <div class="car-price">${car.Price || '—'}</div>
-              <button class="car-btn" onclick="event.stopPropagation(); enquireCar('${escapeQ(car.Make)} ${escapeQ(car.Model)}', '${escapeQ(car.Price)}')">Enquire</button>
-            </div>
-          </div>
-        </div>`;
-    }).join('');
+function renderCars(cars) {
+  const grid = document.getElementById('inventory-grid');
+  if (cars.length === 0) {
+    grid.innerHTML = `
+      <div class="no-results">
+        <i class="fa-solid fa-car"></i>
+        <p>No vehicles match your search.</p>
+      </div>`;
+    return;
   }
 
+  grid.innerHTML = '';
+  cars.forEach((car, index) => {
+    const photos = car.Photos ? car.Photos.split(',').map(p => p.trim()).filter(p => p) : [];
+    const mainPhoto = photos[0] || '';
+    const priceNum = parseFloat((car.Price || '').replace(/[^0-9.]/g, '')) || 0;
+
+    const card = document.createElement('div');
+    card.className = 'car-card';
+    card.dataset.make  = car.Make  || '';
+    card.dataset.fuel  = car.Fuel  || '';
+    card.dataset.price = priceNum;
+    card.dataset.year  = car.Year  || '';
+
+    card.innerHTML = `
+      <div class="car-img">
+        <div class="car-tag">${car.Badge || 'In Stock'}</div>
+        ${mainPhoto ? `<img src="${mainPhoto}" alt="${car.Make} ${car.Model}" class="car-photo">` : ''}
+      </div>
+      <div class="car-info">
+        <div class="car-make">${car.Make || ''}</div>
+        <div class="car-model">${car.Model || ''}</div>
+        <div class="car-specs">
+          <div class="car-spec"><strong>${car.Year || '—'}</strong> Year</div>
+          <div class="car-spec"><strong>${car.Mileage || '—'}</strong></div>
+          <div class="car-spec"><strong>${car.Fuel || '—'}</strong></div>
+        </div>
+        <div class="car-bottom">
+          <div class="car-price">${car.Price || '—'}</div>
+          <button class="car-btn" id="enquire-${index}">Enquire</button>
+        </div>
+      </div>`;
+
+    card.addEventListener('click', function() {
+      openCarModal(
+        car.Make || '',
+        car.Model || '',
+        car.Price || '',
+        photos,
+        car.Year || '',
+        car.Mileage || '',
+        car.Fuel || '',
+        car.Color || '',
+        car.Engine || '',
+        car.Seats || '',
+        car.Description || ''
+      );
+    });
+
+    document.getElementById(`enquire-${index}`) && card.querySelector(`#enquire-${index}`).addEventListener('click', function(e) {
+      e.stopPropagation();
+      enquireCar(`${car.Make} ${car.Model}`, car.Price);
+    });
+
+    grid.appendChild(card);
+
+    card.querySelector(`#enquire-${index}`).addEventListener('click', function(e) {
+      e.stopPropagation();
+      enquireCar(`${car.Make} ${car.Model}`, car.Price);
+    });
+  });
+}
   function escapeQ(str) {
     return (str || '').toString().replace(/'/g, "\\'");
   }

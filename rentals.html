@@ -50,7 +50,7 @@
     .rental-contact-btns { display: flex; flex-direction: column; gap: 14px; }
     .rental-wa-btn { background: #25D366; color: var(--white); border: none; padding: 16px 32px; font-family: var(--font-body); font-size: 15px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background .2s; text-decoration: none; justify-content: center; }
     .rental-wa-btn:hover { background: #1da851; }
-    .rental-call-btn { background: transparent; color: var(--white); border: 2px solid rgba(255,255,255,0.5); padding: 16px 32px; font-family: var(--font-body); font-size: 15px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all .2s; justify-content: center; text-decoration: none; }
+    .rental-call-btn { background: transparent; color: var(--white); border: 2px solid rgba(255,255,255,0.5); padding: 16px 32px; font-family: var(--font-body); font-size: 15px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; transition: all .2s; justify-content: center; text-decoration: none; }
     .rental-call-btn:hover { border-color: var(--white); background: rgba(255,255,255,0.1); }
     .loading-rentals { text-align: center; padding: 80px; color: var(--gray); }
     .loading-rentals i { font-size: 40px; color: var(--red); display: block; margin-bottom: 12px; animation: spin 1s linear infinite; }
@@ -93,7 +93,7 @@
 <nav>
   <a href="index.html" class="nav-logo-link">
     <div class="nav-logo">
-      <img src="Images/logo.png" alt="Royal Motors Logo" class="nav-logo-img">
+      <img src="images/Logo-removebg-preview.png" alt="Royal Motors Logo" class="nav-logo-img">
       ROYAL <span>MOTORS</span>
     </div>
   </a>
@@ -223,13 +223,14 @@
   let currentPhotos = [];
   let currentPhotoIndex = 0;
 
-  /* --- LOAD RENTALS FROM GOOGLE SHEET --- */
+  /* --- LOAD RENTALS --- */
   async function loadRentals() {
     try {
-      const res = await fetch(SCRIPT_URL + '?type=rentals');
+      const res  = await fetch(SCRIPT_URL + '?type=rentals');
       const data = await res.json();
       const rentals = Array.isArray(data) ? data.filter(r => r.Make) : [];
       const grid = document.getElementById('rental-grid');
+      grid.innerHTML = '';
 
       if (rentals.length === 0) {
         grid.innerHTML = `
@@ -240,15 +241,14 @@
         return;
       }
 
-      grid.innerHTML = rentals.map(car => `
-        <div class="rental-card" onclick="openCarModal(
-          '${escQ(car.Make)}','${escQ(car.Model)}','${escQ(car.Price)}/day',
-          ['${escQ(car.Photo)}'],
-          'Available','${escQ(car.Trans)}','${escQ(car.Fuel)}','—','—','${escQ(car.Seats)}',
-          '${escQ(car.Description)}')">
+      rentals.forEach(car => {
+        const photo = car.Photo || '';
+        const card  = document.createElement('div');
+        card.className = 'rental-card';
+        card.innerHTML = `
           <div class="rental-img">
             <div class="rental-badge">Available</div>
-            ${car.Photo ? `<img src="${car.Photo}" alt="${car.Make} ${car.Model}" onerror="this.style.display='none'">` : ''}
+            ${photo ? `<img src="${photo}" alt="${car.Make} ${car.Model}" onerror="this.style.display='none'">` : ''}
           </div>
           <div class="rental-info">
             <div class="rental-make">${car.Make}</div>
@@ -263,22 +263,35 @@
                 <div class="rental-price">${car.Price}</div>
                 <div class="rental-per">Per Day</div>
               </div>
-              <button class="rental-btn" onclick="event.stopPropagation(); rentCar('${escQ(car.Make)} ${escQ(car.Model)}','${escQ(car.Price)}/day')">Book Now</button>
+              <button class="rental-btn book-btn">Book Now</button>
             </div>
-          </div>
-        </div>`).join('');
+          </div>`;
+
+        card.addEventListener('click', function() {
+          openCarModal(
+            car.Make, car.Model, `${car.Price}/day`,
+            [photo],
+            'Available', car.Trans, car.Fuel,
+            '—', '—', car.Seats,
+            car.Description || ''
+          );
+        });
+
+        card.querySelector('.book-btn').addEventListener('click', function(e) {
+          e.stopPropagation();
+          const text = `Hello Royal Motors! 🚗%0A%0AI would like to rent the *${car.Make} ${car.Model}* at *${car.Price}/day*%0A%0APlease let me know availability!`;
+          window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+        });
+
+        grid.appendChild(card);
+      });
     } catch(err) {
-      document.getElementById('rental-grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray);">Could not load rental fleet. Please refresh.</div>';
+      document.getElementById('rental-grid').innerHTML =
+        '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray);">Could not load rental fleet. Please refresh.</div>';
     }
   }
 
-  function escQ(str) { return (str || '').toString().replace(/'/g, "\\'"); }
-
-  function rentCar(name, price) {
-    const text = `Hello Royal Motors! 🚗%0A%0AI would like to rent the *${name}* at *${price}*%0A%0APlease let me know availability!`;
-    window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
-  }
-
+  /* --- MODAL --- */
   function openCarModal(make, model, price, photos, year, mileage, fuel, color, engine, seats, description) {
     document.getElementById('modal-make').textContent        = make;
     document.getElementById('modal-model').textContent       = model;
@@ -331,7 +344,9 @@
     if (e.target === document.getElementById('carModal')) closeCarModal();
   }
 
-  function toggleMenu() { document.querySelector('.nav-links').classList.toggle('open'); }
+  function toggleMenu() {
+    document.querySelector('.nav-links').classList.toggle('open');
+  }
 
   loadRentals();
 </script>
