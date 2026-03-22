@@ -18,6 +18,15 @@ function doGet(e) {
       return response({ status: 'deleted', row: row });
     }
 
+    // DELETE RENTAL via GET request
+    if (type === 'delete-rental') {
+      const sheet = ss.getSheetByName('Rentals');
+      if (!sheet) return response({ status: 'error', message: 'Rentals sheet not found' });
+      const row = Number(e.parameter.row);
+      sheet.deleteRow(row);
+      return response({ status: 'deleted', row: row });
+    }
+
     // Return RENTALS
     if (type === 'rentals') {
       const sheet = ss.getSheetByName('Rentals');
@@ -58,6 +67,35 @@ function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
     const ss = SpreadsheetApp.openById(SHEET_ID);
+
+    // EDIT existing car or rental
+    if (data.type === 'edit') {
+      const sheet = ss.getSheetByName(data.sheet) || ss.getActiveSheet();
+      const row = Number(data.row);
+      if (data.sheet === 'Rentals') {
+        sheet.getRange(row, 1).setValue(data.make);
+        sheet.getRange(row, 2).setValue(data.model);
+        sheet.getRange(row, 3).setValue(data.price);
+        sheet.getRange(row, 4).setValue(data.seats);
+        sheet.getRange(row, 5).setValue(data.fuel);
+        sheet.getRange(row, 7).setValue(data.description);
+        if (data.photos) sheet.getRange(row, 7).setValue(data.photos);
+      } else {
+        sheet.getRange(row, 2).setValue(data.make);
+        sheet.getRange(row, 3).setValue(data.model);
+        sheet.getRange(row, 4).setValue(data.price);
+        sheet.getRange(row, 5).setValue(data.year);
+        sheet.getRange(row, 6).setValue(data.mileage);
+        sheet.getRange(row, 7).setValue(data.fuel);
+        sheet.getRange(row, 8).setValue(data.color);
+        sheet.getRange(row, 9).setValue(data.engine);
+        sheet.getRange(row, 10).setValue(data.seats);
+        sheet.getRange(row, 11).setValue(data.badge);
+        sheet.getRange(row, 12).setValue(data.description);
+        if (data.photos) sheet.getRange(row, 13).setValue(data.photos);
+      }
+      return response({ status: 'edited', row: row });
+    }
 
     // ADD RENTAL car
     if (data.type === 'rental') {

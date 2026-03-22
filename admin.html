@@ -106,7 +106,20 @@
     .message.success { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
     .message.error { background: #ffebee; color: #c62828; border-left: 4px solid #c62828; }
 
-    /* TABLE */
+    /* MANAGE TABS */
+    .manage-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .manage-tab { padding: 9px 20px; font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: 1.5px solid var(--light-gray); background: var(--white); color: var(--gray); transition: all .2s; }
+    .manage-tab.active { background: var(--black); color: var(--white); border-color: var(--black); }
+    .manage-tab:hover:not(.active) { border-color: var(--red); color: var(--red); }
+    .edit-btn { background: transparent; color: var(--black); border: 1px solid var(--light-gray); padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all .2s; margin-right: 6px; }
+    .edit-btn:hover { background: var(--black); color: var(--white); border-color: var(--black); }
+
+    /* EDIT MODAL */
+    .edit-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; padding: 16px; }
+    .edit-modal-overlay.active { display: flex; }
+    .edit-modal-box { background: var(--white); width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; padding: 28px; border-top: 4px solid var(--red); position: relative; }
+    .edit-modal-box h3 { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+    .edit-modal-close { position: absolute; top: 14px; right: 14px; background: var(--red); color: var(--white); border: none; width: 30px; height: 30px; font-size: 14px; cursor: pointer; font-weight: 600; }
     .cars-table-wrap { background: var(--white); overflow-x: auto; }
     .cars-table { width: 100%; border-collapse: collapse; }
     .cars-table th { background: var(--black); color: var(--white); padding: 12px 16px; text-align: left; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600; }
@@ -145,47 +158,54 @@
     }
 
     @media (max-width: 600px) {
-      .admin-nav { height: 52px; padding: 0 10px; }
-      .admin-nav-logo { font-size: 14px; letter-spacing: 1px; }
+      * { box-sizing: border-box; }
+      body { overflow-x: hidden; }
+      .admin-nav { height: 50px; padding: 0 10px; }
+      .admin-nav-logo { font-size: 13px; letter-spacing: 1px; }
       .admin-nav-right { gap: 6px; }
       .admin-nav-right a { font-size: 10px; }
       .logout-btn { padding: 4px 8px; font-size: 10px; }
-      .login-box { padding: 28px 20px; }
-      .login-logo { font-size: 22px; }
-      .login-sub { font-size: 12px; margin-bottom: 20px; }
+      .login-page { padding: 16px; }
+      .login-box { padding: 24px 16px; width: 100%; }
+      .login-logo { font-size: 20px; }
+      .login-sub { font-size: 12px; margin-bottom: 16px; }
       .login-field input { padding: 10px 12px; font-size: 13px; }
-      .login-btn { padding: 12px; font-size: 13px; }
-      .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-      .stat-card { padding: 14px 12px; }
-      .stat-card-num { font-size: 28px; }
+      .login-btn { padding: 11px; font-size: 13px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+      .stat-card { padding: 12px 10px; }
+      .stat-card-num { font-size: 26px; }
       .stat-card-label { font-size: 10px; }
-      .admin-main { padding: 10px; padding-bottom: 75px; }
-      .section-header { margin-bottom: 12px; }
-      .section-header h2 { font-size: 22px; }
-      .form-card { padding: 16px 12px; margin-bottom: 16px; }
-      .form-card h3 { font-size: 14px; margin-bottom: 14px; padding-bottom: 8px; }
-      .form-grid { grid-template-columns: 1fr; gap: 10px; }
+      .admin-main { padding: 8px; padding-bottom: 72px; overflow-x: hidden; }
+      .section-header { margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+      .section-header h2 { font-size: 20px; }
+      .form-card { padding: 14px 10px; margin-bottom: 12px; }
+      .form-card h3 { font-size: 13px; margin-bottom: 12px; padding-bottom: 8px; }
+      .form-grid { grid-template-columns: 1fr; gap: 8px; }
       .form-group label { font-size: 10px; }
-      .form-group input, .form-group select, .form-group textarea { padding: 9px 10px; font-size: 13px; }
+      .form-group input, .form-group select, .form-group textarea { padding: 8px 10px; font-size: 13px; width: 100%; }
       .form-group textarea { min-height: 60px; }
-      .form-actions { gap: 8px; margin-top: 14px; }
-      .submit-btn { padding: 10px 18px; font-size: 12px; }
-      .clear-btn { padding: 10px 14px; font-size: 12px; }
-      .upload-area { padding: 18px 12px; }
-      .upload-area i { font-size: 24px; margin-bottom: 6px; }
+      .form-actions { gap: 8px; margin-top: 12px; }
+      .submit-btn { padding: 9px 14px; font-size: 11px; }
+      .clear-btn { padding: 9px 12px; font-size: 11px; }
+      .upload-area { padding: 16px 10px; }
+      .upload-area i { font-size: 22px; margin-bottom: 6px; }
       .upload-area p { font-size: 12px; }
       .upload-area span { font-size: 10px; }
-      .photos-preview-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
-      .photo-preview-item img { height: 52px; }
-      .form-card p { font-size: 13px; line-height: 1.7; }
-      .cars-table th { padding: 8px 10px; font-size: 10px; }
-      .cars-table td { padding: 8px 10px; font-size: 12px; }
-      .cars-table img { width: 46px; height: 34px; }
-      .delete-btn { padding: 4px 8px; font-size: 10px; }
-      .badge { font-size: 9px; padding: 2px 5px; }
-      .mobile-nav-item { font-size: 9px; padding: 8px 4px; }
-      .mobile-nav-item i { font-size: 16px; }
-      .message { padding: 10px 14px; font-size: 12px; }
+      .photos-preview-grid { grid-template-columns: repeat(4, 1fr); gap: 5px; }
+      .photo-preview-item img { height: 48px; }
+      .cars-table-wrap { overflow-x: auto; width: 100%; }
+      .cars-table { min-width: 420px; }
+      .cars-table th { padding: 7px 8px; font-size: 9px; }
+      .cars-table td { padding: 7px 8px; font-size: 11px; }
+      .cars-table img { width: 40px; height: 30px; }
+      .delete-btn { padding: 4px 7px; font-size: 10px; }
+      .edit-btn { padding: 4px 7px; font-size: 10px; }
+      .badge { font-size: 9px; padding: 2px 4px; }
+      .mobile-nav-item { font-size: 9px; padding: 7px 4px; }
+      .mobile-nav-item i { font-size: 15px; }
+      .message { padding: 10px 12px; font-size: 12px; }
+      .manage-tabs { gap: 6px; margin-bottom: 12px; }
+      .manage-tab { padding: 7px 14px; font-size: 12px; }
     }
   </style>
 </head>
@@ -219,10 +239,9 @@
 <div class="admin-nav-right">
 
   <!-- VIEW SITE BUTTON -->
-  <a href="index.html" target="_blank" style="color:#888;font-size:13px;text-decoration:none;">
+  <a href="index.html" target="_blank" style="color:#888;font-size:13px;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='#888'">
     <i class="fa-solid fa-arrow-up-right-from-square"></i> View Site
   </a>
-
 
   <button class="logout-btn" onclick="doLogout()">Logout</button>
 </div>  </div>
@@ -382,30 +401,64 @@
       <!-- MANAGE CARS -->
       <div class="page-section" id="section-manage-cars">
         <div class="section-header">
-          <h2>Manage Cars</h2>
-          <button class="submit-btn" onclick="showSection('add-car', document.querySelector('.sidebar-item:nth-child(2)'))">
-            <i class="fa-solid fa-plus"></i> Add New Car
+          <h2>Manage</h2>
+          <button class="submit-btn" id="manage-add-btn" onclick="handleManageAdd()">
+            <i class="fa-solid fa-plus"></i> <span id="manage-add-label">Add New Car</span>
           </button>
         </div>
-        <div class="cars-table-wrap">
-          <div class="loading" id="cars-loading">
-            <i class="fa-solid fa-spinner"></i>
-            Loading cars from database...
+
+        <!-- TABS -->
+        <div class="manage-tabs">
+          <button class="manage-tab active" id="tab-cars" onclick="switchManageTab('cars')">Inventory Cars</button>
+          <button class="manage-tab" id="tab-rentals" onclick="switchManageTab('rentals')">Rental Cars</button>
+        </div>
+
+        <!-- CARS TABLE -->
+        <div id="manage-cars-section">
+          <div class="cars-table-wrap">
+            <div class="loading" id="cars-loading">
+              <i class="fa-solid fa-spinner"></i>
+              Loading cars from database...
+            </div>
+            <table class="cars-table" id="cars-table" style="display:none;">
+              <thead>
+                <tr>
+                  <th>Photo</th>
+                  <th>Make</th>
+                  <th>Model</th>
+                  <th>Price</th>
+                  <th>Year</th>
+                  <th>Fuel</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="cars-tbody"></tbody>
+            </table>
           </div>
-          <table class="cars-table" id="cars-table" style="display:none;">
-            <thead>
-              <tr>
-                <th>Photo</th>
-                <th>Make</th>
-                <th>Model</th>
-                <th>Price</th>
-                <th>Year</th>
-                <th>Fuel</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="cars-tbody"></tbody>
-          </table>
+        </div>
+
+        <!-- RENTALS TABLE -->
+        <div id="manage-rentals-section" style="display:none;">
+          <div class="cars-table-wrap">
+            <div class="loading" id="rentals-loading">
+              <i class="fa-solid fa-spinner"></i>
+              Loading rental cars...
+            </div>
+            <table class="cars-table" id="rentals-table" style="display:none;">
+              <thead>
+                <tr>
+                  <th>Photo</th>
+                  <th>Make</th>
+                  <th>Model</th>
+                  <th>Price/Day</th>
+                  <th>Seats</th>
+                  <th>Fuel</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="rentals-tbody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -522,8 +575,81 @@
   </div>
 </div>
 
+<!-- EDIT MODAL -->
+<div class="edit-modal-overlay" id="editModal">
+  <div class="edit-modal-box">
+    <button class="edit-modal-close" onclick="closeEditModal()">✕</button>
+    <h3>Edit Car</h3>
+    <input type="hidden" id="edit-row">
+    <input type="hidden" id="edit-type">
+
+    <!-- PHOTO SECTION -->
+    <div class="form-card" style="margin-bottom:16px;">
+      <h3 style="font-size:14px;margin-bottom:12px;border-bottom:1px solid var(--light-gray);padding-bottom:8px;">Update Photos (optional)</h3>
+      <div class="form-group full" style="margin-bottom:12px;">
+        <label>Main Photo</label>
+        <div class="upload-area" style="padding:16px;">
+          <input type="file" accept="image/*" onchange="uploadEditMainPhoto(this)">
+          <i class="fa-solid fa-camera" style="font-size:22px;"></i>
+          <p style="font-size:12px;">Click to replace main photo</p>
+        </div>
+        <div class="upload-progress" id="edit-main-progress"><div class="upload-progress-bar" id="edit-main-progress-bar"></div></div>
+        <div id="edit-main-preview" style="margin-top:8px;"></div>
+      </div>
+      <div class="form-group full">
+        <label>Extra Photos (up to 4)</label>
+        <div class="upload-area" style="padding:16px;">
+          <input type="file" accept="image/*" multiple onchange="uploadEditExtraPhotos(this)">
+          <i class="fa-solid fa-images" style="font-size:22px;"></i>
+          <p style="font-size:12px;">Click to replace extra photos</p>
+        </div>
+        <div class="upload-progress" id="edit-extra-progress"><div class="upload-progress-bar" id="edit-extra-progress-bar"></div></div>
+        <div class="photos-preview-grid" id="edit-extra-previews"></div>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group"><label>Make</label><input type="text" id="edit-make"></div>
+      <div class="form-group"><label>Model</label><input type="text" id="edit-model"></div>
+      <div class="form-group"><label>Price</label><input type="text" id="edit-price"></div>
+      <div class="form-group"><label>Year</label><input type="text" id="edit-year"></div>
+      <div class="form-group"><label>Mileage</label><input type="text" id="edit-mileage"></div>
+      <div class="form-group">
+        <label>Fuel</label>
+        <select id="edit-fuel">
+          <option value="Petrol">Petrol</option>
+          <option value="Diesel">Diesel</option>
+          <option value="Electric">Electric</option>
+          <option value="Hybrid">Hybrid</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Color</label><input type="text" id="edit-color"></div>
+      <div class="form-group"><label>Engine</label><input type="text" id="edit-engine"></div>
+      <div class="form-group"><label>Seats</label><input type="text" id="edit-seats"></div>
+      <div class="form-group">
+        <label>Badge</label>
+        <select id="edit-badge">
+          <option value="New Arrival">New Arrival</option>
+          <option value="Best Seller">Best Seller</option>
+          <option value="Finance Deal">Finance Deal</option>
+          <option value="Hot Deal">Hot Deal</option>
+          <option value="Luxury">Luxury</option>
+          <option value="Great Value">Great Value</option>
+          <option value="Available">Available</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Description</label><textarea id="edit-description"></textarea></div>
+    </div>
+    <div class="form-actions" style="margin-top:20px;">
+      <button class="submit-btn" onclick="saveEdit()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+      <button class="clear-btn" onclick="closeEditModal()">Cancel</button>
+    </div>
+    <div class="message" id="edit-message"></div>
+  </div>
+</div>
+
 <script>
-  const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbwVdgPoVABiD9F7npOtS8KaxKVoRFxoV6PZ6tdBAamT0VMvjW-sdTm_8XyiusFcbZ8-/exec';
+  const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycby4lVCR0Ojte_DhpGrY18BoJMWwFAlLR4WyE3lV81hfV78YWWqrtsag39odgwP83FMD/exec';
   const CLOUD_NAME   = 'dukqrrhsi';
   const UPLOAD_PRESET = 'Royalmotors';
   const ADMIN_USER   = 'royalmotors';
@@ -554,6 +680,10 @@
     document.getElementById('login-user').value = '';
     document.getElementById('login-pass').value = '';
   }
+
+  function goHome() { window.open('index.html', '_blank'); }
+
+  function escapeQ(str) { return (str || '').toString().replace(/'/g, "\\'"); }
 
   /* --- NAVIGATION --- */
   function showSection(name, el) {
@@ -747,6 +877,9 @@
             <td>${car.Year || '—'}</td>
             <td><span class="badge badge-gray">${car.Fuel || '—'}</span></td>
             <td>
+              <button class="edit-btn" onclick="openEditModal(${i + 2}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}')">
+                <i class="fa-solid fa-pen"></i> Edit
+              </button>
               <button class="delete-btn" onclick="deleteCar(${i + 2})">
                 <i class="fa-solid fa-trash"></i> Delete
               </button>
@@ -758,6 +891,176 @@
       document.getElementById('cars-table').style.display = 'table';
     } catch(err) {
       document.getElementById('cars-loading').innerHTML = '<p style="color:var(--red);padding:40px;">Could not load cars. Check internet connection.</p>';
+    }
+  }
+
+  async function loadRentalCars() {
+    document.getElementById('rentals-loading').style.display = 'block';
+    document.getElementById('rentals-table').style.display = 'none';
+    try {
+      const res = await fetch(SCRIPT_URL + '?type=rentals');
+      const cars = await res.json();
+      const tbody = document.getElementById('rentals-tbody');
+      tbody.innerHTML = '';
+      if (!Array.isArray(cars) || cars.length === 0) {
+        document.getElementById('rentals-loading').innerHTML = '<p style="color:var(--gray);padding:40px;text-align:center;">No rental cars added yet.</p>';
+        return;
+      }
+      cars.forEach((car, i) => {
+        if (!car.Make) return;
+        tbody.innerHTML += `
+          <tr>
+            <td>${car.Photo ? `<img src="${car.Photo}" onerror="this.style.display='none'">` : '—'}</td>
+            <td>${car.Make || '—'}</td>
+            <td><strong>${car.Model || '—'}</strong></td>
+            <td style="color:var(--red);font-weight:600;">${car.Price || '—'}</td>
+            <td>${car.Seats || '—'}</td>
+            <td><span class="badge badge-gray">${car.Fuel || '—'}</span></td>
+            <td>
+              <button class="edit-btn" onclick="openEditModal(${i + 2}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','Available','${escapeQ(car.Description)}')">
+                <i class="fa-solid fa-pen"></i> Edit
+              </button>
+              <button class="delete-btn" onclick="deleteRental(${i + 2})">
+                <i class="fa-solid fa-trash"></i> Delete
+              </button>
+            </td>
+          </tr>`;
+      });
+      document.getElementById('rentals-loading').style.display = 'none';
+      document.getElementById('rentals-table').style.display = 'table';
+    } catch(err) {
+      document.getElementById('rentals-loading').innerHTML = '<p style="color:var(--red);padding:40px;">Could not load rental cars.</p>';
+    }
+  }
+
+  let currentManageTab = 'cars';
+  let editMainPhotoUrl = '';
+  let editExtraPhotoUrls = [];
+
+  /* --- CONTEXT AWARE ADD BUTTON --- */
+  function handleManageAdd() {
+    if (currentManageTab === 'rentals') {
+      showSection('add-rental', document.querySelector('.sidebar-item:nth-child(4)'));
+    } else {
+      showSection('add-car', document.querySelector('.sidebar-item:nth-child(2)'));
+    }
+  }
+
+  /* --- SWITCH TABS --- */
+  function switchManageTab(tab) {
+    currentManageTab = tab;
+    document.getElementById('tab-cars').classList.toggle('active', tab === 'cars');
+    document.getElementById('tab-rentals').classList.toggle('active', tab === 'rentals');
+    document.getElementById('manage-cars-section').style.display = tab === 'cars' ? 'block' : 'none';
+    document.getElementById('manage-rentals-section').style.display = tab === 'rentals' ? 'block' : 'none';
+    document.getElementById('manage-add-label').textContent = tab === 'rentals' ? 'Add Rental Car' : 'Add New Car';
+    if (tab === 'rentals') loadRentalCars();
+  }
+
+  /* --- EDIT PHOTO UPLOADS --- */
+  async function uploadEditMainPhoto(input) {
+    const file = input.files[0];
+    if (!file) return;
+    try {
+      const url = await uploadToCloudinary(file, 'edit-main-progress', 'edit-main-progress-bar');
+      editMainPhotoUrl = url;
+      document.getElementById('edit-main-preview').innerHTML =
+        `<img src="${url}" style="width:100px;height:68px;object-fit:cover;border:2px solid var(--red);">
+         <p style="font-size:11px;color:var(--gray);margin-top:4px;">Main photo updated.</p>`;
+    } catch(err) { alert('Upload failed. Check your connection.'); }
+  }
+
+  async function uploadEditExtraPhotos(input) {
+    const files = Array.from(input.files).slice(0, 4);
+    if (!files.length) return;
+    editExtraPhotoUrls = [];
+    const grid = document.getElementById('edit-extra-previews');
+    grid.innerHTML = '<p style="font-size:12px;color:var(--gray);grid-column:1/-1;">Uploading...</p>';
+    document.getElementById('edit-extra-progress').style.display = 'block';
+    for (let i = 0; i < files.length; i++) {
+      document.getElementById('edit-extra-progress-bar').style.width = `${((i+1)/files.length)*100}%`;
+      const url = await uploadToCloudinary(files[i], 'edit-extra-progress', 'edit-extra-progress-bar');
+      editExtraPhotoUrls.push(url);
+    }
+    grid.innerHTML = editExtraPhotoUrls.map(url =>
+      `<div class="photo-preview-item"><img src="${url}"></div>`).join('');
+    setTimeout(() => document.getElementById('edit-extra-progress').style.display = 'none', 800);
+  }
+
+  /* --- EDIT MODAL --- */
+  function openEditModal(row, type, make, model, price, year, mileage, fuel, color, engine, seats, badge, description) {
+    editMainPhotoUrl = '';
+    editExtraPhotoUrls = [];
+    document.getElementById('edit-main-preview').innerHTML = '';
+    document.getElementById('edit-extra-previews').innerHTML = '';
+    document.getElementById('edit-row').value = row;
+    document.getElementById('edit-type').value = type;
+    document.getElementById('edit-make').value = make || '';
+    document.getElementById('edit-model').value = model || '';
+    document.getElementById('edit-price').value = price || '';
+    document.getElementById('edit-year').value = year || '';
+    document.getElementById('edit-mileage').value = mileage || '';
+    document.getElementById('edit-fuel').value = fuel || 'Petrol';
+    document.getElementById('edit-color').value = color || '';
+    document.getElementById('edit-engine').value = engine || '';
+    document.getElementById('edit-seats').value = seats || '';
+    document.getElementById('edit-badge').value = badge || 'New Arrival';
+    document.getElementById('edit-description').value = description || '';
+    document.getElementById('editModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeEditModal() {
+    document.getElementById('editModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  async function saveEdit() {
+    const row  = document.getElementById('edit-row').value;
+    const type = document.getElementById('edit-type').value;
+    const make  = document.getElementById('edit-make').value.trim();
+    const model = document.getElementById('edit-model').value.trim();
+    const price = document.getElementById('edit-price').value.trim();
+    if (!make || !model || !price) {
+      showMessage('edit-message', 'error', 'Please fill in Make, Model and Price.');
+      return;
+    }
+    const allPhotos = editMainPhotoUrl
+      ? [editMainPhotoUrl, ...editExtraPhotoUrls].join(',')
+      : editExtraPhotoUrls.length ? editExtraPhotoUrls.join(',') : '';
+    const data = {
+      type: 'edit',
+      sheet: type === 'rental' ? 'Rentals' : 'Cars',
+      row: Number(row),
+      make, model, price,
+      year:        document.getElementById('edit-year').value.trim(),
+      mileage:     document.getElementById('edit-mileage').value.trim(),
+      fuel:        document.getElementById('edit-fuel').value,
+      color:       document.getElementById('edit-color').value.trim(),
+      engine:      document.getElementById('edit-engine').value.trim(),
+      seats:       document.getElementById('edit-seats').value.trim(),
+      badge:       document.getElementById('edit-badge').value,
+      description: document.getElementById('edit-description').value.trim(),
+      photos:      allPhotos,
+    };
+    try {
+      await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      showMessage('edit-message', 'success', 'Changes saved! Refresh to see updates.');
+      setTimeout(() => { closeEditModal(); if (type === 'rental') loadRentalCars(); else loadCars(); }, 2000);
+    } catch(err) {
+      showMessage('edit-message', 'error', 'Could not save. Please try again.');
+    }
+  }
+
+  /* --- DELETE RENTAL --- */
+  async function deleteRental(row) {
+    if (!confirm('Are you sure you want to delete this rental car?')) return;
+    try {
+      await fetch(SCRIPT_URL + '?type=delete-rental&row=' + Number(row), { method: 'GET' });
+      alert('Rental car deleted! Refreshing...');
+      loadRentalCars();
+    } catch(err) {
+      alert('Could not delete. Please try again.');
     }
   }
 
