@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Admin — Royal Motors Sierra Leone</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -307,13 +307,23 @@
 
       <!-- ADD CAR -->
       <div class="page-section" id="section-add-car">
-        <div class="section-header">
-          <h2>Add New Car</h2>
-        </div>
-        <div class="form-card">
-          <h3>Car Photos</h3>
+        <div class="section-header"><h2>Add New Car</h2></div>
 
-          <!-- MAIN PHOTO UPLOAD -->
+        <!-- STEP INDICATOR -->
+        <div class="step-indicator">
+          <div class="step-dot active" id="car-dot-1">1</div>
+          <div class="step-line" id="car-line-1"></div>
+          <div class="step-dot" id="car-dot-2">2</div>
+          <div class="step-line" id="car-line-2"></div>
+          <div class="step-dot" id="car-dot-3">3</div>
+          <div class="step-line" id="car-line-3"></div>
+          <div class="step-dot" id="car-dot-4">4</div>
+        </div>
+
+        <!-- STEP 1: Photos -->
+        <div class="form-card step-panel active" id="car-step-1">
+          <div class="step-label">Step 1 of 4</div>
+          <div class="step-title">Car Photos</div>
           <div class="form-group full" style="margin-bottom:16px;">
             <label>Main Photo (shown on card)</label>
             <div class="upload-area" id="main-upload-area">
@@ -322,13 +332,9 @@
               <p>Click to upload main photo</p>
               <span>JPG, PNG, WEBP — Max 10MB</span>
             </div>
-            <div class="upload-progress" id="main-progress">
-              <div class="upload-progress-bar" id="main-progress-bar"></div>
-            </div>
+            <div class="upload-progress" id="main-progress"><div class="upload-progress-bar" id="main-progress-bar"></div></div>
             <div id="main-preview" style="margin-top:8px;"></div>
           </div>
-
-          <!-- EXTRA PHOTOS -->
           <div class="form-group full">
             <label>Extra Photos — Interior, Side, Rear, Engine (up to 4)</label>
             <div class="upload-area" id="extra-upload-area">
@@ -337,36 +343,22 @@
               <p>Click to upload extra photos</p>
               <span>Select up to 4 photos at once</span>
             </div>
-            <div class="upload-progress" id="extra-progress">
-              <div class="upload-progress-bar" id="extra-progress-bar"></div>
-            </div>
+            <div class="upload-progress" id="extra-progress"><div class="upload-progress-bar" id="extra-progress-bar"></div></div>
             <div class="photos-preview-grid" id="extra-previews"></div>
           </div>
+          <div class="step-nav"><span></span><button class="step-next-btn" onclick="goToCarStep(2)">Next &rarr;</button></div>
         </div>
 
-        <div class="form-card">
-          <h3>Car Details</h3>
+        <!-- STEP 2: Basic Info -->
+        <div class="form-card step-panel" id="car-step-2">
+          <div class="step-label">Step 2 of 4</div>
+          <div class="step-title">Basic Details</div>
           <div class="form-grid">
-            <div class="form-group">
-              <label>Brand / Make</label>
-              <input type="text" id="car-make" placeholder="e.g. Toyota">
-            </div>
-            <div class="form-group">
-              <label>Model</label>
-              <input type="text" id="car-model" placeholder="e.g. Land Cruiser Prado">
-            </div>
-            <div class="form-group">
-              <label>Price</label>
-              <input type="text" id="car-price" placeholder="e.g. $38,500">
-            </div>
-            <div class="form-group">
-              <label>Year</label>
-              <input type="text" id="car-year" placeholder="e.g. 2023">
-            </div>
-            <div class="form-group">
-              <label>Mileage</label>
-              <input type="text" id="car-mileage" placeholder="e.g. 45K km">
-            </div>
+            <div class="form-group"><label>Brand / Make</label><input type="text" id="car-make" placeholder="e.g. Toyota"></div>
+            <div class="form-group"><label>Model</label><input type="text" id="car-model" placeholder="e.g. Land Cruiser Prado"></div>
+            <div class="form-group"><label>Price</label><input type="text" id="car-price" placeholder="e.g. $38,500"></div>
+            <div class="form-group"><label>Year</label><input type="text" id="car-year" placeholder="e.g. 2023"></div>
+            <div class="form-group"><label>Mileage</label><input type="text" id="car-mileage" placeholder="e.g. 45K km"></div>
             <div class="form-group">
               <label>Fuel Type</label>
               <select id="car-fuel">
@@ -377,18 +369,21 @@
                 <option value="Hybrid">Hybrid</option>
               </select>
             </div>
-            <div class="form-group">
-              <label>Color</label>
-              <input type="text" id="car-color" placeholder="e.g. White">
-            </div>
-            <div class="form-group">
-              <label>Engine</label>
-              <input type="text" id="car-engine" placeholder="e.g. 4.0L V6">
-            </div>
-            <div class="form-group">
-              <label>Seats</label>
-              <input type="text" id="car-seats" placeholder="e.g. 5">
-            </div>
+          </div>
+          <div class="step-nav">
+            <button class="step-back-btn" onclick="goToCarStep(1)">&larr; Back</button>
+            <button class="step-next-btn" onclick="goToCarStep(3)">Next &rarr;</button>
+          </div>
+        </div>
+
+        <!-- STEP 3: More Details -->
+        <div class="form-card step-panel" id="car-step-3">
+          <div class="step-label">Step 3 of 4</div>
+          <div class="step-title">More Details</div>
+          <div class="form-grid">
+            <div class="form-group"><label>Color</label><input type="text" id="car-color" placeholder="e.g. White"></div>
+            <div class="form-group"><label>Engine</label><input type="text" id="car-engine" placeholder="e.g. 4.0L V6"></div>
+            <div class="form-group"><label>Seats</label><input type="text" id="car-seats" placeholder="e.g. 5"></div>
             <div class="form-group">
               <label>Badge Label</label>
               <select id="car-badge">
@@ -400,16 +395,26 @@
                 <option value="Great Value">Great Value</option>
               </select>
             </div>
-            <div class="form-group full">
-              <label>Description</label>
-              <textarea id="car-description" placeholder="Write a short description of the car..."></textarea>
-            </div>
           </div>
-          <div class="form-actions">
+          <div class="step-nav">
+            <button class="step-back-btn" onclick="goToCarStep(2)">&larr; Back</button>
+            <button class="step-next-btn" onclick="goToCarStep(4)">Next &rarr;</button>
+          </div>
+        </div>
+
+        <!-- STEP 4: Description & Submit -->
+        <div class="form-card step-panel" id="car-step-4">
+          <div class="step-label">Step 4 of 4</div>
+          <div class="step-title">Description & Submit</div>
+          <div class="form-group full">
+            <label>Description</label>
+            <textarea id="car-description" placeholder="Write a short description of the car..."></textarea>
+          </div>
+          <div class="step-nav">
+            <button class="step-back-btn" onclick="goToCarStep(3)">&larr; Back</button>
             <button class="submit-btn" id="submit-car-btn" onclick="submitCar()">
               <i class="fa-solid fa-plus"></i> Add Car to Inventory
             </button>
-            <button class="clear-btn" onclick="clearCarForm()">Clear Form</button>
           </div>
           <div class="message" id="car-message"></div>
         </div>
@@ -481,60 +486,55 @@
 
       <!-- ADD RENTAL -->
       <div class="page-section" id="section-add-rental">
-        <div class="section-header">
-          <h2>Add Rental Car</h2>
+        <div class="section-header"><h2>Add Rental Car</h2></div>
+
+        <!-- STEP INDICATOR -->
+        <div class="step-indicator">
+          <div class="step-dot active" id="rental-dot-1">1</div>
+          <div class="step-line" id="rental-line-1"></div>
+          <div class="step-dot" id="rental-dot-2">2</div>
+          <div class="step-line" id="rental-line-2"></div>
+          <div class="step-dot" id="rental-dot-3">3</div>
         </div>
-        <div class="form-card">
-          <h3> Rental Car Photo</h3>
-          <div class="form-group full">
+
+        <!-- STEP 1: Photos -->
+        <div class="form-card step-panel active" id="rental-step-1">
+          <div class="step-label">Step 1 of 3</div>
+          <div class="step-title">Rental Car Photos</div>
+          <div class="form-group full" style="margin-bottom:16px;">
             <label>Main Photo</label>
             <div class="upload-area">
               <input type="file" accept="image/*" onchange="uploadPhoto(this, 'rental')">
               <i class="fa-solid fa-camera"></i>
               <p>Click to upload rental car photo</p>
-              <span>JPG, PNG, WEBP  Max 10MB</span>
+              <span>JPG, PNG, WEBP — Max 10MB</span>
             </div>
-            <div class="upload-progress" id="rental-progress">
-              <div class="upload-progress-bar" id="rental-progress-bar"></div>
-            </div>
+            <div class="upload-progress" id="rental-progress"><div class="upload-progress-bar" id="rental-progress-bar"></div></div>
             <div id="rental-preview" style="margin-top:8px;"></div>
           </div>
-          
-          <!-- EXTRA PHOTOS -->
           <div class="form-group full">
-            <label>Extra Photos — Interior, Side, Rear, Engine (up to 4)</label>
-            <div class="upload-area" id="extra-upload-area">
+            <label>Extra Photos (up to 4)</label>
+            <div class="upload-area" id="rental-extra-upload-area">
               <input type="file" accept="image/*" multiple onchange="uploadExtraPhotos(this)">
               <i class="fa-solid fa-images"></i>
               <p>Click to upload extra photos</p>
               <span>Select up to 4 photos at once</span>
             </div>
-            <div class="upload-progress" id="extra-progress">
-              <div class="upload-progress-bar" id="extra-progress-bar"></div>
-            </div>
-            <div class="photos-preview-grid" id="extra-previews"></div>
+            <div class="upload-progress" id="rental-extra-progress"><div class="upload-progress-bar" id="rental-extra-progress-bar"></div></div>
+            <div class="photos-preview-grid" id="rental-extra-previews"></div>
           </div>
+          <div class="step-nav"><span></span><button class="step-next-btn" onclick="goToRentalStep(2)">Next &rarr;</button></div>
         </div>
 
-        <div class="form-card">
-          <h3> Rental Car Details</h3>
+        <!-- STEP 2: Details -->
+        <div class="form-card step-panel" id="rental-step-2">
+          <div class="step-label">Step 2 of 3</div>
+          <div class="step-title">Rental Car Details</div>
           <div class="form-grid">
-            <div class="form-group">
-              <label>Brand / Make</label>
-              <input type="text" id="rental-make" placeholder="e.g. Toyota">
-            </div>
-            <div class="form-group">
-              <label>Model</label>
-              <input type="text" id="rental-model" placeholder="e.g. Corolla">
-            </div>
-            <div class="form-group">
-              <label>Daily Rate</label>
-              <input type="text" id="rental-price" placeholder="e.g. $60">
-            </div>
-            <div class="form-group">
-              <label>Seats</label>
-              <input type="text" id="rental-seats" placeholder="e.g. 5">
-            </div>
+            <div class="form-group"><label>Brand / Make</label><input type="text" id="rental-make" placeholder="e.g. Toyota"></div>
+            <div class="form-group"><label>Model</label><input type="text" id="rental-model" placeholder="e.g. Corolla"></div>
+            <div class="form-group"><label>Daily Rate</label><input type="text" id="rental-price" placeholder="e.g. $60"></div>
+            <div class="form-group"><label>Seats</label><input type="text" id="rental-seats" placeholder="e.g. 5"></div>
             <div class="form-group">
               <label>Fuel Type</label>
               <select id="rental-fuel">
@@ -551,16 +551,26 @@
                 <option value="Manual">Manual</option>
               </select>
             </div>
-            <div class="form-group full">
-              <label>Description</label>
-              <textarea id="rental-description" placeholder="Write a short description..."></textarea>
-            </div>
           </div>
-          <div class="form-actions">
+          <div class="step-nav">
+            <button class="step-back-btn" onclick="goToRentalStep(1)">&larr; Back</button>
+            <button class="step-next-btn" onclick="goToRentalStep(3)">Next &rarr;</button>
+          </div>
+        </div>
+
+        <!-- STEP 3: Description & Submit -->
+        <div class="form-card step-panel" id="rental-step-3">
+          <div class="step-label">Step 3 of 3</div>
+          <div class="step-title">Description & Submit</div>
+          <div class="form-group full">
+            <label>Description</label>
+            <textarea id="rental-description" placeholder="Write a short description..."></textarea>
+          </div>
+          <div class="step-nav">
+            <button class="step-back-btn" onclick="goToRentalStep(2)">&larr; Back</button>
             <button class="submit-btn" id="submit-rental-btn" onclick="submitRental()">
               <i class="fa-solid fa-key"></i> Add Rental Car
             </button>
-            <button class="clear-btn" onclick="clearRentalForm()">Clear Form</button>
           </div>
           <div class="message" id="rental-message"></div>
         </div>
@@ -596,24 +606,13 @@
 <div class="edit-modal-overlay" id="editModal">
   <div class="edit-modal-box">
     <button class="edit-modal-close" onclick="closeEditModal()">X</button>
+    <h3>Edit Car</h3>
     <input type="hidden" id="edit-row">
     <input type="hidden" id="edit-type">
 
-    <!-- STEP INDICATOR -->
-    <div class="step-indicator">
-      <div class="step-dot active" id="edit-dot-1">1</div>
-      <div class="step-line" id="edit-line-1"></div>
-      <div class="step-dot" id="edit-dot-2">2</div>
-      <div class="step-line" id="edit-line-2"></div>
-      <div class="step-dot" id="edit-dot-3">3</div>
-      <div class="step-line" id="edit-line-3"></div>
-      <div class="step-dot" id="edit-dot-4">4</div>
-    </div>
-
-    <!-- STEP 1: Photos -->
-    <div class="step-panel active" id="edit-step-1">
-      <div class="step-label">Step 1 of 4</div>
-      <div class="step-title">Update Photos</div>
+    <!-- PHOTO SECTION -->
+    <div class="form-card" style="margin-bottom:16px;">
+      <h3 style="font-size:14px;margin-bottom:12px;border-bottom:1px solid var(--light-gray);padding-bottom:8px;">Update Photos (optional)</h3>
       <div class="form-group full" style="margin-bottom:12px;">
         <label>Main Photo</label>
         <div class="upload-area" style="padding:16px;">
@@ -634,80 +633,45 @@
         <div class="upload-progress" id="edit-extra-progress"><div class="upload-progress-bar" id="edit-extra-progress-bar"></div></div>
         <div class="photos-preview-grid" id="edit-extra-previews"></div>
       </div>
-      <div class="step-nav">
-        <span></span>
-        <button class="step-next-btn" onclick="goToEditStep(2)">Next &rarr;</button>
-      </div>
     </div>
 
-    <!-- STEP 2: Basic Info -->
-    <div class="step-panel" id="edit-step-2">
-      <div class="step-label">Step 2 of 4</div>
-      <div class="step-title">Basic Details</div>
-      <div class="form-grid">
-        <div class="form-group"><label>Make</label><input type="text" id="edit-make" placeholder="e.g. Toyota"></div>
-        <div class="form-group"><label>Model</label><input type="text" id="edit-model" placeholder="e.g. Land Cruiser"></div>
-        <div class="form-group"><label>Price</label><input type="text" id="edit-price" placeholder="e.g. $38,500"></div>
-        <div class="form-group"><label>Year</label><input type="text" id="edit-year" placeholder="e.g. 2023"></div>
-        <div class="form-group"><label>Mileage</label><input type="text" id="edit-mileage" placeholder="e.g. 45K km"></div>
-        <div class="form-group">
-          <label>Fuel</label>
-          <select id="edit-fuel">
-            <option value="Petrol">Petrol</option>
-            <option value="Diesel">Diesel</option>
-            <option value="Electric">Electric</option>
-            <option value="Hybrid">Hybrid</option>
-          </select>
-        </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Make</label><input type="text" id="edit-make"></div>
+      <div class="form-group"><label>Model</label><input type="text" id="edit-model"></div>
+      <div class="form-group"><label>Price</label><input type="text" id="edit-price"></div>
+      <div class="form-group"><label>Year</label><input type="text" id="edit-year"></div>
+      <div class="form-group"><label>Mileage</label><input type="text" id="edit-mileage"></div>
+      <div class="form-group">
+        <label>Fuel</label>
+        <select id="edit-fuel">
+          <option value="Petrol">Petrol</option>
+          <option value="Diesel">Diesel</option>
+          <option value="Electric">Electric</option>
+          <option value="Hybrid">Hybrid</option>
+        </select>
       </div>
-      <div class="step-nav">
-        <button class="step-back-btn" onclick="goToEditStep(1)">&larr; Back</button>
-        <button class="step-next-btn" onclick="goToEditStep(3)">Next &rarr;</button>
+      <div class="form-group"><label>Color</label><input type="text" id="edit-color"></div>
+      <div class="form-group"><label>Engine</label><input type="text" id="edit-engine"></div>
+      <div class="form-group"><label>Seats</label><input type="text" id="edit-seats"></div>
+      <div class="form-group">
+        <label>Badge</label>
+        <select id="edit-badge">
+          <option value="New Arrival">New Arrival</option>
+          <option value="Best Seller">Best Seller</option>
+          <option value="Finance Deal">Finance Deal</option>
+          <option value="Hot Deal">Hot Deal</option>
+          <option value="Luxury">Luxury</option>
+          <option value="Great Value">Great Value</option>
+          <option value="Available">Available</option>
+        </select>
       </div>
+      <div class="form-group full"><label>Description</label><textarea id="edit-description"></textarea></div>
     </div>
-
-    <!-- STEP 3: More Details -->
-    <div class="step-panel" id="edit-step-3">
-      <div class="step-label">Step 3 of 4</div>
-      <div class="step-title">More Details</div>
-      <div class="form-grid">
-        <div class="form-group"><label>Color</label><input type="text" id="edit-color" placeholder="e.g. White"></div>
-        <div class="form-group"><label>Engine</label><input type="text" id="edit-engine" placeholder="e.g. 4.0L V6"></div>
-        <div class="form-group"><label>Seats</label><input type="text" id="edit-seats" placeholder="e.g. 5"></div>
-        <div class="form-group">
-          <label>Badge</label>
-          <select id="edit-badge">
-            <option value="New Arrival">New Arrival</option>
-            <option value="Best Seller">Best Seller</option>
-            <option value="Finance Deal">Finance Deal</option>
-            <option value="Hot Deal">Hot Deal</option>
-            <option value="Luxury">Luxury</option>
-            <option value="Great Value">Great Value</option>
-            <option value="Available">Available</option>
-          </select>
-        </div>
-      </div>
-      <div class="step-nav">
-        <button class="step-back-btn" onclick="goToEditStep(2)">&larr; Back</button>
-        <button class="step-next-btn" onclick="goToEditStep(4)">Next &rarr;</button>
-      </div>
+    <div class="form-actions" style="margin-top:20px;">
+      <button class="submit-btn" onclick="saveEdit()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+      <button class="clear-btn" onclick="closeEditModal()">Cancel</button>
     </div>
-
-    <!-- STEP 4: Description & Save -->
-    <div class="step-panel" id="edit-step-4">
-      <div class="step-label">Step 4 of 4</div>
-      <div class="step-title">Description & Save</div>
-      <div class="form-group full">
-        <label>Description</label>
-        <textarea id="edit-description" placeholder="Write a short description..."></textarea>
-      </div>
-      <div class="step-nav">
-        <button class="step-back-btn" onclick="goToEditStep(3)">&larr; Back</button>
-        <button class="submit-btn" onclick="saveEdit()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
-      </div>
-      <div class="message" id="edit-message"></div>
-    </div>
-
+    <div class="message" id="edit-message"></div>
   </div>
 </div>
 
@@ -1051,6 +1015,30 @@
     setTimeout(() => document.getElementById('edit-extra-progress').style.display = 'none', 800);
   }
 
+  /* --- STEP NAVIGATION: ADD CAR --- */
+  function goToCarStep(step) {
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById(`car-step-${i}`).classList.toggle('active', i === step);
+      const dot = document.getElementById(`car-dot-${i}`);
+      dot.classList.remove('active', 'done');
+      if (i === step) dot.classList.add('active');
+      else if (i < step) dot.classList.add('done');
+      if (i < 4) document.getElementById(`car-line-${i}`).classList.toggle('done', i < step);
+    }
+  }
+
+  /* --- STEP NAVIGATION: ADD RENTAL --- */
+  function goToRentalStep(step) {
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById(`rental-step-${i}`).classList.toggle('active', i === step);
+      const dot = document.getElementById(`rental-dot-${i}`);
+      dot.classList.remove('active', 'done');
+      if (i === step) dot.classList.add('active');
+      else if (i < step) dot.classList.add('done');
+      if (i < 3) document.getElementById(`rental-line-${i}`).classList.toggle('done', i < step);
+    }
+  }
+
   /* --- EDIT STEP NAVIGATION --- */
   function goToEditStep(step) {
     for (let i = 1; i <= 4; i++) {
@@ -1089,7 +1077,6 @@
     document.getElementById('edit-description').value = description || '';
     document.getElementById('editModal').classList.add('active');
     document.body.style.overflow = 'hidden';
-    goToEditStep(1);
   }
 
   function closeEditModal() {
@@ -1187,6 +1174,7 @@ async function deleteCar(row) {
     document.getElementById('extra-previews').innerHTML = '';
     mainPhotoUrl = '';
     extraPhotoUrls = [];
+    goToCarStep(1);
   }
 
   function clearRentalForm() {
@@ -1194,6 +1182,7 @@ async function deleteCar(row) {
     .forEach(id => document.getElementById(id).value = '');
     document.getElementById('rental-preview').innerHTML = '';
     rentalPhotoUrl = '';
+    goToRentalStep(1);
   }
 </script>
   
