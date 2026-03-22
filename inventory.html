@@ -47,7 +47,7 @@
       .page-hero { padding: 40px 20px 30px; }
       .inventory-hero-title { font-size: 48px; }
       .filter-bar { padding: 16px 20px; }
-      .inventory-section { padding: 30px 20px 60px; }
+      .inventory-section { padding: 16px 10px 60px; }
       .inventory-grid { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 600px) {
@@ -56,7 +56,17 @@
       .filter-search { min-width: 160px; flex: 0 0 auto; }
       .filter-select { min-width: 130px; flex: 0 0 auto; }
       .filter-reset { flex: 0 0 auto; white-space: nowrap; }
-      .inventory-grid { grid-template-columns: 1fr; }
+      .inventory-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .car-img { height: 130px; }
+      .car-info { padding: 10px; }
+      .car-make { font-size: 10px; }
+      .car-model { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+      .car-specs { gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+      .car-spec { font-size: 10px; }
+      .car-price { font-size: 18px; }
+      .car-btn { padding: 6px 10px; font-size: 10px; }
+      .car-bottom { padding-top: 8px; }
+      .car-tag { font-size: 9px; padding: 2px 6px; }
       .modal-main-photo { height: 220px; }
       .modal-thumbnails img { width: 56px; height: 42px; }
       .gallery-arrow { width: 32px; height: 32px; font-size: 22px; }
@@ -69,24 +79,22 @@
 <nav>
   <a href="index.html" class="nav-logo-link">
     <div class="nav-logo">
-      <img src="images/Logo-removebg-preview.png" alt="Royal Motors Logo" class="nav-logo-img">
+      <img src="images/Logo-removebg-preview.png"Royal Motors Logo" class="nav-logo-img">
       ROYAL <span>MOTORS</span>
     </div>
   </a>
   <ul class="nav-links">
     <li><a href="index.html">Home</a></li>
-    <li><a href="inventory.html"class=active >Inventory</a></li>
-    <li><a href="about.html" >About</a></li>
+    <li><a href="inventory.html" class="active">Inventory</a></li>
+    <li><a href="about.html">About</a></li>
     <li><a href="index.html#contact">Contact</a></li>
     <li><a href="rentals.html">Rentals</a></li>
   </ul>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <a href="index.html" class="mobile-home-btn" title="Home">
-      <i class="fa-solid fa-house"></i>
-    </a>
-    <div class="hamburger" onclick="toggleMenu()">
-      <span></span><span></span><span></span>
-    </div>
+  <button class="nav-cta">Book a Test Drive</button>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
   </div>
 </nav>
 
@@ -153,6 +161,13 @@
   <div class="footer-location">Freetown, Sierra Leone</div>
 </footer>
 
+<!-- WHATSAPP BUTTON -->
+<a class="wa-btn" href="https://wa.me/23276784937" target="_blank" title="Chat on WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.531 5.845L.057 23.428a.75.75 0 00.921.921l5.582-1.474A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.712 9.712 0 01-4.953-1.354l-.355-.211-3.682.972.987-3.598-.232-.371A9.712 9.712 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/>
+  </svg>
+</a>
 
 <!-- CAR DETAIL MODAL -->
 <div id="carModal" class="modal-overlay" onclick="closeModal(event)">
@@ -381,7 +396,7 @@ function renderCars(cars) {
       });
     }
     document.getElementById('modal-wa-btn').onclick = function() {
-      const text = `Hello Royal Motors!%0A%0AI am interested in the *${make} ${model}* priced at *${price}*%0A%0APlease send me more information!`;
+      const text = `Hello Royal Motors! 🚗%0A%0AI am interested in the *${make} ${model}* priced at *${price}*%0A%0APlease send me more information!`;
       window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
     };
     document.getElementById('carModal').classList.add('active');
@@ -410,7 +425,7 @@ function renderCars(cars) {
   }
 
   function enquireCar(name, price) {
-    const text = `Hello Royal Motors!%0A%0AI am interested in the *${name}* priced at *${price}*%0A%0APlease send me more information!`;
+    const text = `Hello Royal Motors! 🚗%0A%0AI am interested in the *${name}* priced at *${price}*%0A%0APlease send me more information!`;
     window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
   }
 
@@ -423,4 +438,4 @@ function renderCars(cars) {
 </script>
 
 </body>
-</html>
+</html>s
