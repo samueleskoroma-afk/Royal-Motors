@@ -73,7 +73,9 @@
     }
     @media (max-width: 600px) {
       .page-hero-title { font-size: 38px; }
-      .page-hero-stats { grid-template-columns: 1fr; }
+      .page-hero-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .about-stat-num { font-size: 28px; }
+      .about-stat-label { font-size: 9px; letter-spacing: 1px; }
       .values-grid { grid-template-columns: 1fr; }
       .team-grid { grid-template-columns: 1fr; }
     }
@@ -130,7 +132,7 @@
 <!-- STORY -->
 <section class="story-section">
   <div class="story-img-wrap">
-    <img src="Images/showroom.jpg" alt="Royal Motors Showroom" class="story-img" onerror="this.style.display='none'">
+    <img src="images/show room.jpg" alt="Royal Motors Showroom" class="story-img" onerror="this.style.display='none'">
     <div class="story-badge">
       <div class="story-badge-num">10</div>
       <div class="story-badge-text">Years of Excellence</div>
