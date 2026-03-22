@@ -26,6 +26,9 @@
     .filter-reset:hover { background: var(--red); color: var(--white); }
     .inventory-section { padding: 40px 60px 80px; }
     .inventory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    @media (max-width: 1200px) and (min-width: 901px) {
+      .inventory-grid { grid-template-columns: 1fr 1fr; }
+    }
     .no-results { grid-column: 1 / -1; text-align: center; padding: 80px 20px; }
     .no-results i { font-size: 48px; color: var(--light-gray); margin-bottom: 16px; display: block; }
     .no-results p { font-size: 18px; color: var(--gray); }
@@ -425,7 +428,7 @@ function renderCars(cars) {
   }
 
   function enquireCar(name, price) {
-    const text = `Hello Royal Motors! 🚗%0A%0AI am interested in the *${name}* priced at *${price}*%0A%0APlease send me more information!`;
+    const text = `Hello Royal Motors! %0A%0AI am interested in the *${name}* priced at *${price}*%0A%0APlease send me more information!`;
     window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
   }
 
