@@ -106,6 +106,23 @@
     .message.success { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
     .message.error { background: #ffebee; color: #c62828; border-left: 4px solid #c62828; }
 
+    /* STEP FORM */
+    .step-indicator { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 24px; }
+    .step-dot { width: 32px; height: 32px; border-radius: 50%; background: var(--light-gray); color: var(--gray); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0; }
+    .step-dot.active { background: var(--red); color: var(--white); }
+    .step-dot.done { background: var(--black); color: var(--white); }
+    .step-line { height: 2px; width: 32px; background: var(--light-gray); flex-shrink: 0; }
+    .step-line.done { background: var(--black); }
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+    .step-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--red); margin-bottom: 6px; }
+    .step-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+    .step-nav { display: flex; gap: 10px; margin-top: 20px; justify-content: space-between; }
+    .step-back-btn { background: transparent; color: var(--gray); border: 1px solid var(--light-gray); padding: 10px 20px; font-family: var(--font-body); font-size: 13px; cursor: pointer; transition: all .2s; }
+    .step-back-btn:hover { border-color: var(--black); color: var(--black); }
+    .step-next-btn { background: var(--black); color: var(--white); border: none; padding: 10px 24px; font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; transition: background .2s; }
+    .step-next-btn:hover { background: var(--red); }
+
     /* MANAGE TABS */
     .manage-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
     .manage-tab { padding: 9px 20px; font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: 1.5px solid var(--light-gray); background: var(--white); color: var(--gray); transition: all .2s; }
@@ -578,14 +595,25 @@
 <!-- EDIT MODAL -->
 <div class="edit-modal-overlay" id="editModal">
   <div class="edit-modal-box">
-    <button class="edit-modal-close" onclick="closeEditModal()">✕</button>
-    <h3>Edit Car</h3>
+    <button class="edit-modal-close" onclick="closeEditModal()">X</button>
     <input type="hidden" id="edit-row">
     <input type="hidden" id="edit-type">
 
-    <!-- PHOTO SECTION -->
-    <div class="form-card" style="margin-bottom:16px;">
-      <h3 style="font-size:14px;margin-bottom:12px;border-bottom:1px solid var(--light-gray);padding-bottom:8px;">Update Photos (optional)</h3>
+    <!-- STEP INDICATOR -->
+    <div class="step-indicator">
+      <div class="step-dot active" id="edit-dot-1">1</div>
+      <div class="step-line" id="edit-line-1"></div>
+      <div class="step-dot" id="edit-dot-2">2</div>
+      <div class="step-line" id="edit-line-2"></div>
+      <div class="step-dot" id="edit-dot-3">3</div>
+      <div class="step-line" id="edit-line-3"></div>
+      <div class="step-dot" id="edit-dot-4">4</div>
+    </div>
+
+    <!-- STEP 1: Photos -->
+    <div class="step-panel active" id="edit-step-1">
+      <div class="step-label">Step 1 of 4</div>
+      <div class="step-title">Update Photos</div>
       <div class="form-group full" style="margin-bottom:12px;">
         <label>Main Photo</label>
         <div class="upload-area" style="padding:16px;">
@@ -606,45 +634,80 @@
         <div class="upload-progress" id="edit-extra-progress"><div class="upload-progress-bar" id="edit-extra-progress-bar"></div></div>
         <div class="photos-preview-grid" id="edit-extra-previews"></div>
       </div>
+      <div class="step-nav">
+        <span></span>
+        <button class="step-next-btn" onclick="goToEditStep(2)">Next &rarr;</button>
+      </div>
     </div>
 
-    <div class="form-grid">
-      <div class="form-group"><label>Make</label><input type="text" id="edit-make"></div>
-      <div class="form-group"><label>Model</label><input type="text" id="edit-model"></div>
-      <div class="form-group"><label>Price</label><input type="text" id="edit-price"></div>
-      <div class="form-group"><label>Year</label><input type="text" id="edit-year"></div>
-      <div class="form-group"><label>Mileage</label><input type="text" id="edit-mileage"></div>
-      <div class="form-group">
-        <label>Fuel</label>
-        <select id="edit-fuel">
-          <option value="Petrol">Petrol</option>
-          <option value="Diesel">Diesel</option>
-          <option value="Electric">Electric</option>
-          <option value="Hybrid">Hybrid</option>
-        </select>
+    <!-- STEP 2: Basic Info -->
+    <div class="step-panel" id="edit-step-2">
+      <div class="step-label">Step 2 of 4</div>
+      <div class="step-title">Basic Details</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Make</label><input type="text" id="edit-make" placeholder="e.g. Toyota"></div>
+        <div class="form-group"><label>Model</label><input type="text" id="edit-model" placeholder="e.g. Land Cruiser"></div>
+        <div class="form-group"><label>Price</label><input type="text" id="edit-price" placeholder="e.g. $38,500"></div>
+        <div class="form-group"><label>Year</label><input type="text" id="edit-year" placeholder="e.g. 2023"></div>
+        <div class="form-group"><label>Mileage</label><input type="text" id="edit-mileage" placeholder="e.g. 45K km"></div>
+        <div class="form-group">
+          <label>Fuel</label>
+          <select id="edit-fuel">
+            <option value="Petrol">Petrol</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Electric">Electric</option>
+            <option value="Hybrid">Hybrid</option>
+          </select>
+        </div>
       </div>
-      <div class="form-group"><label>Color</label><input type="text" id="edit-color"></div>
-      <div class="form-group"><label>Engine</label><input type="text" id="edit-engine"></div>
-      <div class="form-group"><label>Seats</label><input type="text" id="edit-seats"></div>
-      <div class="form-group">
-        <label>Badge</label>
-        <select id="edit-badge">
-          <option value="New Arrival">New Arrival</option>
-          <option value="Best Seller">Best Seller</option>
-          <option value="Finance Deal">Finance Deal</option>
-          <option value="Hot Deal">Hot Deal</option>
-          <option value="Luxury">Luxury</option>
-          <option value="Great Value">Great Value</option>
-          <option value="Available">Available</option>
-        </select>
+      <div class="step-nav">
+        <button class="step-back-btn" onclick="goToEditStep(1)">&larr; Back</button>
+        <button class="step-next-btn" onclick="goToEditStep(3)">Next &rarr;</button>
       </div>
-      <div class="form-group full"><label>Description</label><textarea id="edit-description"></textarea></div>
     </div>
-    <div class="form-actions" style="margin-top:20px;">
-      <button class="submit-btn" onclick="saveEdit()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
-      <button class="clear-btn" onclick="closeEditModal()">Cancel</button>
+
+    <!-- STEP 3: More Details -->
+    <div class="step-panel" id="edit-step-3">
+      <div class="step-label">Step 3 of 4</div>
+      <div class="step-title">More Details</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Color</label><input type="text" id="edit-color" placeholder="e.g. White"></div>
+        <div class="form-group"><label>Engine</label><input type="text" id="edit-engine" placeholder="e.g. 4.0L V6"></div>
+        <div class="form-group"><label>Seats</label><input type="text" id="edit-seats" placeholder="e.g. 5"></div>
+        <div class="form-group">
+          <label>Badge</label>
+          <select id="edit-badge">
+            <option value="New Arrival">New Arrival</option>
+            <option value="Best Seller">Best Seller</option>
+            <option value="Finance Deal">Finance Deal</option>
+            <option value="Hot Deal">Hot Deal</option>
+            <option value="Luxury">Luxury</option>
+            <option value="Great Value">Great Value</option>
+            <option value="Available">Available</option>
+          </select>
+        </div>
+      </div>
+      <div class="step-nav">
+        <button class="step-back-btn" onclick="goToEditStep(2)">&larr; Back</button>
+        <button class="step-next-btn" onclick="goToEditStep(4)">Next &rarr;</button>
+      </div>
     </div>
-    <div class="message" id="edit-message"></div>
+
+    <!-- STEP 4: Description & Save -->
+    <div class="step-panel" id="edit-step-4">
+      <div class="step-label">Step 4 of 4</div>
+      <div class="step-title">Description & Save</div>
+      <div class="form-group full">
+        <label>Description</label>
+        <textarea id="edit-description" placeholder="Write a short description..."></textarea>
+      </div>
+      <div class="step-nav">
+        <button class="step-back-btn" onclick="goToEditStep(3)">&larr; Back</button>
+        <button class="submit-btn" onclick="saveEdit()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+      </div>
+      <div class="message" id="edit-message"></div>
+    </div>
+
   </div>
 </div>
 
@@ -877,7 +940,7 @@
             <td>${car.Year || '—'}</td>
             <td><span class="badge badge-gray">${car.Fuel || '—'}</span></td>
             <td>
-              <button class="edit-btn" onclick="openEditModal(${i + 2}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}')">
+              <button class="edit-btn" onclick="openEditModal(${i + 2}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(car.Photos)}')">
                 <i class="fa-solid fa-pen"></i> Edit
               </button>
               <button class="delete-btn" onclick="deleteCar(${i + 2})">
@@ -917,7 +980,7 @@
             <td>${car.Seats || '—'}</td>
             <td><span class="badge badge-gray">${car.Fuel || '—'}</span></td>
             <td>
-              <button class="edit-btn" onclick="openEditModal(${i + 2}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','Available','${escapeQ(car.Description)}')">
+              <button class="edit-btn" onclick="openEditModal(${i + 2}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','Available','${escapeQ(car.Description)}','${escapeQ(car.Photo)}')">
                 <i class="fa-solid fa-pen"></i> Edit
               </button>
               <button class="delete-btn" onclick="deleteRental(${i + 2})">
@@ -936,6 +999,7 @@
   let currentManageTab = 'cars';
   let editMainPhotoUrl = '';
   let editExtraPhotoUrls = [];
+  let editExistingPhotos = '';
 
   /* --- CONTEXT AWARE ADD BUTTON --- */
   function handleManageAdd() {
@@ -987,11 +1051,28 @@
     setTimeout(() => document.getElementById('edit-extra-progress').style.display = 'none', 800);
   }
 
+  /* --- EDIT STEP NAVIGATION --- */
+  function goToEditStep(step) {
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById(`edit-step-${i}`).classList.toggle('active', i === step);
+      const dot = document.getElementById(`edit-dot-${i}`);
+      dot.classList.remove('active', 'done');
+      if (i === step) dot.classList.add('active');
+      else if (i < step) dot.classList.add('done');
+      if (i < 4) {
+        document.getElementById(`edit-line-${i}`).classList.toggle('done', i < step);
+      }
+    }
+  }
+
   /* --- EDIT MODAL --- */
-  function openEditModal(row, type, make, model, price, year, mileage, fuel, color, engine, seats, badge, description) {
+  function openEditModal(row, type, make, model, price, year, mileage, fuel, color, engine, seats, badge, description, existingPhotos) {
     editMainPhotoUrl = '';
     editExtraPhotoUrls = [];
-    document.getElementById('edit-main-preview').innerHTML = '';
+    editExistingPhotos = existingPhotos || '';
+    document.getElementById('edit-main-preview').innerHTML = existingPhotos
+      ? '<p style="font-size:11px;color:var(--gray);margin-top:4px;">Current photo kept unless you upload a new one.</p>'
+      : '';
     document.getElementById('edit-extra-previews').innerHTML = '';
     document.getElementById('edit-row').value = row;
     document.getElementById('edit-type').value = type;
@@ -1008,6 +1089,7 @@
     document.getElementById('edit-description').value = description || '';
     document.getElementById('editModal').classList.add('active');
     document.body.style.overflow = 'hidden';
+    goToEditStep(1);
   }
 
   function closeEditModal() {
@@ -1027,7 +1109,9 @@
     }
     const allPhotos = editMainPhotoUrl
       ? [editMainPhotoUrl, ...editExtraPhotoUrls].join(',')
-      : editExtraPhotoUrls.length ? editExtraPhotoUrls.join(',') : '';
+      : editExtraPhotoUrls.length
+        ? editExtraPhotoUrls.join(',')
+        : editExistingPhotos;
     const data = {
       type: 'edit',
       sheet: type === 'rental' ? 'Rentals' : 'Cars',
