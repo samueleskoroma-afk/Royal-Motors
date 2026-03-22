@@ -123,6 +123,12 @@
     .step-next-btn { background: var(--black); color: var(--white); border: none; padding: 10px 24px; font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; transition: background .2s; }
     .step-next-btn:hover { background: var(--red); }
 
+    /* POPUP NOTIFICATION */
+    .popup-notify { position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-120px); background: var(--black); color: var(--white); padding: 16px 28px; font-size: 14px; font-weight: 600; letter-spacing: 0.5px; z-index: 99999; transition: transform .4s cubic-bezier(.175,.885,.32,1.275); border-left: 4px solid var(--red); white-space: nowrap; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+    .popup-notify.show { transform: translateX(-50%) translateY(0); }
+    .popup-notify.success { border-left-color: #2e7d32; }
+    .popup-notify.error { border-left-color: var(--red); }
+
     /* MANAGE TABS */
     .manage-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
     .manage-tab { padding: 9px 20px; font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: 1.5px solid var(--light-gray); background: var(--white); color: var(--gray); transition: all .2s; }
@@ -449,8 +455,6 @@
                   <th>Make</th>
                   <th>Model</th>
                   <th>Price</th>
-                  <th>Year</th>
-                  <th>Fuel</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -473,8 +477,6 @@
                   <th>Make</th>
                   <th>Model</th>
                   <th>Price/Day</th>
-                  <th>Seats</th>
-                  <th>Fuel</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -675,6 +677,9 @@
   </div>
 </div>
 
+<!-- POPUP NOTIFICATION -->
+<div class="popup-notify" id="popup-notify"></div>
+
 <script>
   const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycby4lVCR0Ojte_DhpGrY18BoJMWwFAlLR4WyE3lV81hfV78YWWqrtsag39odgwP83FMD/exec';
   const CLOUD_NAME   = 'dukqrrhsi';
@@ -685,6 +690,14 @@
   let mainPhotoUrl   = '';
   let extraPhotoUrls = [];
   let rentalPhotoUrl = '';
+
+  /* --- POPUP NOTIFICATION --- */
+  function showPopup(message, type = 'success') {
+    const el = document.getElementById('popup-notify');
+    el.textContent = message;
+    el.className = `popup-notify ${type} show`;
+    setTimeout(() => el.classList.remove('show'), 3500);
+  }
 
   /* --- LOGIN --- */
   function doLogin() {
@@ -811,11 +824,11 @@
     const description = document.getElementById('car-description').value.trim();
 
     if (!make || !model || !price) {
-      showMessage('car-message', 'error', 'Please fill in at least Brand, Model and Price!');
+      showPopup('Please fill in at least Brand, Model and Price!', 'error');
       return;
     }
     if (!mainPhotoUrl) {
-      showMessage('car-message', 'error', 'Please upload a main photo first!');
+      showPopup('Please upload a main photo first!', 'error');
       return;
     }
 
@@ -831,10 +844,10 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'car', make, model, price, year, mileage, fuel, color, engine, seats, badge, description, photos: allPhotos })
       });
-      showMessage('car-message', 'success', 'Car added successfully! It will appear on the website shortly.');
+      showPopup('Car added successfully! It will appear on the website shortly.', 'success');
       clearCarForm();
     } catch(err) {
-      showMessage('car-message', 'error', 'Something went wrong. Please try again.');
+      showPopup('Something went wrong. Please try again.', 'error');
     }
 
     btn.textContent = 'Add Car to Inventory';
@@ -852,11 +865,11 @@
     const description = document.getElementById('rental-description').value.trim();
 
     if (!make || !model || !price) {
-      showMessage('rental-message', 'error', 'Please fill in at least Brand, Model and Rate!');
+      showPopup('Please fill in at least Brand, Model and Rate!', 'error');
       return;
     }
     if (!rentalPhotoUrl) {
-      showMessage('rental-message', 'error', 'Please upload a photo first!');
+      showPopup('Please upload a photo first!', 'error');
       return;
     }
 
@@ -871,10 +884,10 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'rental', make, model, price, seats, fuel, trans, photo: rentalPhotoUrl, description })
       });
-      showMessage('rental-message', 'success', 'Rental car added successfully!');
+      showPopup('Rental car added successfully!', 'success');
       clearRentalForm();
     } catch(err) {
-      showMessage('rental-message', 'error', 'Something went wrong. Please try again.');
+      showPopup('Something went wrong. Please try again.', 'error');
     }
 
     btn.textContent = 'Add Rental Car';
@@ -901,8 +914,6 @@
             <td>${car.Make || '—'}</td>
             <td><strong>${car.Model || '—'}</strong></td>
             <td style="color:var(--red);font-weight:600;">${car.Price || '—'}</td>
-            <td>${car.Year || '—'}</td>
-            <td><span class="badge badge-gray">${car.Fuel || '—'}</span></td>
             <td>
               <button class="edit-btn" onclick="openEditModal(${i + 2}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(car.Photos)}')">
                 <i class="fa-solid fa-pen"></i> Edit
@@ -941,8 +952,6 @@
             <td>${car.Make || '—'}</td>
             <td><strong>${car.Model || '—'}</strong></td>
             <td style="color:var(--red);font-weight:600;">${car.Price || '—'}</td>
-            <td>${car.Seats || '—'}</td>
-            <td><span class="badge badge-gray">${car.Fuel || '—'}</span></td>
             <td>
               <button class="edit-btn" onclick="openEditModal(${i + 2}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','Available','${escapeQ(car.Description)}','${escapeQ(car.Photo)}')">
                 <i class="fa-solid fa-pen"></i> Edit
@@ -1091,7 +1100,7 @@
     const model = document.getElementById('edit-model').value.trim();
     const price = document.getElementById('edit-price').value.trim();
     if (!make || !model || !price) {
-      showMessage('edit-message', 'error', 'Please fill in Make, Model and Price.');
+      showPopup('Please fill in Make, Model and Price.', 'error');
       return;
     }
     const allPhotos = editMainPhotoUrl
@@ -1116,10 +1125,10 @@
     };
     try {
       await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      showMessage('edit-message', 'success', 'Changes saved! Refresh to see updates.');
+      showPopup('Changes saved successfully!', 'success');
       setTimeout(() => { closeEditModal(); if (type === 'rental') loadRentalCars(); else loadCars(); }, 2000);
     } catch(err) {
-      showMessage('edit-message', 'error', 'Could not save. Please try again.');
+      showPopup('Could not save. Please try again.', 'error');
     }
   }
 
