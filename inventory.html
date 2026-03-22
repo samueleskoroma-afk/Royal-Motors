@@ -3,78 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory — Royal Motors Sierra Leone</title>
+  <title>Royal Motors Sierra Leone</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    .page-hero { background: var(--black); padding: 60px 60px 40px; border-bottom: 3px solid var(--red); }
-    .inventory-hero-label { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: 8px; }
-    .inventory-hero-title { font-family: var(--font-display); font-size: 64px; color: var(--white); letter-spacing: 2px; line-height: 1; margin-bottom: 12px; }
-    .inventory-hero-title span { color: var(--red); }
-    .inventory-hero-sub { color: #888; font-size: 15px; font-weight: 300; max-width: 500px; margin-bottom: 16px; }
-    .inventory-count { display: inline-block; background: var(--red); color: var(--white); font-size: 13px; font-weight: 600; padding: 4px 14px; letter-spacing: 1px; }
-    .rental-link { display: inline-block; margin-left: 12px; background: transparent; color: #fff; border: 2px solid var(--red); padding: 4px 16px; font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; text-decoration: none; transition: all .2s; }
-    .rental-link:hover { background: var(--red); }
-    .filter-bar { background: var(--off-white); padding: 24px 60px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--light-gray); position: sticky; top: 64px; z-index: 50; }
-    .filter-search { flex: 1; min-width: 200px; display: flex; align-items: center; background: var(--white); border: 1px solid var(--light-gray); padding: 0 14px; gap: 10px; }
-    .filter-search i { color: var(--gray); font-size: 14px; }
-    .filter-search input { border: none; outline: none; width: 100%; font-family: var(--font-body); font-size: 14px; padding: 10px 0; background: transparent; }
-    .filter-select { padding: 10px 14px; border: 1px solid var(--light-gray); background: var(--white); font-family: var(--font-body); font-size: 13px; color: var(--black); outline: none; cursor: pointer; min-width: 140px; transition: border-color .2s; }
-    .filter-select:focus { border-color: var(--red); }
-    .filter-reset { background: transparent; border: 1.5px solid var(--red); color: var(--red); padding: 10px 18px; font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .2s; }
-    .filter-reset:hover { background: var(--red); color: var(--white); }
-    .inventory-section { padding: 40px 60px 80px; }
-    .inventory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-    @media (max-width: 1200px) and (min-width: 901px) {
-      .inventory-grid { grid-template-columns: 1fr 1fr; }
-    }
-    .no-results { grid-column: 1 / -1; text-align: center; padding: 80px 20px; }
-    .no-results i { font-size: 48px; color: var(--light-gray); margin-bottom: 16px; display: block; }
-    .no-results p { font-size: 18px; color: var(--gray); }
-    .loading-cars { grid-column: 1 / -1; text-align: center; padding: 80px 20px; }
-    .loading-cars i { font-size: 48px; color: var(--red); display: block; margin-bottom: 16px; animation: spin 1s linear infinite; }
-    .loading-cars p { font-size: 16px; color: var(--gray); }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .modal-gallery { position: relative; background: #000; }
-    .modal-main-photo { width: 100%; height: 320px; object-fit: cover; display: block; }
-    .gallery-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; width: 40px; height: 40px; font-size: 28px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: background .2s; }
-    .gallery-arrow:hover { background: var(--red); }
-    .gallery-prev { left: 10px; }
-    .gallery-next { right: 10px; }
-    .modal-thumbnails { display: flex; gap: 6px; padding: 8px; background: #000; overflow-x: auto; }
-    .modal-thumbnails img { width: 72px; height: 52px; object-fit: cover; cursor: pointer; opacity: 0.6; transition: opacity .2s; flex-shrink: 0; border: 2px solid transparent; }
-    .modal-thumbnails img:hover { opacity: 1; }
-    .modal-thumbnails img.active { opacity: 1; border-color: var(--red); }
-    @media (max-width: 900px) {
-      .page-hero { padding: 40px 20px 30px; }
-      .inventory-hero-title { font-size: 48px; }
-      .filter-bar { padding: 16px 20px; }
-      .inventory-section { padding: 16px 10px 60px; }
-      .inventory-grid { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 600px) {
-      .inventory-hero-title { font-size: 38px; }
-      .filter-bar { flex-direction: row; overflow-x: auto; flex-wrap: nowrap; gap: 10px; padding: 12px 16px; }
-      .filter-search { min-width: 160px; flex: 0 0 auto; }
-      .filter-select { min-width: 130px; flex: 0 0 auto; }
-      .filter-reset { flex: 0 0 auto; white-space: nowrap; }
-      .inventory-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-      .car-img { height: 130px; }
-      .car-info { padding: 10px; }
-      .car-make { font-size: 10px; }
-      .car-model { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-      .car-specs { gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-      .car-spec { font-size: 10px; }
-      .car-price { font-size: 18px; }
-      .car-btn { padding: 6px 10px; font-size: 10px; }
-      .car-bottom { padding-top: 8px; }
-      .car-tag { font-size: 9px; padding: 2px 6px; }
-      .modal-main-photo { height: 220px; }
-      .modal-thumbnails img { width: 56px; height: 42px; }
-      .gallery-arrow { width: 32px; height: 32px; font-size: 22px; }
-    }
-  </style>
 </head>
 <body>
 
@@ -82,77 +14,172 @@
 <nav>
   <a href="index.html" class="nav-logo-link">
     <div class="nav-logo">
-      <img src="images/Logo-removebg-preview.png"Royal Motors Logo" class="nav-logo-img">
+      <img src="images/Logo-removebg-preview.png" alt="Royal Motors Logo" class="nav-logo-img">
       ROYAL <span>MOTORS</span>
     </div>
   </a>
   <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="inventory.html" class="active">Inventory</a></li>
-    <li><a href="about.html">About</a></li>
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="inventory.html">Inventory</a></li>
+    <li><a href="about.html" >About</a></li>
     <li><a href="index.html#contact">Contact</a></li>
     <li><a href="rentals.html">Rentals</a></li>
   </ul>
-  <button class="nav-cta">Book a Test Drive</button>
-  <div class="hamburger" onclick="toggleMenu()">
-    <span></span>
-    <span></span>
-    <span></span>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="index.html" class="mobile-home-btn" title="Home">
+      <i class="fa-solid fa-house"></i>
+    </a>
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
   </div>
 </nav>
 
-<!-- INVENTORY HERO -->
-<div class="page-hero">
-  <div class="inventory-hero-label">Browse Our Fleet</div>
-  <h1 class="inventory-hero-title">Full <span>Inventory</span></h1>
-  <p class="inventory-hero-sub">Explore our complete collection of quality vehicles. Use the filters to find your perfect match.</p>
-  <div>
-    <div class="inventory-count" id="car-count">Loading...</div>
-    <a href="rentals.html" class="rental-link">Car Rentals</a>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <div class="hero-badge">Freetown's #1 Car Dealer</div>
+    <h1 class="hero-title">Drive Your <span>Dream</span> Car Today</h1>
+    <p class="hero-sub">Sierra Leone's premier destination for quality vehicles. New arrivals every week — find the perfect car for you and your family.</p>
+    <div class="hero-btns">
+      <a href="inventory.html" class="btn-primary">Browse Inventory</a>
+      <a href="rentals.html" class="btn-outline">Car Rentals</a>
+      <a href="#contact" class="btn-outline">Contact Us</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <img src="images/HEROPIC.png" alt="Car Brands" class="hero-brands-img">
+  </div>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num">200<span>+</span></div>
+      <div class="stat-label">Cars in Stock</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">10<span>yrs</span></div>
+      <div class="stat-label">In Business</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">5K<span>+</span></div>
+      <div class="stat-label">Happy Clients</div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    &nbsp;&nbsp;&nbsp; NEW ARRIVALS EVERY WEEK &nbsp;●&nbsp; FLEXIBLE PAYMENT PLANS &nbsp;●&nbsp; QUALITY GUARANTEED &nbsp;●&nbsp; SERVING ALL OF SIERRA LEONE &nbsp;●&nbsp; VISIT OUR FREETOWN SHOWROOM &nbsp;●&nbsp;
+    NEW ARRIVALS EVERY WEEK &nbsp;●&nbsp; FLEXIBLE PAYMENT PLANS &nbsp;●&nbsp; QUALITY GUARANTEED &nbsp;●&nbsp; SERVING ALL OF SIERRA LEONE &nbsp;●&nbsp; VISIT OUR FREETOWN SHOWROOM &nbsp;●&nbsp;
   </div>
 </div>
 
-<!-- FILTER BAR -->
-<div class="filter-bar">
-  <div class="filter-search">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <input type="text" id="search-input" placeholder="Search by brand or model..." oninput="filterCars()">
+<!-- FEATURED VEHICLES -->
+<section class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-label">Browse Our Fleet</div>
+      <div class="section-title">Featured Vehicles</div>
+    </div>
+    <a class="view-all" href="inventory.html">View All Cars →</a>
   </div>
-  <select class="filter-select" id="filter-brand" onchange="filterCars()">
-    <option value="">All Brands</option>
-  </select>
-  <select class="filter-select" id="filter-fuel" onchange="filterCars()">
-    <option value="">All Fuel Types</option>
-    <option value="Petrol">Petrol</option>
-    <option value="Diesel">Diesel</option>
-    <option value="Electric">Electric</option>
-    <option value="Hybrid">Hybrid</option>
-  </select>
-  <select class="filter-select" id="filter-price" onchange="filterCars()">
-    <option value="">All Prices</option>
-    <option value="0-20000">Under $20,000</option>
-    <option value="20000-35000">$20,000 - $35,000</option>
-    <option value="35000-60000">$35,000 - $60,000</option>
-    <option value="60000-999999">Above $60,000</option>
-  </select>
-  <select class="filter-select" id="filter-sort" onchange="filterCars()">
-    <option value="">Sort By</option>
-    <option value="price-low">Price: Low to High</option>
-    <option value="price-high">Price: High to Low</option>
-    <option value="year-new">Newest First</option>
-    <option value="year-old">Oldest First</option>
-  </select>
-  <button class="filter-reset" onclick="resetFilters()">
-    <i class="fa-solid fa-rotate-left"></i> Reset
-  </button>
-</div>
+  <div class="cars-grid" id="featured-grid">
+    <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray);">
+      <i class="fa-solid fa-spinner" style="font-size:32px;color:var(--red);display:block;margin-bottom:12px;animation:spin 1s linear infinite;"></i>
+      Loading featured vehicles...
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:40px;">
+    <a href="inventory.html" class="btn-primary" style="text-decoration:none;padding:16px 48px;">See More Cars →</a>
+  </div>
+</section>
 
-<!-- INVENTORY GRID -->
-<section class="inventory-section">
-  <div class="inventory-grid" id="inventory-grid">
-    <div class="loading-cars">
-      <i class="fa-solid fa-spinner"></i>
-      <p>Loading vehicles...</p>
+<!-- WHY US -->
+<section class="why-section">
+  <div class="section-label" style="color:var(--red);">Why Choose Us</div>
+  <div class="section-title" style="color:#fff;">Sierra Leone's Most Trusted Dealer</div>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-icon"><i class="fa-solid fa-circle-check"></i></div>
+      <div class="why-title">Quality Assured</div>
+      <div class="why-text">Every vehicle is thoroughly inspected before hitting our showroom floor.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+      <div class="why-title">Flexible Finance</div>
+      <div class="why-text">Payment plans designed around your budget. Drive away today.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon"><i class="fa-solid fa-users"></i></div>
+      <div class="why-title">Expert Team</div>
+      <div class="why-text">Our knowledgeable staff guide you to the right car for your needs.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+      <div class="why-title">After-Sales Support</div>
+      <div class="why-text">We're with you long after the sale — servicing and support included.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="contact-info">
+    <div class="section-label">Get In Touch</div>
+    <div class="section-title" style="font-size:48px;font-family:var(--font-display);letter-spacing:1px;margin-bottom:32px;">Contact Us</div>
+
+    <p class="contact-group-label">Call us on</p>
+    <a href="tel:+23276784937" class="contact-card">
+      <i class="fa-solid fa-phone contact-card-icon"></i>
+      <span>+232 76 784 937</span>
+    </a>
+
+    <p class="contact-group-label">Visit us at</p>
+    <div class="contact-card">
+      <i class="fa-solid fa-location-dot contact-card-icon"></i>
+      <span>Wilkinson Road, Freetown, Sierra Leone</span>
+    </div>
+
+    <p class="contact-group-label">Opening hours</p>
+    <div class="contact-card">
+      <i class="fa-solid fa-clock contact-card-icon"></i>
+      <span>Mon – Sat: 8:00am – 6:00pm</span>
+    </div>
+
+    <p class="contact-group-label">Send us a message</p>
+    <a href="https://wa.me/23276784937" target="_blank" class="contact-card">
+      <i class="fa-brands fa-whatsapp contact-card-icon" style="color:#25D366;"></i>
+      <span>WhatsApp Us</span>
+    </a>
+
+    <p class="contact-group-label">Follow us on social media</p>
+    <div class="contact-social-card">
+      <a href="#" class="social-row"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" class="social-icon-img"><span>Facebook</span></a>
+      <a href="#" class="social-row"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" class="social-icon-img"><span>Instagram</span></a>
+      <a href="https://wa.me/23276784937" target="_blank" class="social-row"><img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" class="social-icon-img"><span>WhatsApp</span></a>
+      <a href="#" class="social-row"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" class="social-icon-img"><span>TikTok</span></a>
+    </div>
+  </div>
+
+  <div class="contact-form-wrap">
+    <p class="form-title">Send an Enquiry</p>
+    <div class="contact-form">
+      <div class="form-row">
+        <div class="form-field"><input type="text" placeholder="First Name"></div>
+        <div class="form-field"><input type="text" placeholder="Last Name"></div>
+      </div>
+      <div class="form-field"><input type="tel" placeholder="Phone Number"></div>
+      <div class="form-field">
+        <select>
+          <option value="">Interested In...</option>
+          <option>New Car Purchase</option>
+          <option>Car Rental</option>
+          <option>Test Drive</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-field"><textarea placeholder="Your message..."></textarea></div>
+      <button class="form-submit" onclick="sendToWhatsApp()">Send Enquiry →</button>
     </div>
   </div>
 </section>
@@ -164,13 +191,6 @@
   <div class="footer-location">Freetown, Sierra Leone</div>
 </footer>
 
-<!-- WHATSAPP BUTTON -->
-<a class="wa-btn" href="https://wa.me/23276784937" target="_blank" title="Chat on WhatsApp">
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.531 5.845L.057 23.428a.75.75 0 00.921.921l5.582-1.474A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.712 9.712 0 01-4.953-1.354l-.355-.211-3.682.972.987-3.598-.232-.371A9.712 9.712 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/>
-  </svg>
-</a>
 
 <!-- CAR DETAIL MODAL -->
 <div id="carModal" class="modal-overlay" onclick="closeModal(event)">
@@ -212,164 +232,87 @@
 <!-- JAVASCRIPT -->
 <script>
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby4lVCR0Ojte_DhpGrY18BoJMWwFAlLR4WyE3lV81hfV78YWWqrtsag39odgwP83FMD/exec';
-  let allCars = [];
   let currentPhotos = [];
   let currentPhotoIndex = 0;
 
-  /* --- LOAD CARS FROM GOOGLE SHEET --- */
-  async function loadInventory() {
+  /* --- LOAD FEATURED CARS FROM GOOGLE SHEET --- */
+  async function loadFeatured() {
     try {
       const res = await fetch(SCRIPT_URL);
       const cars = await res.json();
-      allCars = cars.filter(c => c.Make);
-      populateBrandFilter();
-      renderCars(allCars);
-      document.getElementById('car-count').textContent = `Showing ${allCars.length} vehicle${allCars.length !== 1 ? 's' : ''}`;
-    } catch(err) {
-      document.getElementById('inventory-grid').innerHTML = `
-        <div class="no-results">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          <p>Could not load inventory. Please check your connection.</p>
-        </div>`;
-    }
-  }
+      const featured = cars.filter(c => c.Make).slice(0, 3);
+      const grid = document.getElementById('featured-grid');
+      grid.innerHTML = '';
 
-  /* --- POPULATE BRAND FILTER DYNAMICALLY --- */
-  function populateBrandFilter() {
-    const brands = [...new Set(allCars.map(c => c.Make))].sort();
-    const select = document.getElementById('filter-brand');
-    brands.forEach(brand => {
-      const opt = document.createElement('option');
-      opt.value = brand;
-      opt.textContent = brand;
-      select.appendChild(opt);
-    });
-  }
-
-  /* --- RENDER CAR CARDS --- */
-function renderCars(cars) {
-  const grid = document.getElementById('inventory-grid');
-  if (cars.length === 0) {
-    grid.innerHTML = `
-      <div class="no-results">
-        <i class="fa-solid fa-car"></i>
-        <p>No vehicles match your search.</p>
-      </div>`;
-    return;
-  }
-
-  grid.innerHTML = '';
-  cars.forEach((car, index) => {
-    const photos = car.Photos ? car.Photos.split(',').map(p => p.trim()).filter(p => p) : [];
-    const mainPhoto = photos[0] || '';
-    const priceNum = parseFloat((car.Price || '').replace(/[^0-9.]/g, '')) || 0;
-
-    const card = document.createElement('div');
-    card.className = 'car-card';
-    card.dataset.make  = car.Make  || '';
-    card.dataset.fuel  = car.Fuel  || '';
-    card.dataset.price = priceNum;
-    card.dataset.year  = car.Year  || '';
-
-    card.innerHTML = `
-      <div class="car-img">
-        <div class="car-tag">${car.Badge || 'In Stock'}</div>
-        ${mainPhoto ? `<img src="${mainPhoto}" alt="${car.Make} ${car.Model}" class="car-photo">` : ''}
-      </div>
-      <div class="car-info">
-        <div class="car-make">${car.Make || ''}</div>
-        <div class="car-model">${car.Model || ''}</div>
-        <div class="car-specs">
-          <div class="car-spec"><strong>${car.Year || '—'}</strong> Year</div>
-          <div class="car-spec"><strong>${car.Mileage || '—'}</strong></div>
-          <div class="car-spec"><strong>${car.Fuel || '—'}</strong></div>
-        </div>
-        <div class="car-bottom">
-          <div class="car-price">${car.Price || '—'}</div>
-          <button class="car-btn" id="enquire-${index}">Enquire</button>
-        </div>
-      </div>`;
-
-    card.addEventListener('click', function() {
-      openCarModal(
-        car.Make || '',
-        car.Model || '',
-        car.Price || '',
-        photos,
-        car.Year || '',
-        car.Mileage || '',
-        car.Fuel || '',
-        car.Color || '',
-        car.Engine || '',
-        car.Seats || '',
-        car.Description || ''
-      );
-    });
-
-    document.getElementById(`enquire-${index}`) && card.querySelector(`#enquire-${index}`).addEventListener('click', function(e) {
-      e.stopPropagation();
-      enquireCar(`${car.Make} ${car.Model}`, car.Price);
-    });
-
-    grid.appendChild(card);
-
-    card.querySelector(`#enquire-${index}`).addEventListener('click', function(e) {
-      e.stopPropagation();
-      enquireCar(`${car.Make} ${car.Model}`, car.Price);
-    });
-  });
-}
-  function escapeQ(str) {
-    return (str || '').toString().replace(/'/g, "\\'");
-  }
-
-  /* --- FILTER CARS --- */
-  function filterCars() {
-    const search = document.getElementById('search-input').value.toLowerCase();
-    const brand  = document.getElementById('filter-brand').value;
-    const fuel   = document.getElementById('filter-fuel').value;
-    const price  = document.getElementById('filter-price').value;
-    const sort   = document.getElementById('filter-sort').value;
-
-    let filtered = allCars.filter(car => {
-      const text = `${car.Make} ${car.Model} ${car.Fuel} ${car.Year}`.toLowerCase();
-      if (search && !text.includes(search)) return false;
-      if (brand && car.Make !== brand) return false;
-      if (fuel && car.Fuel !== fuel) return false;
-      if (price) {
-        const [min, max] = price.split('-').map(Number);
-        const p = parseFloat((car.Price || '').replace(/[^0-9.]/g, '')) || 0;
-        if (p < min || p > max) return false;
+      if (featured.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray);">No vehicles available yet. Check back soon!</div>';
+        return;
       }
-      return true;
-    });
 
-    if (sort) {
-      filtered.sort((a, b) => {
-        const pa = parseFloat((a.Price || '').replace(/[^0-9.]/g, '')) || 0;
-        const pb = parseFloat((b.Price || '').replace(/[^0-9.]/g, '')) || 0;
-        const ya = parseInt(a.Year) || 0;
-        const yb = parseInt(b.Year) || 0;
-        if (sort === 'price-low')  return pa - pb;
-        if (sort === 'price-high') return pb - pa;
-        if (sort === 'year-new')   return yb - ya;
-        if (sort === 'year-old')   return ya - yb;
-        return 0;
+      featured.forEach(car => {
+        const photos    = car.Photos ? car.Photos.split(',').map(p => p.trim()).filter(p => p) : [];
+        const mainPhoto = photos[0] || '';
+
+        const card = document.createElement('div');
+        card.className = 'car-card';
+        card.innerHTML = `
+          <div class="car-img">
+            <div class="car-tag">${car.Badge || 'In Stock'}</div>
+            ${mainPhoto ? `<img src="${mainPhoto}" alt="${car.Make} ${car.Model}" class="car-photo">` : ''}
+          </div>
+          <div class="car-info">
+            <div class="car-make">${car.Make || ''}</div>
+            <div class="car-model">${car.Model || ''}</div>
+            <div class="car-specs">
+              <div class="car-spec"><strong>${car.Year || '—'}</strong> Year</div>
+              <div class="car-spec"><strong>${car.Mileage || '—'}</strong></div>
+              <div class="car-spec"><strong>${car.Fuel || '—'}</strong></div>
+            </div>
+            <div class="car-bottom">
+              <div class="car-price">${car.Price || '—'}</div>
+              <button class="car-btn enquire-btn">Enquire</button>
+            </div>
+          </div>`;
+
+        card.addEventListener('click', function() {
+          openCarModal(
+            car.Make || '', car.Model || '', car.Price || '',
+            photos,
+            car.Year || '', car.Mileage || '', car.Fuel || '',
+            car.Color || '', car.Engine || '', car.Seats || '',
+            car.Description || ''
+          );
+        });
+
+        card.querySelector('.enquire-btn').addEventListener('click', function(e) {
+          e.stopPropagation();
+          enquireCar(`${car.Make} ${car.Model}`, car.Price);
+        });
+
+        grid.appendChild(card);
       });
-    }
 
-    renderCars(filtered);
-    document.getElementById('car-count').textContent = `Showing ${filtered.length} vehicle${filtered.length !== 1 ? 's' : ''}`;
+    } catch(err) {
+      document.getElementById('featured-grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--gray);">Could not load vehicles. Please refresh.</div>';
+    }
   }
 
-  function resetFilters() {
-    document.getElementById('search-input').value = '';
-    document.getElementById('filter-brand').value = '';
-    document.getElementById('filter-fuel').value  = '';
-    document.getElementById('filter-price').value = '';
-    document.getElementById('filter-sort').value  = '';
-    renderCars(allCars);
-    document.getElementById('car-count').textContent = `Showing ${allCars.length} vehicle${allCars.length !== 1 ? 's' : ''}`;
+  /* --- CONTACT FORM → WHATSAPP --- */
+  function sendToWhatsApp() {
+    const firstName = document.querySelector('input[placeholder="First Name"]').value;
+    const lastName  = document.querySelector('input[placeholder="Last Name"]').value;
+    const phone     = document.querySelector('input[placeholder="Phone Number"]').value;
+    const interest  = document.querySelector('select').value;
+    const message   = document.querySelector('textarea').value;
+    if (!firstName || !phone) { alert('Please fill in your name and phone number!'); return; }
+    const text = `Hello Royal Motors!%0A%0AName: ${firstName} ${lastName}%0APhone: ${phone}%0AInterested In: ${interest}%0AMessage: ${message}`;
+    window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+  }
+
+  /* --- CAR ENQUIRE → WHATSAPP --- */
+  function enquireCar(name, price) {
+    const text = `Hello Royal Motors!%0A%0AI am interested in the *${name}* priced at *${price}*%0A%0APlease send me more information!`;
+    window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
   }
 
   /* --- MODAL --- */
@@ -399,7 +342,7 @@ function renderCars(cars) {
       });
     }
     document.getElementById('modal-wa-btn').onclick = function() {
-      const text = `Hello Royal Motors! 🚗%0A%0AI am interested in the *${make} ${model}* priced at *${price}*%0A%0APlease send me more information!`;
+      const text = `Hello Royal Motors!%0A%0AI am interested in the *${make} ${model}* priced at *${price}*%0A%0APlease send me more information!`;
       window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
     };
     document.getElementById('carModal').classList.add('active');
@@ -408,9 +351,7 @@ function renderCars(cars) {
 
   function updateMainPhoto() {
     document.getElementById('modal-main-img').src = currentPhotos[currentPhotoIndex] || '';
-    document.querySelectorAll('.modal-thumbnails img').forEach((img, i) => {
-      img.classList.toggle('active', i === currentPhotoIndex);
-    });
+    document.querySelectorAll('.modal-thumbnails img').forEach((img, i) => img.classList.toggle('active', i === currentPhotoIndex));
   }
 
   function changePhoto(dir) {
@@ -427,17 +368,12 @@ function renderCars(cars) {
     if (e.target === document.getElementById('carModal')) closeCarModal();
   }
 
-  function enquireCar(name, price) {
-    const text = `Hello Royal Motors! %0A%0AI am interested in the *${name}* priced at *${price}*%0A%0APlease send me more information!`;
-    window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
-  }
-
   function toggleMenu() {
     document.querySelector('.nav-links').classList.toggle('open');
   }
 
   /* --- INIT --- */
-  loadInventory();
+  loadFeatured();
 </script>
 
 </body>
