@@ -252,7 +252,8 @@ function renderCars(cars) {
 
   grid.innerHTML = '';
   cars.forEach((car, index) => {
-    const photos = car.Photos ? car.Photos.split(',').map(p => p.trim()).filter(p => p) : [];
+    const photosRaw = ((car.Photos != null && car.Photos !== '') ? car.Photos : (car.Photo || '')).toString().trim();
+    const photos = photosRaw ? photosRaw.split(',').map(p => p.trim()).filter(p => p) : [];
     const mainPhoto = photos[0] || '';
     const priceNum = parseFloat((car.Price || '').replace(/[^0-9.]/g, '')) || 0;
 

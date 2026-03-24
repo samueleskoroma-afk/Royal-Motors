@@ -78,8 +78,12 @@ function doPost(e) {
         sheet.getRange(row, 3).setValue(data.price);
         sheet.getRange(row, 4).setValue(data.seats);
         sheet.getRange(row, 5).setValue(data.fuel);
-        sheet.getRange(row, 7).setValue(data.description);
-        if (data.photos) sheet.getRange(row, 7).setValue(data.photos);
+        sheet.getRange(row, 6).setValue(data.trans || '');
+        const photosStr = (data.photos || '').toString().trim();
+        const firstPhoto = photosStr ? photosStr.split(',')[0].trim() : '';
+        sheet.getRange(row, 7).setValue(firstPhoto);
+        sheet.getRange(row, 8).setValue(data.description || '');
+        sheet.getRange(row, 9).setValue(photosStr || firstPhoto);
       } else {
         sheet.getRange(row, 2).setValue(data.make);
         sheet.getRange(row, 3).setValue(data.model);
