@@ -238,6 +238,23 @@
   let currentPhotos = [];
   let currentPhotoIndex = 0;
 
+  /* Build full URL list: Photos column (comma-separated) + fallback to Photo; dedupe */
+  function rentalPhotoList(car) {
+    const raw = (car.Photos != null && String(car.Photos).trim() !== '')
+      ? String(car.Photos).trim()
+      : ((car.photos != null && String(car.photos).trim() !== '') ? String(car.photos).trim() : '');
+    const main = (car.Photo != null && String(car.Photo).trim() !== '') ? String(car.Photo).trim() : '';
+    let urls = raw ? raw.split(/[,;]\s*/).map(p => p.trim()).filter(Boolean) : [];
+    if (urls.length === 0 && main) urls = [main];
+    else if (main && !urls.includes(main)) urls = [main, ...urls];
+    const seen = new Set();
+    return urls.filter(u => {
+      if (!u || seen.has(u)) return false;
+      seen.add(u);
+      return true;
+    });
+  }
+
   /* --- LOAD RENTALS --- */
   async function loadRentals() {
     try {
@@ -257,7 +274,7 @@
       }
 
       rentals.forEach(car => {
-        const photos = car.Photos ? car.Photos.split(',').map(p => p.trim()).filter(p => p) : (car.Photo ? [car.Photo] : []);
+        const photos = rentalPhotoList(car);
         const photo = photos[0] || '';
         const card  = document.createElement('div');
         card.className = 'rental-card';
