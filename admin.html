@@ -462,11 +462,8 @@
               <thead>
                 <tr>
                   <th>Photo</th>
-                  <th>Make</th>
                   <th>Model</th>
                   <th>Price</th>
-                  <th>Year</th>
-                  <th>Fuel</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -486,11 +483,8 @@
               <thead>
                 <tr>
                   <th>Photo</th>
-                  <th>Make</th>
                   <th>Model</th>
                   <th>Price/Day</th>
-                  <th>Seats</th>
-                  <th>Fuel</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -966,15 +960,18 @@
 
   /* --- LOAD CARS TABLE --- */
   async function loadCars() {
-    document.getElementById('cars-loading').style.display = 'block';
+    const loadingEl = document.getElementById('cars-loading');
+    loadingEl.innerHTML = '<i class="fa-solid fa-spinner"></i> Loading cars from database...';
+    loadingEl.style.display = 'block';
     document.getElementById('cars-table').style.display = 'none';
     try {
       const res = await fetch(SCRIPT_URL);
       const cars = await res.json();
+      const list = Array.isArray(cars) ? cars : [];
       const tbody = document.getElementById('cars-tbody');
       tbody.innerHTML = '';
       let count = 0;
-      cars.forEach((car, i) => {
+      list.forEach((car, i) => {
         if (!car.Make) return;
         count++;
         const photosRaw = ((car.Photos != null && car.Photos !== '') ? car.Photos
@@ -984,11 +981,8 @@
         tbody.innerHTML += `
           <tr>
             <td>${photo ? `<img src="${photo}" onerror="this.style.display='none'">` : '—'}</td>
-            <td>${car.Make || '—'}</td>
             <td><strong>${car.Model || '—'}</strong></td>
             <td style="color:var(--red);font-weight:600;">${car.Price || '—'}</td>
-            <td>${car.Year || '—'}</td>
-            <td><span class="badge badge-gray">${car.Fuel || '—'}</span></td>
             <td>
               <button class="edit-btn" onclick="openEditModal(${i + 2}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photosForEdit)}')">
                 <i class="fa-solid fa-pen"></i> Edit
@@ -1003,15 +997,21 @@
           </tr>`;
       });
       document.getElementById('total-cars').textContent = count;
-      document.getElementById('cars-loading').style.display = 'none';
+      if (count === 0) {
+        loadingEl.innerHTML = '<p style="color:var(--gray);padding:40px;text-align:center;">No inventory cars added yet.</p>';
+        return;
+      }
+      loadingEl.style.display = 'none';
       document.getElementById('cars-table').style.display = 'table';
     } catch(err) {
-      document.getElementById('cars-loading').innerHTML = '<p style="color:var(--red);padding:40px;">Could not load cars. Check internet connection.</p>';
+      loadingEl.innerHTML = '<p style="color:var(--red);padding:40px;">Could not load cars. Check internet connection.</p>';
     }
   }
 
   async function loadRentalCars() {
-    document.getElementById('rentals-loading').style.display = 'block';
+    const loadingEl = document.getElementById('rentals-loading');
+    loadingEl.innerHTML = '<i class="fa-solid fa-spinner"></i> Loading rental cars...';
+    loadingEl.style.display = 'block';
     document.getElementById('rentals-table').style.display = 'none';
     try {
       const res = await fetch(SCRIPT_URL + '?type=rentals');
@@ -1019,20 +1019,21 @@
       const tbody = document.getElementById('rentals-tbody');
       tbody.innerHTML = '';
       if (!Array.isArray(cars) || cars.length === 0) {
-        document.getElementById('rentals-loading').innerHTML = '<p style="color:var(--gray);padding:40px;text-align:center;">No rental cars added yet.</p>';
+        loadingEl.innerHTML = '<p style="color:var(--gray);padding:40px;text-align:center;">No rental cars added yet.</p>';
         return;
       }
+      let count = 0;
       cars.forEach((car, i) => {
         if (!car.Make) return;
-        const rentalPhotosForEdit = (car.Photos || car.Photo || '').toString();
+        count++;
+        const rentalPhotosRaw = ((car.Photos != null && car.Photos !== '') ? car.Photos : (car.Photo || '')).toString().trim();
+        const rentalThumb = rentalPhotosRaw ? rentalPhotosRaw.split(',')[0].trim() : '';
+        const rentalPhotosForEdit = rentalPhotosRaw || '';
         tbody.innerHTML += `
           <tr>
-            <td>${car.Photo ? `<img src="${car.Photo}" onerror="this.style.display='none'">` : '—'}</td>
-            <td>${car.Make || '—'}</td>
+            <td>${rentalThumb ? `<img src="${rentalThumb}" onerror="this.style.display='none'">` : '—'}</td>
             <td><strong>${car.Model || '—'}</strong></td>
             <td style="color:var(--red);font-weight:600;">${car.Price || '—'}</td>
-            <td>${car.Seats || '—'}</td>
-            <td><span class="badge badge-gray">${car.Fuel || '—'}</span></td>
             <td>
               <button class="edit-btn" onclick="openEditModal(${i + 2}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','Available','${escapeQ(car.Description)}','${escapeQ(rentalPhotosForEdit)}')">
                 <i class="fa-solid fa-pen"></i> Edit
@@ -1043,10 +1044,14 @@
             </td>
           </tr>`;
       });
-      document.getElementById('rentals-loading').style.display = 'none';
+      if (count === 0) {
+        loadingEl.innerHTML = '<p style="color:var(--gray);padding:40px;text-align:center;">No rental cars added yet.</p>';
+        return;
+      }
+      loadingEl.style.display = 'none';
       document.getElementById('rentals-table').style.display = 'table';
     } catch(err) {
-      document.getElementById('rentals-loading').innerHTML = '<p style="color:var(--red);padding:40px;">Could not load rental cars.</p>';
+      loadingEl.innerHTML = '<p style="color:var(--red);padding:40px;">Could not load rental cars.</p>';
     }
   }
 
