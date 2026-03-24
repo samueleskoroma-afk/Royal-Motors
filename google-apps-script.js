@@ -5,6 +5,31 @@
 
 const SHEET_ID = '16yRIt44Ilfr8cw7XbewyvhnWoYzv5iQnKbv7gMQROS8';
 
+/** Tab names tried in order — must match one tab at the bottom of your spreadsheet */
+function getRentalsSheet_(ss) {
+  const names = ['Rentals', 'Rental Cars', 'RENTALS', 'rental cars'];
+  for (let i = 0; i < names.length; i++) {
+    const sh = ss.getSheetByName(names[i]);
+    if (sh) return sh;
+  }
+  return null;
+}
+
+/** If headers are wrong/missing, still map Photo (col G) and Photos (col I) by position */
+function normalizeRentalRow_(row, headers) {
+  const obj = {};
+  headers.forEach(function(h, i) {
+    if (h !== '' && h != null) obj[String(h).trim()] = row[i];
+  });
+  if (row.length >= 7 && (obj.Photo === undefined || obj.Photo === '') && row[6] !== '') {
+    obj.Photo = row[6];
+  }
+  if (row.length >= 9 && (obj.Photos === undefined || obj.Photos === '') && row[8] !== '') {
+    obj.Photos = row[8];
+  }
+  return obj;
+}
+
 function doGet(e) {
   try {
     const type = e && e.parameter && e.parameter.type;
@@ -20,7 +45,7 @@ function doGet(e) {
 
     // DELETE RENTAL via GET request
     if (type === 'delete-rental') {
-      const sheet = ss.getSheetByName('Rentals');
+      const sheet = getRentalsSheet_(ss);
       if (!sheet) return response({ status: 'error', message: 'Rentals sheet not found' });
       const row = Number(e.parameter.row);
       sheet.deleteRow(row);
@@ -29,17 +54,15 @@ function doGet(e) {
 
     // Return RENTALS
     if (type === 'rentals') {
-      const sheet = ss.getSheetByName('Rentals');
+      const sheet = getRentalsSheet_(ss);
       if (!sheet) return response([]);
       const data = sheet.getDataRange().getValues();
       if (data.length < 2) return response([]);
       const headers = data[0];
       const rentals = data.slice(1)
-        .filter(row => row[0])
-        .map(row => {
-          const obj = {};
-          headers.forEach((h, i) => obj[h] = row[i]);
-          return obj;
+        .filter(function(row) { return row[0]; })
+        .map(function(row) {
+          return normalizeRentalRow_(row, headers);
         });
       return response(rentals);
     }
@@ -70,40 +93,42 @@ function doPost(e) {
 
     // EDIT existing car or rental
     if (data.type === 'edit') {
-      const sheet = ss.getSheetByName(data.sheet) || ss.getActiveSheet();
+      const targetSheet = (data.sheet === 'Rentals')
+        ? (getRentalsSheet_(ss) || ss.getActiveSheet())
+        : (ss.getSheetByName(data.sheet) || ss.getActiveSheet());
       const row = Number(data.row);
       if (data.sheet === 'Rentals') {
-        sheet.getRange(row, 1).setValue(data.make);
-        sheet.getRange(row, 2).setValue(data.model);
-        sheet.getRange(row, 3).setValue(data.price);
-        sheet.getRange(row, 4).setValue(data.seats);
-        sheet.getRange(row, 5).setValue(data.fuel);
-        sheet.getRange(row, 6).setValue(data.trans || '');
+        targetSheet.getRange(row, 1).setValue(data.make);
+        targetSheet.getRange(row, 2).setValue(data.model);
+        targetSheet.getRange(row, 3).setValue(data.price);
+        targetSheet.getRange(row, 4).setValue(data.seats);
+        targetSheet.getRange(row, 5).setValue(data.fuel);
+        targetSheet.getRange(row, 6).setValue(data.trans || '');
         const photosStr = (data.photos || '').toString().trim();
         const firstPhoto = photosStr ? photosStr.split(',')[0].trim() : '';
-        sheet.getRange(row, 7).setValue(firstPhoto);
-        sheet.getRange(row, 8).setValue(data.description || '');
-        sheet.getRange(row, 9).setValue(photosStr || firstPhoto);
+        targetSheet.getRange(row, 7).setValue(firstPhoto);
+        targetSheet.getRange(row, 8).setValue(data.description || '');
+        targetSheet.getRange(row, 9).setValue(photosStr || firstPhoto);
       } else {
-        sheet.getRange(row, 2).setValue(data.make);
-        sheet.getRange(row, 3).setValue(data.model);
-        sheet.getRange(row, 4).setValue(data.price);
-        sheet.getRange(row, 5).setValue(data.year);
-        sheet.getRange(row, 6).setValue(data.mileage);
-        sheet.getRange(row, 7).setValue(data.fuel);
-        sheet.getRange(row, 8).setValue(data.color);
-        sheet.getRange(row, 9).setValue(data.engine);
-        sheet.getRange(row, 10).setValue(data.seats);
-        sheet.getRange(row, 11).setValue(data.badge);
-        sheet.getRange(row, 12).setValue(data.description);
-        if (data.photos) sheet.getRange(row, 13).setValue(data.photos);
+        targetSheet.getRange(row, 2).setValue(data.make);
+        targetSheet.getRange(row, 3).setValue(data.model);
+        targetSheet.getRange(row, 4).setValue(data.price);
+        targetSheet.getRange(row, 5).setValue(data.year);
+        targetSheet.getRange(row, 6).setValue(data.mileage);
+        targetSheet.getRange(row, 7).setValue(data.fuel);
+        targetSheet.getRange(row, 8).setValue(data.color);
+        targetSheet.getRange(row, 9).setValue(data.engine);
+        targetSheet.getRange(row, 10).setValue(data.seats);
+        targetSheet.getRange(row, 11).setValue(data.badge);
+        targetSheet.getRange(row, 12).setValue(data.description);
+        if (data.photos) targetSheet.getRange(row, 13).setValue(data.photos);
       }
       return response({ status: 'edited', row: row });
     }
 
     // ADD RENTAL car
     if (data.type === 'rental') {
-      let sheet = ss.getSheetByName('Rentals');
+      let sheet = getRentalsSheet_(ss);
       if (!sheet) {
         sheet = ss.insertSheet('Rentals');
         sheet.appendRow(['Make','Model','Price','Seats','Fuel','Trans','Photo','Description','Photos']);
