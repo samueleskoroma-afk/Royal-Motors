@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rentals — Royal Motors Sierra Leone</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .page-hero { background: var(--black); padding: 70px 60px 50px; border-bottom: 3px solid var(--red); }
+    .page-hero-label { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: 8px; }
+    .page-hero-title { font-family: var(--font-display); font-size: 64px; color: var(--white); letter-spacing: 2px; line-height: 1; margin-bottom: 12px; }
+    .page-hero-title span { color: var(--red); }
+    .page-hero-sub { color: #888; font-size: 15px; font-weight: 300; max-width: 520px; margin-bottom: 28px; }
+    .hero-rental-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+    .rental-features { background: var(--off-white); padding: 60px; }
+    .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 40px; }
+    .feature-card { background: var(--white); padding: 28px 20px; text-align: center; border-top: 3px solid var(--red); }
+    .feature-card i { font-size: 32px; color: var(--red); margin-bottom: 14px; display: block; }
+    .feature-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+    .feature-card p { font-size: 13px; color: var(--gray); line-height: 1.6; font-weight: 300; }
+    .rental-section { padding: 60px; }
+    .rental-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .rental-card { background: var(--off-white); overflow: hidden; transition: transform .2s, box-shadow .2s; cursor: pointer; }
+    .rental-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.1); }
+    .rental-img { height: 280px; overflow: hidden; position: relative; background: var(--light-gray); }
+    .rental-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .rental-badge { position: absolute; top: 12px; left: 12px; background: var(--red); color: var(--white); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 8px; }
+    .rental-info { padding: 20px; }
+    .rental-make { font-size: 11px; color: var(--gray); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+    .rental-model { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+    .rental-specs { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+    .rental-spec { font-size: 12px; color: var(--gray); }
+    .rental-spec strong { color: var(--black); font-weight: 500; }
+    .rental-bottom { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--light-gray); padding-top: 14px; }
+    .rental-price { font-family: var(--font-display); font-size: 28px; color: var(--red); letter-spacing: 1px; }
+    .rental-per { font-size: 11px; color: var(--gray); letter-spacing: 1px; text-transform: uppercase; }
+    .rental-btn { background: var(--black); color: var(--white); border: none; padding: 10px 18px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: background .2s; }
+    .rental-btn:hover { background: var(--red); }
+    .how-section { background: var(--black); padding: 60px; }
+    .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 40px; position: relative; }
+    .steps-grid::before { content: ''; position: absolute; top: 28px; left: 10%; right: 10%; height: 2px; background: var(--red); z-index: 0; }
+    .step { text-align: center; position: relative; z-index: 1; padding: 0 20px; }
+    .step-num { width: 56px; height: 56px; background: var(--red); color: var(--white); font-family: var(--font-display); font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; border: 3px solid var(--black); }
+    .step-title { font-size: 15px; font-weight: 600; color: var(--white); margin-bottom: 8px; }
+    .step-text { font-size: 13px; color: #888; line-height: 1.6; font-weight: 300; }
+    .rental-contact { background: var(--red); padding: 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+    .rental-contact-text h2 { font-family: var(--font-display); font-size: 52px; color: var(--white); letter-spacing: 1px; margin-bottom: 16px; line-height: 1; }
+    .rental-contact-text p { color: rgba(255,255,255,0.8); font-size: 15px; line-height: 1.7; font-weight: 300; }
+    .rental-contact-btns { display: flex; flex-direction: column; gap: 14px; }
+    .rental-wa-btn { background: #25D366; color: var(--white); border: none; padding: 10px 20px; font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background .2s; text-decoration: none; justify-content: center; }
+    .rental-wa-btn:hover { background: #1da851; }
+    .rental-call-btn { background: transparent; color: var(--white); border: 2px solid rgba(255,255,255,0.5); padding: 10px 20px; font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; transition: all .2s; justify-content: center; text-decoration: none; }
+    .rental-call-btn:hover { border-color: var(--white); background: rgba(255,255,255,0.1); }
+    .loading-rentals { text-align: center; padding: 80px; color: var(--gray); }
+    .loading-rentals i { font-size: 40px; color: var(--red); display: block; margin-bottom: 12px; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-gallery { position: relative; background: #000; }
+    .modal-main-photo { width: 100%; height: 320px; object-fit: cover; display: block; }
+    .gallery-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; width: 40px; height: 40px; font-size: 28px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: background .2s; }
+    .gallery-arrow:hover { background: var(--red); }
+    .gallery-prev { left: 10px; }
+    .gallery-next { right: 10px; }
+    .modal-thumbnails { display: flex; gap: 6px; padding: 8px; background: #000; overflow-x: auto; }
+    .modal-thumbnails img { width: 72px; height: 52px; object-fit: cover; cursor: pointer; opacity: 0.6; transition: opacity .2s; flex-shrink: 0; border: 2px solid transparent; }
+    .modal-thumbnails img:hover { opacity: 1; }
+    .modal-thumbnails img.active { opacity: 1; border-color: var(--red); }
+    @media (max-width: 900px) {
+      .page-hero { padding: 50px 20px 40px; }
+      .page-hero-title { font-size: 48px; }
+      .rental-features { padding: 40px 20px; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .rental-section { padding: 16px 10px 40px; }
+      .rental-grid { grid-template-columns: 1fr 1fr; }
+      .how-section { padding: 40px 20px; }
+      .steps-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+      .steps-grid::before { display: none; }
+      .rental-contact { padding: 40px 20px; grid-template-columns: 1fr; gap: 32px; }
+      .rental-contact-text h2 { font-size: 40px; }
+    }
+    @media (max-width: 600px) {
+      .page-hero-title { font-size: 38px; }
+      .features-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      .rental-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .rental-img { height: 130px; }
+      .rental-info { padding: 10px; }
+      .rental-make { font-size: 10px; }
+      .rental-model { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+      .rental-specs { gap: 6px; margin-bottom: 8px; }
+      .rental-spec { font-size: 10px; }
+      .rental-price { font-size: 18px; }
+      .rental-per { font-size: 10px; }
+      .rental-btn { padding: 6px 10px; font-size: 10px; }
+      .rental-bottom { padding-top: 8px; }
+      .rental-badge { font-size: 9px; padding: 2px 6px; }
+      .steps-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      .feature-card { padding: 14px 8px; }
+      .feature-card i { font-size: 20px; margin-bottom: 8px; }
+      .feature-card h3 { font-size: 11px; }
+      .feature-card p { font-size: 10px; }
+      .step { padding: 0 4px; }
+      .step-num { width: 36px; height: 36px; font-size: 16px; margin-bottom: 10px; }
+      .step-title { font-size: 11px; }
+      .step-text { font-size: 10px; }
+      .modal-main-photo { height: 220px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo-link">
+    <div class="nav-logo">
+      <img src="images/Logo-removebg-preview.png" alt="Royal Motors Logo" class="nav-logo-img">
+      ROYAL <span>MOTORS</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="inventory.html">Inventory</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+    <li><a href="rentals.html" class="active">Rentals</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="index.html" class="mobile-home-btn" title="Home">
+      <i class="fa-solid fa-house"></i>
+    </a>
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-label">Short & Long Term</div>
+  <h1 class="page-hero-title">Car <span>Rentals</span></h1>
+  <p class="page-hero-sub">Contact our team today to check availability, get a custom quote for longer rentals, or ask any questions.</p>
+  <div class="hero-rental-btns">
+    <a href="https://wa.me/23276784937" target="_blank" class="rental-call-btn"><i class="fa-brands fa-whatsapp"></i> Book Now</a>
+    <a href="tel:+23276784937" class="rental-call-btn"><i class="fa-solid fa-phone"></i> Call Us Directly</a>
+  </div>
+</div>
+
+<!-- RENTAL CARS -->
+<section class="rental-section">
+  <div class="section-header">
+    <div>
+      <div class="section-label">Available Now</div>
+      <div class="section-title">Rental Fleet</div>
+    </div>
+  </div>
+  <div class="rental-grid" id="rental-grid">
+    <div class="loading-rentals" style="grid-column:1/-1;">
+      <i class="fa-solid fa-spinner"></i>
+      <p>Loading rental fleet...</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="rental-features">
+  <div class="section-label">Why Rent With Us</div>
+  <div class="section-title">Simple. Affordable. Reliable.</div>
+  <div class="features-grid">
+    <div class="feature-card"><i class="fa-solid fa-key"></i><h3>Easy Booking</h3></div>
+    <div class="feature-card"><i class="fa-solid fa-shield-halved"></i><h3>Fully Insured</h3></div>
+    <div class="feature-card"><i class="fa-solid fa-location-dot"></i><h3>Delivery Available</h3></div>
+    <div class="feature-card"><i class="fa-solid fa-headset"></i><h3>24/7 Support</h3></div>
+  </div>
+</section>
+
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="section-label" style="color:var(--red);">Simple Process</div>
+  <div class="section-title" style="color:#fff;">How It Works</div>
+  <div class="steps-grid">
+    <div class="step"><div class="step-num">01</div><div class="step-title">Choose Your Car</div></div>
+    <div class="step"><div class="step-num">02</div><div class="step-title">Contact Us</div></div>
+    <div class="step"><div class="step-num">03</div><div class="step-title">Make Payment</div></div>
+    <div class="step"><div class="step-num">04</div><div class="step-title">Drive Away</div></div>
+  </div>
+</section>
+
+
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Royal <span>Motors</span></div>
+  <div class="footer-text">© 2026 Royal Motors Sierra Leone. All rights reserved.</div>
+  <div class="footer-location">Freetown, Sierra Leone</div>
+</footer>
+
+
+<!-- CAR DETAIL MODAL -->
+<div id="carModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeCarModal()">✕</button>
+    <div class="modal-gallery">
+      <button class="gallery-arrow gallery-prev" onclick="changePhoto(-1)">&#8249;</button>
+      <img id="modal-main-img" src="" alt="Car" class="modal-main-photo">
+      <button class="gallery-arrow gallery-next" onclick="changePhoto(1)">&#8250;</button>
+    </div>
+    <div class="modal-thumbnails" id="modal-thumbnails"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <p id="modal-make" class="modal-make"></p>
+          <h2 id="modal-model" class="modal-model"></h2>
+        </div>
+        <div class="modal-price-box">
+          <p id="modal-price" class="modal-price"></p>
+          <p class="modal-finance">Daily rental rate</p>
+        </div>
+      </div>
+      <div class="modal-specs-grid">
+        <div class="modal-spec-item"><i class="fa-solid fa-circle-check"></i><p id="modal-year"></p><span>Status</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-gas-pump"></i><p id="modal-fuel"></p><span>Fuel</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-user-group"></i><p id="modal-seats"></p><span>Seats</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-gears"></i><p id="modal-mileage"></p><span>Trans</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-palette"></i><p id="modal-color"></p><span>Color</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-car-side"></i><p id="modal-engine"></p><span>Engine</span></div>
+      </div>
+      <p id="modal-description" class="modal-description"></p>
+      <button class="modal-whatsapp" id="modal-wa-btn">
+        <i class="fa-brands fa-whatsapp"></i> Book on WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMBJiuzYC9VsddpzFWJkGKy-4b13mLaFlhVD05W0DXMopmKb9BGlGLQMaYoyo3OaCY/exec';
+  let currentPhotos = [];
+  let currentPhotoIndex = 0;
+
+  /* --- LOAD RENTALS --- */
+  async function loadRentals() {
+    try {
+      const res  = await fetch(SCRIPT_URL + '?type=rentals');
+      const data = await res.json();
+      const rentals = Array.isArray(data) ? data.filter(r => r.Make) : [];
+      const grid = document.getElementById('rental-grid');
+      grid.innerHTML = '';
+
+      if (rentals.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column:1/-1;text-align:center;padding:60px;">
+            <i class="fa-solid fa-car" style="font-size:48px;color:var(--light-gray);display:block;margin-bottom:16px;"></i>
+            <p style="color:var(--gray);font-size:16px;">No rental cars available yet. Check back soon!</p>
+          </div>`;
+        return;
+      }
+
+      rentals.forEach(car => {
+        const photos = car.Photos ? car.Photos.split(',').map(p => p.trim()).filter(p => p) : (car.Photo ? [car.Photo] : []);
+        const photo = photos[0] || '';
+        const card  = document.createElement('div');
+        card.className = 'rental-card';
+        card.innerHTML = `
+          <div class="rental-img">
+            <div class="rental-badge">Available</div>
+            ${photo ? `<img src="${photo}" alt="${car.Make} ${car.Model}" onerror="this.style.display='none'">` : ''}
+          </div>
+          <div class="rental-info">
+            <div class="rental-make">${car.Make}</div>
+            <div class="rental-model">${car.Model}</div>
+            <div class="rental-specs">
+              <div class="rental-spec"><strong>${car.Seats}</strong> Seats</div>
+              <div class="rental-spec"><strong>${car.Trans}</strong></div>
+              <div class="rental-spec"><strong>${car.Fuel}</strong></div>
+            </div>
+            <div class="rental-bottom">
+              <div>
+                <div class="rental-price">${car.Price}</div>
+                <div class="rental-per">Per Day</div>
+              </div>
+              <button class="rental-btn book-btn">Book Now</button>
+            </div>
+          </div>`;
+
+        card.addEventListener('click', function() {
+          openCarModal(
+            car.Make, car.Model, `${car.Price}/day`,
+            photos,
+            'Available', car.Trans, car.Fuel,
+            '—', '—', car.Seats,
+            car.Description || ''
+          );
+        });
+
+        card.querySelector('.book-btn').addEventListener('click', function(e) {
+          e.stopPropagation();
+          const text = `Hello Royal Motors! %0A%0AI would like to rent the *${car.Make} ${car.Model}* at *${car.Price}/day*%0A%0APlease let me know availability!`;
+          window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+        });
+
+        grid.appendChild(card);
+      });
+    } catch(err) {
+      document.getElementById('rental-grid').innerHTML =
+        '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray);">Could not load rental fleet. Please refresh.</div>';
+    }
+  }
+
+  /* --- MODAL --- */
+  function openCarModal(make, model, price, photos, year, mileage, fuel, color, engine, seats, description) {
+    document.getElementById('modal-make').textContent        = make;
+    document.getElementById('modal-model').textContent       = model;
+    document.getElementById('modal-price').textContent       = price;
+    document.getElementById('modal-year').textContent        = year;
+    document.getElementById('modal-mileage').textContent     = mileage;
+    document.getElementById('modal-fuel').textContent        = fuel;
+    document.getElementById('modal-color').textContent       = color;
+    document.getElementById('modal-engine').textContent      = engine;
+    document.getElementById('modal-seats').textContent       = seats;
+    document.getElementById('modal-description').textContent = description;
+    currentPhotos = Array.isArray(photos) ? photos.filter(p => p) : [photos];
+    currentPhotoIndex = 0;
+    updateMainPhoto();
+    const thumbs = document.getElementById('modal-thumbnails');
+    thumbs.innerHTML = '';
+    if (currentPhotos.length > 1) {
+      currentPhotos.forEach((src, i) => {
+        const img = document.createElement('img');
+        img.src = src;
+        if (i === 0) img.classList.add('active');
+        img.onclick = () => { currentPhotoIndex = i; updateMainPhoto(); };
+        thumbs.appendChild(img);
+      });
+    }
+    document.getElementById('modal-wa-btn').onclick = function() {
+      const text = `Hello Royal Motors! %0A%0AI would like to rent the *${make} ${model}* at *${price}*%0A%0APlease let me know availability!`;
+      window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+    };
+    document.getElementById('carModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function updateMainPhoto() {
+    document.getElementById('modal-main-img').src = currentPhotos[currentPhotoIndex] || '';
+    document.querySelectorAll('.modal-thumbnails img').forEach((img, i) => img.classList.toggle('active', i === currentPhotoIndex));
+  }
+
+  function changePhoto(dir) {
+    currentPhotoIndex = (currentPhotoIndex + dir + currentPhotos.length) % currentPhotos.length;
+    updateMainPhoto();
+  }
+
+  function closeCarModal() {
+    document.getElementById('carModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  function closeModal(e) {
+    if (e.target === document.getElementById('carModal')) closeCarModal();
+  }
+
+  function toggleMenu() {
+    document.querySelector('.nav-links').classList.toggle('open');
+  }
+
+  loadRentals();
+</script>
+</body>
+</html>

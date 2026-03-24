@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory — Royal Motors Sierra Leone</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .page-hero { background: var(--black); padding: 60px 60px 40px; border-bottom: 3px solid var(--red); }
+    .inventory-hero-label { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: 8px; }
+    .inventory-hero-title { font-family: var(--font-display); font-size: 64px; color: var(--white); letter-spacing: 2px; line-height: 1; margin-bottom: 12px; }
+    .inventory-hero-title span { color: var(--red); }
+    .inventory-hero-sub { color: #888; font-size: 15px; font-weight: 300; max-width: 500px; margin-bottom: 16px; }
+    .inventory-count { display: inline-block; background: var(--red); color: var(--white); font-size: 13px; font-weight: 600; padding: 4px 14px; letter-spacing: 1px; }
+    .rental-link { display: inline-block; margin-left: 12px; background: transparent; color: #fff; border: 2px solid var(--red); padding: 4px 16px; font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; text-decoration: none; transition: all .2s; }
+    .rental-link:hover { background: var(--red); }
+    .filter-bar { background: var(--off-white); padding: 24px 60px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--light-gray); position: sticky; top: 64px; z-index: 50; }
+    .filter-search { flex: 1; min-width: 200px; display: flex; align-items: center; background: var(--white); border: 1px solid var(--light-gray); padding: 0 14px; gap: 10px; }
+    .filter-search i { color: var(--gray); font-size: 14px; }
+    .filter-search input { border: none; outline: none; width: 100%; font-family: var(--font-body); font-size: 14px; padding: 10px 0; background: transparent; }
+    .filter-select { padding: 10px 14px; border: 1px solid var(--light-gray); background: var(--white); font-family: var(--font-body); font-size: 13px; color: var(--black); outline: none; cursor: pointer; min-width: 140px; transition: border-color .2s; }
+    .filter-select:focus { border-color: var(--red); }
+    .filter-reset { background: transparent; border: 1.5px solid var(--red); color: var(--red); padding: 10px 18px; font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .2s; }
+    .filter-reset:hover { background: var(--red); color: var(--white); }
+    .inventory-section { padding: 40px 60px 80px; }
+    .inventory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .no-results { grid-column: 1 / -1; text-align: center; padding: 80px 20px; }
+    .no-results i { font-size: 48px; color: var(--light-gray); margin-bottom: 16px; display: block; }
+    .no-results p { font-size: 18px; color: var(--gray); }
+    .loading-cars { grid-column: 1 / -1; text-align: center; padding: 80px 20px; }
+    .loading-cars i { font-size: 48px; color: var(--red); display: block; margin-bottom: 16px; animation: spin 1s linear infinite; }
+    .loading-cars p { font-size: 16px; color: var(--gray); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-gallery { position: relative; background: #000; }
+    .modal-main-photo { width: 100%; height: 320px; object-fit: cover; display: block; }
+    .gallery-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; width: 40px; height: 40px; font-size: 28px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; transition: background .2s; }
+    .gallery-arrow:hover { background: var(--red); }
+    .gallery-prev { left: 10px; }
+    .gallery-next { right: 10px; }
+    .modal-thumbnails { display: flex; gap: 6px; padding: 8px; background: #000; overflow-x: auto; }
+    .modal-thumbnails img { width: 72px; height: 52px; object-fit: cover; cursor: pointer; opacity: 0.6; transition: opacity .2s; flex-shrink: 0; border: 2px solid transparent; }
+    .modal-thumbnails img:hover { opacity: 1; }
+    .modal-thumbnails img.active { opacity: 1; border-color: var(--red); }
+    @media (max-width: 900px) {
+      .page-hero { padding: 40px 20px 30px; }
+      .inventory-hero-title { font-size: 48px; }
+      .filter-bar { padding: 16px 20px; }
+      .inventory-section { padding: 16px 10px 60px; }
+      .inventory-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .inventory-hero-title { font-size: 38px; }
+      .filter-bar { flex-direction: row; overflow-x: auto; flex-wrap: nowrap; gap: 10px; padding: 12px 16px; }
+      .filter-search { min-width: 160px; flex: 0 0 auto; }
+      .filter-select { min-width: 130px; flex: 0 0 auto; }
+      .filter-reset { flex: 0 0 auto; white-space: nowrap; }
+      .inventory-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .car-img { height: 130px; }
+      .car-info { padding: 10px; }
+      .car-make { font-size: 10px; }
+      .car-model { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+      .car-specs { gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+      .car-spec { font-size: 10px; }
+      .car-price { font-size: 18px; }
+      .car-btn { padding: 6px 10px; font-size: 10px; }
+      .car-bottom { padding-top: 8px; }
+      .car-tag { font-size: 9px; padding: 2px 6px; }
+      .modal-main-photo { height: 220px; }
+      .modal-thumbnails img { width: 56px; height: 42px; }
+      .gallery-arrow { width: 32px; height: 32px; font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo-link">
+    <div class="nav-logo">
+      <img src="images/Logo-removebg-preview.png" alt="Royal Motors Logo" class="nav-logo-img">
+      ROYAL <span>MOTORS</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="inventory.html" class="active" >Inventory</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+    <li><a href="rentals.html" >Rentals</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="index.html" class="mobile-home-btn" title="Home">
+      <i class="fa-solid fa-house"></i>
+    </a>
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- INVENTORY HERO -->
+<div class="page-hero">
+  <div class="inventory-hero-label">Browse Our Fleet</div>
+  <h1 class="inventory-hero-title">Full <span>Inventory</span></h1>
+  <p class="inventory-hero-sub">Explore our complete collection of quality vehicles. Use the filters to find your perfect match.</p>
+  <div>
+    <div class="inventory-count" id="car-count">Loading...</div>
+    <a href="rentals.html" class="rental-link">Car Rentals</a>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filter-search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="search-input" placeholder="Search by brand or model..." oninput="filterCars()">
+  </div>
+  <select class="filter-select" id="filter-brand" onchange="filterCars()">
+    <option value="">Brands</option>
+  </select>
+  <select class="filter-select" id="filter-fuel" onchange="filterCars()">
+    <option value="">Fuel Type</option>
+    <option value="Petrol">Petrol</option>
+    <option value="Diesel">Diesel</option>
+    <option value="Electric">Electric</option>
+    <option value="Hybrid">Hybrid</option>
+  </select>
+  <select class="filter-select" id="filter-price" onchange="filterCars()">
+    <option value="">Prices</option>
+    <option value="0-20000">Under $20,000</option>
+    <option value="20000-35000">$20,000 - $35,000</option>
+    <option value="35000-60000">$35,000 - $60,000</option>
+    <option value="60000-999999">Above $60,000</option>
+  </select>
+  <select class="filter-select" id="filter-sort" onchange="filterCars()">
+    <option value="">Sort By</option>
+    <option value="price-low">Price: Low to High</option>
+    <option value="price-high">Price: High to Low</option>
+    <option value="year-new">Newest First</option>
+    <option value="year-old">Oldest First</option>
+  </select>
+  <button class="filter-reset" onclick="resetFilters()">
+    <i class="fa-solid fa-rotate-left"></i> Reset
+  </button>
+</div>
+
+<!-- INVENTORY GRID -->
+<section class="inventory-section">
+  <div class="inventory-grid" id="inventory-grid">
+    <div class="loading-cars">
+      <i class="fa-solid fa-spinner"></i>
+      <p>Loading vehicles...</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Royal <span>Motors</span></div>
+  <div class="footer-text">© 2026 Royal Motors Sierra Leone. All rights reserved.</div>
+  <div class="footer-location">Freetown, Sierra Leone</div>
+</footer>
+
+
+<!-- CAR DETAIL MODAL -->
+<div id="carModal" class="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeCarModal()">✕</button>
+    <div class="modal-gallery">
+      <button class="gallery-arrow gallery-prev" onclick="changePhoto(-1)">&#8249;</button>
+      <img id="modal-main-img" src="" alt="Car" class="modal-main-photo">
+      <button class="gallery-arrow gallery-next" onclick="changePhoto(1)">&#8250;</button>
+    </div>
+    <div class="modal-thumbnails" id="modal-thumbnails"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <p id="modal-make" class="modal-make"></p>
+          <h2 id="modal-model" class="modal-model"></h2>
+        </div>
+        <div class="modal-price-box">
+          <p id="modal-price" class="modal-price"></p>
+          <p class="modal-finance">Finance available</p>
+        </div>
+      </div>
+      <div class="modal-specs-grid">
+        <div class="modal-spec-item"><i class="fa-solid fa-calendar"></i><p id="modal-year"></p><span>Year</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-gauge"></i><p id="modal-mileage"></p><span>Mileage</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-gas-pump"></i><p id="modal-fuel"></p><span>Fuel</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-palette"></i><p id="modal-color"></p><span>Color</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-car-side"></i><p id="modal-engine"></p><span>Engine</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-user-group"></i><p id="modal-seats"></p><span>Seats</span></div>
+      </div>
+      <p id="modal-description" class="modal-description"></p>
+      <button class="modal-whatsapp" id="modal-wa-btn">
+        <i class="fa-brands fa-whatsapp"></i> Enquire on WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- JAVASCRIPT -->
+<script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMBJiuzYC9VsddpzFWJkGKy-4b13mLaFlhVD05W0DXMopmKb9BGlGLQMaYoyo3OaCY/exec';
+  let allCars = [];
+  let currentPhotos = [];
+  let currentPhotoIndex = 0;
+
+  /* --- LOAD CARS FROM GOOGLE SHEET --- */
+  async function loadInventory() {
+    try {
+      const res = await fetch(SCRIPT_URL);
+      const cars = await res.json();
+      allCars = cars.filter(c => c.Make);
+      populateBrandFilter();
+      renderCars(allCars);
+      document.getElementById('car-count').textContent = `Showing ${allCars.length} vehicle${allCars.length !== 1 ? 's' : ''}`;
+    } catch(err) {
+      document.getElementById('inventory-grid').innerHTML = `
+        <div class="no-results">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <p>Could not load inventory. Please check your connection.</p>
+        </div>`;
+    }
+  }
+
+  /* --- POPULATE BRAND FILTER DYNAMICALLY --- */
+  function populateBrandFilter() {
+    const brands = [...new Set(allCars.map(c => c.Make))].sort();
+    const select = document.getElementById('filter-brand');
+    brands.forEach(brand => {
+      const opt = document.createElement('option');
+      opt.value = brand;
+      opt.textContent = brand;
+      select.appendChild(opt);
+    });
+  }
+
+  /* --- RENDER CAR CARDS --- */
+function renderCars(cars) {
+  const grid = document.getElementById('inventory-grid');
+  if (cars.length === 0) {
+    grid.innerHTML = `
+      <div class="no-results">
+        <i class="fa-solid fa-car"></i>
+        <p>No vehicles yet. Check back soon</p>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = '';
+  cars.forEach((car, index) => {
+    const photos = car.Photos ? car.Photos.split(',').map(p => p.trim()).filter(p => p) : [];
+    const mainPhoto = photos[0] || '';
+    const priceNum = parseFloat((car.Price || '').replace(/[^0-9.]/g, '')) || 0;
+
+    const card = document.createElement('div');
+    card.className = 'car-card';
+    card.dataset.make  = car.Make  || '';
+    card.dataset.fuel  = car.Fuel  || '';
+    card.dataset.price = priceNum;
+    card.dataset.year  = car.Year  || '';
+
+    card.innerHTML = `
+      <div class="car-img">
+        <div class="car-tag">${car.Badge || 'In Stock'}</div>
+        ${mainPhoto ? `<img src="${mainPhoto}" alt="${car.Make} ${car.Model}" class="car-photo">` : ''}
+      </div>
+      <div class="car-info">
+        <div class="car-make">${car.Make || ''}</div>
+        <div class="car-model">${car.Model || ''}</div>
+        <div class="car-specs">
+          <div class="car-spec"><strong>${car.Year || '—'}</strong> Year</div>
+          <div class="car-spec"><strong>${car.Mileage || '—'}</strong></div>
+          <div class="car-spec"><strong>${car.Fuel || '—'}</strong></div>
+        </div>
+        <div class="car-bottom">
+          <div class="car-price">${car.Price || '—'}</div>
+          <button class="car-btn" id="enquire-${index}">Enquire</button>
+        </div>
+      </div>`;
+
+    card.addEventListener('click', function() {
+      openCarModal(
+        car.Make || '',
+        car.Model || '',
+        car.Price || '',
+        photos,
+        car.Year || '',
+        car.Mileage || '',
+        car.Fuel || '',
+        car.Color || '',
+        car.Engine || '',
+        car.Seats || '',
+        car.Description || ''
+      );
+    });
+
+    document.getElementById(`enquire-${index}`) && card.querySelector(`#enquire-${index}`).addEventListener('click', function(e) {
+      e.stopPropagation();
+      enquireCar(`${car.Make} ${car.Model}`, car.Price);
+    });
+
+    grid.appendChild(card);
+
+    card.querySelector(`#enquire-${index}`).addEventListener('click', function(e) {
+      e.stopPropagation();
+      enquireCar(`${car.Make} ${car.Model}`, car.Price);
+    });
+  });
+}
+  function escapeQ(str) {
+    return (str || '').toString().replace(/'/g, "\\'");
+  }
+
+  /* --- FILTER CARS --- */
+  function filterCars() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const brand  = document.getElementById('filter-brand').value;
+    const fuel   = document.getElementById('filter-fuel').value;
+    const price  = document.getElementById('filter-price').value;
+    const sort   = document.getElementById('filter-sort').value;
+
+    let filtered = allCars.filter(car => {
+      const text = `${car.Make} ${car.Model} ${car.Fuel} ${car.Year}`.toLowerCase();
+      if (search && !text.includes(search)) return false;
+      if (brand && car.Make !== brand) return false;
+      if (fuel && car.Fuel !== fuel) return false;
+      if (price) {
+        const [min, max] = price.split('-').map(Number);
+        const p = parseFloat((car.Price || '').replace(/[^0-9.]/g, '')) || 0;
+        if (p < min || p > max) return false;
+      }
+      return true;
+    });
+
+    if (sort) {
+      filtered.sort((a, b) => {
+        const pa = parseFloat((a.Price || '').replace(/[^0-9.]/g, '')) || 0;
+        const pb = parseFloat((b.Price || '').replace(/[^0-9.]/g, '')) || 0;
+        const ya = parseInt(a.Year) || 0;
+        const yb = parseInt(b.Year) || 0;
+        if (sort === 'price-low')  return pa - pb;
+        if (sort === 'price-high') return pb - pa;
+        if (sort === 'year-new')   return yb - ya;
+        if (sort === 'year-old')   return ya - yb;
+        return 0;
+      });
+    }
+
+    renderCars(filtered);
+    document.getElementById('car-count').textContent = `Showing ${filtered.length} vehicle${filtered.length !== 1 ? 's' : ''}`;
+  }
+
+  function resetFilters() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('filter-brand').value = '';
+    document.getElementById('filter-fuel').value  = '';
+    document.getElementById('filter-price').value = '';
+    document.getElementById('filter-sort').value  = '';
+    renderCars(allCars);
+    document.getElementById('car-count').textContent = `Showing ${allCars.length} vehicle${allCars.length !== 1 ? 's' : ''}`;
+  }
+
+  /* --- MODAL --- */
+  function openCarModal(make, model, price, photos, year, mileage, fuel, color, engine, seats, description) {
+    document.getElementById('modal-make').textContent        = make;
+    document.getElementById('modal-model').textContent       = model;
+    document.getElementById('modal-price').textContent       = price;
+    document.getElementById('modal-year').textContent        = year;
+    document.getElementById('modal-mileage').textContent     = mileage;
+    document.getElementById('modal-fuel').textContent        = fuel;
+    document.getElementById('modal-color').textContent       = color;
+    document.getElementById('modal-engine').textContent      = engine;
+    document.getElementById('modal-seats').textContent       = seats;
+    document.getElementById('modal-description').textContent = description;
+    currentPhotos = Array.isArray(photos) ? photos.filter(p => p) : [photos];
+    currentPhotoIndex = 0;
+    updateMainPhoto();
+    const thumbs = document.getElementById('modal-thumbnails');
+    thumbs.innerHTML = '';
+    if (currentPhotos.length > 1) {
+      currentPhotos.forEach((src, i) => {
+        const img = document.createElement('img');
+        img.src = src;
+        if (i === 0) img.classList.add('active');
+        img.onclick = () => { currentPhotoIndex = i; updateMainPhoto(); };
+        thumbs.appendChild(img);
+      });
+    }
+    document.getElementById('modal-wa-btn').onclick = function() {
+      const text = `Hello Royal Motors! %0A%0AI am interested in the *${make} ${model}* priced at *${price}*%0A%0APlease send me more information!`;
+      window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+    };
+    document.getElementById('carModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function updateMainPhoto() {
+    document.getElementById('modal-main-img').src = currentPhotos[currentPhotoIndex] || '';
+    document.querySelectorAll('.modal-thumbnails img').forEach((img, i) => {
+      img.classList.toggle('active', i === currentPhotoIndex);
+    });
+  }
+
+  function changePhoto(dir) {
+    currentPhotoIndex = (currentPhotoIndex + dir + currentPhotos.length) % currentPhotos.length;
+    updateMainPhoto();
+  }
+
+  function closeCarModal() {
+    document.getElementById('carModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+
+  function closeModal(e) {
+    if (e.target === document.getElementById('carModal')) closeCarModal();
+  }
+
+  function enquireCar(name, price) {
+    const text = `Hello Royal Motors! %0A%0AI am interested in the *${name}* priced at *${price}*%0A%0APlease send me more information!`;
+    window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+  }
+
+  function toggleMenu() {
+    document.querySelector('.nav-links').classList.toggle('open');
+  }
+
+  /* --- INIT --- */
+  loadInventory();
+</script>
+
+</body>
+</html>
