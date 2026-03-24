@@ -30,6 +30,44 @@ function normalizeRentalRow_(row, headers) {
   return obj;
 }
 
+/** If headers are wrong/missing, still map Photo(s) to `Photo` / `Photos` keys */
+function normalizeCarRow_(row, headers) {
+  const obj = {};
+  headers.forEach(function(h, i) {
+    if (h !== '' && h != null) obj[String(h).trim()] = row[i];
+  });
+
+  const headerStrs = headers.map(h => (h == null ? '' : String(h)).trim());
+  const lower = headerStrs.map(s => s.toLowerCase());
+
+  let photosIdx = -1;
+  let photoIdx = -1;
+  for (let i = 0; i < lower.length; i++) {
+    if (!lower[i]) continue;
+    if (lower[i].includes('photos')) photosIdx = i;
+    else if (lower[i].includes('photo')) photoIdx = i;
+  }
+
+  const photosVal = photosIdx >= 0 ? row[photosIdx] : '';
+  const photoVal = photoIdx >= 0 ? row[photoIdx] : '';
+
+  // Prefer the plural key used by the frontend
+  if ((obj.Photos == null || String(obj.Photos).trim() === '') && photosIdx >= 0 && photosVal) obj.Photos = photosVal;
+  if ((obj.Photo == null || String(obj.Photo).trim() === '') && photoIdx >= 0 && photoVal) obj.Photo = photoVal;
+
+  // Also handle lowercase variants like `photos` / `photo`
+  if ((obj.Photos == null || String(obj.Photos).trim() === '') && obj.photos != null && String(obj.photos).trim() !== '') obj.Photos = obj.photos;
+  if ((obj.Photo == null || String(obj.Photo).trim() === '') && obj.photo != null && String(obj.photo).trim() !== '') obj.Photo = obj.photo;
+
+  // Final fallback: if last column looks like a URL(s), treat it as Photos
+  if ((obj.Photos == null || String(obj.Photos).trim() === '') && headers.length) {
+    const lastVal = row[headers.length - 1];
+    if (typeof lastVal === 'string' && lastVal.toLowerCase().includes('http')) obj.Photos = lastVal;
+  }
+
+  return obj;
+}
+
 function doGet(e) {
   try {
     const type = e && e.parameter && e.parameter.type;
@@ -74,11 +112,7 @@ function doGet(e) {
     const headers = data[0];
     const cars = data.slice(1)
       .filter(row => row[1])
-      .map(row => {
-        const obj = {};
-        headers.forEach((h, i) => obj[h] = row[i]);
-        return obj;
-      });
+      .map(row => normalizeCarRow_(row, headers));
     return response(cars);
 
   } catch(err) {
