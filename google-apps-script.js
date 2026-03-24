@@ -27,6 +27,9 @@ function normalizeRentalRow_(row, headers) {
   if (row.length >= 9 && (obj.Photos === undefined || obj.Photos === '') && row[8] !== '') {
     obj.Photos = row[8];
   }
+  if (row.length >= 10 && (obj.Badge === undefined || obj.Badge === '') && row[9] !== '') {
+    obj.Badge = row[9];
+  }
   return obj;
 }
 
@@ -143,6 +146,7 @@ function doPost(e) {
         targetSheet.getRange(row, 7).setValue(firstPhoto);
         targetSheet.getRange(row, 8).setValue(data.description || '');
         targetSheet.getRange(row, 9).setValue(photosStr || firstPhoto);
+        targetSheet.getRange(row, 10).setValue(data.badge || '');
       } else {
         targetSheet.getRange(row, 2).setValue(data.make);
         targetSheet.getRange(row, 3).setValue(data.model);
@@ -165,12 +169,13 @@ function doPost(e) {
       let sheet = getRentalsSheet_(ss);
       if (!sheet) {
         sheet = ss.insertSheet('Rentals');
-        sheet.appendRow(['Make','Model','Price','Seats','Fuel','Trans','Photo','Description','Photos']);
+        sheet.appendRow(['Make','Model','Price','Seats','Fuel','Trans','Photo','Description','Photos','Badge']);
       }
       sheet.appendRow([
         data.make, data.model, data.price,
         data.seats, data.fuel, data.trans,
-        data.photo, data.description, data.photos || data.photo
+        data.photo, data.description, data.photos || data.photo,
+        data.badge || ''
       ]);
       return response({ status: 'rental added' });
     }

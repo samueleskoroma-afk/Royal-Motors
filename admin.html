@@ -403,6 +403,7 @@
             <div class="form-group">
               <label>Badge Label</label>
               <select id="car-badge">
+                <option value="">None</option>
                 <option value="New Arrival">New Arrival</option>
                 <option value="Best Seller">Best Seller</option>
                 <option value="Finance Deal">Finance Deal</option>
@@ -561,6 +562,19 @@
                 <option value="Manual">Manual</option>
               </select>
             </div>
+            <div class="form-group full">
+              <label>Badge (optional)</label>
+              <select id="rental-badge">
+                <option value="">None</option>
+                <option value="New Arrival">New Arrival</option>
+                <option value="Best Seller">Best Seller</option>
+                <option value="Finance Deal">Finance Deal</option>
+                <option value="Hot Deal">Hot Deal</option>
+                <option value="Luxury">Luxury</option>
+                <option value="Great Value">Great Value</option>
+                <option value="Available">Available</option>
+              </select>
+            </div>
           </div>
           <div class="step-nav">
             <button class="step-back-btn" onclick="goToRentalStep(1)">&larr; Back</button>
@@ -673,6 +687,7 @@
       <div class="form-group">
         <label>Badge</label>
         <select id="edit-badge">
+          <option value="">None</option>
           <option value="New Arrival">New Arrival</option>
           <option value="Best Seller">Best Seller</option>
           <option value="Finance Deal">Finance Deal</option>
@@ -925,6 +940,7 @@
     const seats       = document.getElementById('rental-seats').value.trim();
     const fuel        = document.getElementById('rental-fuel').value;
     const trans       = document.getElementById('rental-trans').value;
+    const badge       = document.getElementById('rental-badge').value;
     const description = document.getElementById('rental-description').value.trim();
 
     if (!make || !model || !price) {
@@ -946,7 +962,7 @@
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'rental', make, model, price, seats, fuel, trans, photo: rentalPhotoUrl, photos: allRentalPhotos, description })
+        body: JSON.stringify({ type: 'rental', make, model, price, seats, fuel, trans, photo: rentalPhotoUrl, photos: allRentalPhotos, description, badge })
       });
       showPopup('Rental car added successfully!', 'success');
       clearRentalForm();
@@ -984,7 +1000,7 @@
             <td><strong>${car.Model || '—'}</strong></td>
             <td style="color:var(--red);font-weight:600;">${car.Price || '—'}</td>
             <td>
-              <button class="edit-btn" onclick="openEditModal(${i + 2}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photosForEdit)}')">
+              <button class="edit-btn" onclick="openEditModal(${i + 2}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photosForEdit)}')">
                 <i class="fa-solid fa-pen"></i> Edit
               </button>
               <button class="rent-btn" onclick="openAddToRentalModal('${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(photosForEdit)}')">
@@ -1035,7 +1051,7 @@
             <td><strong>${car.Model || '—'}</strong></td>
             <td style="color:var(--red);font-weight:600;">${car.Price || '—'}</td>
             <td>
-              <button class="edit-btn" onclick="openEditModal(${i + 2}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','Available','${escapeQ(car.Description)}','${escapeQ(rentalPhotosForEdit)}')">
+              <button class="edit-btn" onclick="openEditModal(${i + 2}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(rentalPhotosForEdit)}')">
                 <i class="fa-solid fa-pen"></i> Edit
               </button>
               <button class="delete-btn" onclick="deleteRental(${i + 2})">
@@ -1149,7 +1165,7 @@
   }
 
   /* --- EDIT MODAL --- */
-  function openEditModal(row, type, make, model, price, year, mileage, fuel, color, engine, seats, badge, description, existingPhotos) {
+  function openEditModal(row, type, make, model, price, year, mileage, fuel, color, engine, seats, trans, badge, description, existingPhotos) {
     editMainPhotoUrl = '';
     editExtraPhotoUrls = [];
     editExistingPhotos = existingPhotos || '';
@@ -1168,8 +1184,8 @@
     document.getElementById('edit-color').value = color || '';
     document.getElementById('edit-engine').value = engine || '';
     document.getElementById('edit-seats').value = seats || '';
-    document.getElementById('edit-trans').value = 'Auto';
-    document.getElementById('edit-badge').value = badge || 'New Arrival';
+    document.getElementById('edit-trans').value = trans || 'Auto';
+    document.getElementById('edit-badge').value = (badge !== undefined && badge !== null) ? badge : '';
     document.getElementById('edit-description').value = description || '';
     document.getElementById('editModal').classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -1276,6 +1292,7 @@ async function deleteCar(row) {
      'car-color','car-engine','car-seats','car-description']
     .forEach(id => document.getElementById(id).value = '');
     document.getElementById('car-fuel').value = '';
+    document.getElementById('car-badge').value = '';
     document.getElementById('main-preview').innerHTML = '';
     document.getElementById('extra-previews').innerHTML = '';
     mainPhotoUrl = '';
@@ -1288,6 +1305,7 @@ async function deleteCar(row) {
     .forEach(id => document.getElementById(id).value = '');
     document.getElementById('rental-preview').innerHTML = '';
     document.getElementById('rental-extra-previews').innerHTML = '';
+    document.getElementById('rental-badge').value = '';
     rentalPhotoUrl = '';
     extraPhotoUrls = [];
     goToRentalStep(1);

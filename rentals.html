@@ -30,7 +30,7 @@
     .rental-info { padding: 20px; }
     .rental-make { font-size: 11px; color: var(--gray); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
     .rental-model { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
-    .rental-specs { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+    .rental-specs { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
     .rental-spec { font-size: 12px; color: var(--gray); }
     .rental-spec strong { color: var(--black); font-weight: 500; }
     .rental-bottom { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--light-gray); padding-top: 14px; }
@@ -238,6 +238,14 @@
   let currentPhotos = [];
   let currentPhotoIndex = 0;
 
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   /* Build full URL list: Photos column (comma-separated) + fallback to Photo; dedupe */
   function rentalPhotoList(car) {
     const raw = (car.Photos != null && String(car.Photos).trim() !== '')
@@ -276,24 +284,25 @@
       rentals.forEach(car => {
         const photos = rentalPhotoList(car);
         const photo = photos[0] || '';
+        const badgeText = (car.Badge != null && String(car.Badge).trim() !== '') ? escapeHtml(String(car.Badge).trim()) : '';
         const card  = document.createElement('div');
         card.className = 'rental-card';
         card.innerHTML = `
           <div class="rental-img">
-            <div class="rental-badge">Available</div>
-            ${photo ? `<img src="${photo}" alt="${car.Make} ${car.Model}" onerror="this.style.display='none'">` : ''}
+            ${badgeText ? `<div class="rental-badge">${badgeText}</div>` : ''}
+            ${photo ? `<img src="${photo}" alt="${escapeHtml(`${car.Make || ''} ${car.Model || ''}`)}" onerror="this.style.display='none'">` : ''}
           </div>
           <div class="rental-info">
-            <div class="rental-make">${car.Make}</div>
-            <div class="rental-model">${car.Model}</div>
+            <div class="rental-make">${escapeHtml(car.Make || '')}</div>
+            <div class="rental-model">${escapeHtml(car.Model || '')}</div>
             <div class="rental-specs">
-              <div class="rental-spec"><strong>${car.Seats}</strong> Seats</div>
-              <div class="rental-spec"><strong>${car.Trans}</strong></div>
-              <div class="rental-spec"><strong>${car.Fuel}</strong></div>
+              <div class="rental-spec"><strong>${escapeHtml(car.Seats || '—')}</strong> Seats</div>
+              <div class="rental-spec"><strong>${escapeHtml(car.Fuel || '—')}</strong></div>
+              <div class="rental-spec"><strong>${escapeHtml(car.Trans || '—')}</strong> Trans</div>
             </div>
             <div class="rental-bottom">
               <div>
-                <div class="rental-price">${car.Price}</div>
+                <div class="rental-price">${escapeHtml(car.Price || '—')}</div>
                 <div class="rental-per">Per Day</div>
               </div>
               <button class="rental-btn book-btn">Book Now</button>

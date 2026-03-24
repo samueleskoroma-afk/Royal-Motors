@@ -236,6 +236,14 @@
   let currentPhotos = [];
   let currentPhotoIndex = 0;
 
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   /* --- LOAD FEATURED CARS FROM GOOGLE SHEET --- */
   async function loadFeatured() {
     try {
@@ -254,24 +262,26 @@
         const photosRaw = ((car.Photos != null && car.Photos !== '') ? car.Photos : (car.Photo || '')).toString().trim();
         const photos    = photosRaw ? photosRaw.split(',').map(p => p.trim()).filter(p => p) : [];
         const mainPhoto = photos[0] || '';
+        const badgeText = (car.Badge != null && String(car.Badge).trim() !== '') ? escapeHtml(String(car.Badge).trim()) : '';
 
         const card = document.createElement('div');
         card.className = 'car-card';
         card.innerHTML = `
           <div class="car-img">
-            <div class="car-tag">${car.Badge || 'In Stock'}</div>
-            ${mainPhoto ? `<img src="${mainPhoto}" alt="${car.Make} ${car.Model}" class="car-photo">` : ''}
+            ${badgeText ? `<div class="car-tag">${badgeText}</div>` : ''}
+            ${mainPhoto ? `<img src="${mainPhoto}" alt="${escapeHtml(`${car.Make || ''} ${car.Model || ''}`)}" class="car-photo">` : ''}
           </div>
           <div class="car-info">
-            <div class="car-make">${car.Make || ''}</div>
-            <div class="car-model">${car.Model || ''}</div>
+            <div class="car-make">${escapeHtml(car.Make || '')}</div>
+            <div class="car-model">${escapeHtml(car.Model || '')}</div>
             <div class="car-specs">
-              <div class="car-spec"><strong>${car.Year || '—'}</strong> Year</div>
-              <div class="car-spec"><strong>${car.Mileage || '—'}</strong></div>
-              <div class="car-spec"><strong>${car.Fuel || '—'}</strong></div>
+              <div class="car-spec"><strong>${escapeHtml(car.Year || '—')}</strong> Year</div>
+              <div class="car-spec"><strong>${escapeHtml(car.Mileage || '—')}</strong></div>
+              <div class="car-spec"><strong>${escapeHtml(car.Fuel || '—')}</strong></div>
+              <div class="car-spec"><strong>${escapeHtml(car.Trans || '—')}</strong> Trans</div>
             </div>
             <div class="car-bottom">
-              <div class="car-price">${car.Price || '—'}</div>
+              <div class="car-price">${escapeHtml(car.Price || '—')}</div>
               <button class="car-btn enquire-btn">Enquire</button>
             </div>
           </div>`;

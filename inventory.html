@@ -272,8 +272,9 @@ function renderCars(cars) {
     const y  = escapeHtml(car.Year || '—');
     const mi = escapeHtml(car.Mileage || '—');
     const fu = escapeHtml(car.Fuel || '—');
+    const tr = escapeHtml(car.Trans || '—');
     const pr = escapeHtml(car.Price || '—');
-    const bg = escapeHtml(car.Badge || 'In Stock');
+    const badgeText = (car.Badge != null && String(car.Badge).trim() !== '') ? escapeHtml(String(car.Badge).trim()) : '';
     const imgAlt = escapeHtml(`${car.Make || ''} ${car.Model || ''}`);
     const safeSrc = escapeHtml(mainPhoto);
 
@@ -286,7 +287,7 @@ function renderCars(cars) {
 
     card.innerHTML = `
       <div class="car-img">
-        <div class="car-tag">${bg}</div>
+        ${badgeText ? `<div class="car-tag">${badgeText}</div>` : ''}
         ${mainPhoto ? `<img src="${safeSrc}" alt="${imgAlt}" class="car-photo">` : ''}
       </div>
       <div class="car-info">
@@ -296,6 +297,7 @@ function renderCars(cars) {
           <div class="car-spec"><strong>${y}</strong> Year</div>
           <div class="car-spec"><strong>${mi}</strong></div>
           <div class="car-spec"><strong>${fu}</strong></div>
+          <div class="car-spec"><strong>${tr}</strong> Trans</div>
         </div>
         <div class="car-bottom">
           <div class="car-price">${pr}</div>

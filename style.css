@@ -81,7 +81,7 @@ nav {
 .car-info { padding: 20px; }
 .car-make { font-size: 11px; color: var(--gray); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
 .car-model { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
-.car-specs { display: flex; gap: 16px; margin-bottom: 16px; }
+.car-specs { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
 .car-spec { font-size: 12px; color: var(--gray); }
 .car-spec strong { color: var(--black); font-weight: 500; }
 .car-bottom { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--light-gray); padding-top: 14px; }
