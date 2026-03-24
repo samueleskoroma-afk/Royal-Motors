@@ -212,7 +212,8 @@
   async function loadInventory() {
     try {
       const res = await fetch(SCRIPT_URL);
-      const cars = await res.json();
+      const data = await res.json();
+      const cars = Array.isArray(data) ? data : [];
       allCars = cars.filter(c => c.Make);
       populateBrandFilter();
       renderCars(allCars);
@@ -221,15 +222,24 @@
       document.getElementById('inventory-grid').innerHTML = `
         <div class="no-results">
           <i class="fa-solid fa-triangle-exclamation"></i>
-          <p>Could not load inventory. Please check your connection.</p>
+          <p>Could not load inventory. Please refresh or try again. If this keeps happening, open the browser console (F12) for details.</p>
         </div>`;
     }
+  }
+
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   /* --- POPULATE BRAND FILTER DYNAMICALLY --- */
   function populateBrandFilter() {
     const brands = [...new Set(allCars.map(c => c.Make))].sort();
     const select = document.getElementById('filter-brand');
+    while (select.children.length > 1) select.removeChild(select.lastChild);
     brands.forEach(brand => {
       const opt = document.createElement('option');
       opt.value = brand;
@@ -251,11 +261,21 @@ function renderCars(cars) {
   }
 
   grid.innerHTML = '';
-  cars.forEach((car, index) => {
+  cars.forEach((car) => {
     const photosRaw = ((car.Photos != null && car.Photos !== '') ? car.Photos : (car.Photo || '')).toString().trim();
     const photos = photosRaw ? photosRaw.split(',').map(p => p.trim()).filter(p => p) : [];
     const mainPhoto = photos[0] || '';
     const priceNum = parseFloat((car.Price || '').replace(/[^0-9.]/g, '')) || 0;
+
+    const mk = escapeHtml(car.Make || '');
+    const md = escapeHtml(car.Model || '');
+    const y  = escapeHtml(car.Year || '—');
+    const mi = escapeHtml(car.Mileage || '—');
+    const fu = escapeHtml(car.Fuel || '—');
+    const pr = escapeHtml(car.Price || '—');
+    const bg = escapeHtml(car.Badge || 'In Stock');
+    const imgAlt = escapeHtml(`${car.Make || ''} ${car.Model || ''}`);
+    const safeSrc = escapeHtml(mainPhoto);
 
     const card = document.createElement('div');
     card.className = 'car-card';
@@ -266,20 +286,20 @@ function renderCars(cars) {
 
     card.innerHTML = `
       <div class="car-img">
-        <div class="car-tag">${car.Badge || 'In Stock'}</div>
-        ${mainPhoto ? `<img src="${mainPhoto}" alt="${car.Make} ${car.Model}" class="car-photo">` : ''}
+        <div class="car-tag">${bg}</div>
+        ${mainPhoto ? `<img src="${safeSrc}" alt="${imgAlt}" class="car-photo">` : ''}
       </div>
       <div class="car-info">
-        <div class="car-make">${car.Make || ''}</div>
-        <div class="car-model">${car.Model || ''}</div>
+        <div class="car-make">${mk}</div>
+        <div class="car-model">${md}</div>
         <div class="car-specs">
-          <div class="car-spec"><strong>${car.Year || '—'}</strong> Year</div>
-          <div class="car-spec"><strong>${car.Mileage || '—'}</strong></div>
-          <div class="car-spec"><strong>${car.Fuel || '—'}</strong></div>
+          <div class="car-spec"><strong>${y}</strong> Year</div>
+          <div class="car-spec"><strong>${mi}</strong></div>
+          <div class="car-spec"><strong>${fu}</strong></div>
         </div>
         <div class="car-bottom">
-          <div class="car-price">${car.Price || '—'}</div>
-          <button class="car-btn" id="enquire-${index}">Enquire</button>
+          <div class="car-price">${pr}</div>
+          <button type="button" class="car-btn enquire-btn">Enquire</button>
         </div>
       </div>`;
 
@@ -299,17 +319,15 @@ function renderCars(cars) {
       );
     });
 
-    document.getElementById(`enquire-${index}`) && card.querySelector(`#enquire-${index}`).addEventListener('click', function(e) {
-      e.stopPropagation();
-      enquireCar(`${car.Make} ${car.Model}`, car.Price);
-    });
+    const enquireBtn = card.querySelector('.enquire-btn');
+    if (enquireBtn) {
+      enquireBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        enquireCar(`${car.Make} ${car.Model}`, car.Price);
+      });
+    }
 
     grid.appendChild(card);
-
-    card.querySelector(`#enquire-${index}`).addEventListener('click', function(e) {
-      e.stopPropagation();
-      enquireCar(`${car.Make} ${car.Model}`, car.Price);
-    });
   });
 }
   function escapeQ(str) {
