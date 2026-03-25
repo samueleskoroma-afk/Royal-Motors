@@ -157,6 +157,11 @@
     .delete-btn:hover { background: var(--red); color: var(--white); }
     .more-info-btn { background: var(--off-white); color: var(--black); border: 1px solid var(--light-gray); padding: 8px 14px; font-family: var(--font-body); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; cursor: pointer; transition: all .2s; white-space: nowrap; }
     .more-info-btn:hover { border-color: var(--red); color: var(--red); }
+    .manage-cell-stack { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+    .manage-cell-stack .more-info-btn,
+    .manage-cell-stack .rent-btn,
+    .manage-cell-stack .edit-btn,
+    .manage-cell-stack .delete-btn { width: 100%; margin-right: 0 !important; box-sizing: border-box; text-align: center; }
     .admin-car-detail-inner { background: var(--off-white); padding: 20px 24px; border-bottom: 1px solid var(--light-gray); }
     .admin-car-detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 14px 20px; font-size: 13px; }
     .admin-car-detail-label { color: var(--gray); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; }
@@ -271,32 +276,21 @@
       .cars-table th:nth-child(1),
       .cars-table tbody tr:not(.car-detail-row) td:nth-child(1) { width: 48px; padding-left: 6px; padding-right: 4px; }
       .cars-table th:nth-child(3),
-      .cars-table tbody tr:not(.car-detail-row) td:nth-child(3) { width: 88px; }
+      .cars-table tbody tr:not(.car-detail-row) td:nth-child(3) { width: 118px; }
       .cars-table th:nth-child(4),
-      .cars-table tbody tr:not(.car-detail-row) td:nth-child(4) { width: 112px; }
+      .cars-table tbody tr:not(.car-detail-row) td:nth-child(4) { width: 100px; }
       .cars-table tbody tr:not(.car-detail-row) td:nth-child(2) { min-width: 0; }
       .cars-table img { width: 44px; height: 34px; object-fit: cover; display: block; }
-      .more-info-btn {
-        width: 100%;
+      .manage-cell-stack { gap: 5px; }
+      .manage-cell-stack .more-info-btn,
+      .manage-cell-stack .rent-btn,
+      .manage-cell-stack .edit-btn,
+      .manage-cell-stack .delete-btn {
         padding: 8px 6px;
         font-size: 10px;
         white-space: normal;
         line-height: 1.2;
-        text-align: center;
       }
-      .cars-table tbody tr:not(.car-detail-row) td:last-child .edit-btn,
-      .cars-table tbody tr:not(.car-detail-row) td:last-child .rent-btn,
-      .cars-table tbody tr:not(.car-detail-row) td:last-child .delete-btn {
-        display: block;
-        width: 100%;
-        margin-right: 0 !important;
-        margin-bottom: 5px;
-        padding: 8px 6px;
-        font-size: 10px;
-        text-align: center;
-        box-sizing: border-box;
-      }
-      .cars-table tbody tr:not(.car-detail-row) td:last-child > button:last-child { margin-bottom: 0; }
       .car-detail-row td { padding: 0 !important; border-bottom: none; }
       .admin-car-detail-inner { padding: 14px 12px; }
       .admin-car-detail-grid {
@@ -1112,18 +1106,22 @@
               <strong>${escapeHtml(car.Model || '—')}</strong>
             </td>
             <td>
-              <button type="button" class="more-info-btn" onclick="toggleCarDetail('${rowKey}', this)">More info</button>
+              <div class="manage-cell-stack">
+                <button type="button" class="more-info-btn" onclick="toggleCarDetail('${rowKey}', this)">More info</button>
+                <button type="button" class="rent-btn" onclick="openAddToRentalModal('${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(photosForEdit)}')">
+                  <i class="fa-solid fa-key"></i> Add to Rentals
+                </button>
+              </div>
             </td>
             <td>
-              <button class="edit-btn" onclick="openEditModal(${i + 2}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photosForEdit)}')">
-                <i class="fa-solid fa-pen"></i> Edit
-              </button>
-              <button class="rent-btn" onclick="openAddToRentalModal('${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(photosForEdit)}')">
-                <i class="fa-solid fa-key"></i> Add to Rentals
-              </button>
-              <button class="delete-btn" onclick="deleteCar(${i + 2})">
-                <i class="fa-solid fa-trash"></i> Delete
-              </button>
+              <div class="manage-cell-stack">
+                <button type="button" class="edit-btn" onclick="openEditModal(${i + 2}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photosForEdit)}')">
+                  <i class="fa-solid fa-pen"></i> Edit
+                </button>
+                <button type="button" class="delete-btn" onclick="deleteCar(${i + 2})">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </div>
             </td>
           </tr>
           <tr class="car-detail-row" id="car-detail-${rowKey}" style="display:none;">
@@ -1194,15 +1192,19 @@
               <strong>${escapeHtml(car.Model || '—')}</strong>
             </td>
             <td>
-              <button type="button" class="more-info-btn" onclick="toggleCarDetail('${rowKey}', this)">More info</button>
+              <div class="manage-cell-stack">
+                <button type="button" class="more-info-btn" onclick="toggleCarDetail('${rowKey}', this)">More info</button>
+              </div>
             </td>
             <td>
-              <button class="edit-btn" onclick="openEditModal(${i + 2}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(rentalPhotosForEdit)}')">
-                <i class="fa-solid fa-pen"></i> Edit
-              </button>
-              <button class="delete-btn" onclick="deleteRental(${i + 2})">
-                <i class="fa-solid fa-trash"></i> Delete
-              </button>
+              <div class="manage-cell-stack">
+                <button type="button" class="edit-btn" onclick="openEditModal(${i + 2}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(rentalPhotosForEdit)}')">
+                  <i class="fa-solid fa-pen"></i> Edit
+                </button>
+                <button type="button" class="delete-btn" onclick="deleteRental(${i + 2})">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </div>
             </td>
           </tr>
           <tr class="car-detail-row" id="car-detail-${rowKey}" style="display:none;">
