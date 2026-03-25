@@ -85,7 +85,7 @@ nav {
 .car-spec { font-size: 12px; color: var(--gray); }
 .car-spec strong { color: var(--black); font-weight: 500; }
 .car-bottom { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--light-gray); padding-top: 14px; }
-.car-price { font-family: var(--font-display); font-size: 26px; letter-spacing: 1px; }
+.car-price { font-family: var(--font-display); font-size: 26px; letter-spacing: 1px; color: var(--red); }
 .car-btn { background: var(--black); color: var(--white); border: none; padding: 8px 16px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: background .2s; }
 .car-btn:hover { background: var(--red); }
 

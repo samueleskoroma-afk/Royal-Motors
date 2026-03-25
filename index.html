@@ -244,6 +244,44 @@
       .replace(/"/g, '&quot;');
   }
 
+  function transmissionLabel(trans) {
+    const t = String(trans ?? '').trim();
+    if (!t) return '';
+    const lower = t.toLowerCase();
+    if (lower === 'auto' || lower === 'automatic') return 'Automatic';
+    if (lower === 'manual') return 'Manual';
+    return t;
+  }
+
+  function looksLikeHttp(str) {
+    return /^https?:\/\//i.test(String(str ?? '').trim());
+  }
+
+  function splitPhotoUrls(raw) {
+    return String(raw ?? '')
+      .split(/[,;\n\r]+/)
+      .map(function(p) { return p.trim(); })
+      .filter(function(p) { return p; });
+  }
+
+  function carTransmissionFromData(car) {
+    const candidates = [car.Trans, car.Transmission, car.transmission];
+    for (let i = 0; i < candidates.length; i++) {
+      const c = candidates[i];
+      if (c == null || String(c).trim() === '') continue;
+      const s = String(c).trim();
+      if (looksLikeHttp(s)) continue;
+      return transmissionLabel(s);
+    }
+    return '';
+  }
+
+  function carBadgeFromData(car) {
+    const b = car.Badge != null ? String(car.Badge).trim() : '';
+    if (!b || looksLikeHttp(b)) return '';
+    return b;
+  }
+
   /* --- LOAD FEATURED CARS FROM GOOGLE SHEET --- */
   async function loadFeatured() {
     try {
@@ -260,16 +298,17 @@
 
       featured.forEach(car => {
         const photosRaw = ((car.Photos != null && car.Photos !== '') ? car.Photos : (car.Photo || '')).toString().trim();
-        const photos    = photosRaw ? photosRaw.split(',').map(p => p.trim()).filter(p => p) : [];
+        const photos    = photosRaw ? splitPhotoUrls(photosRaw) : [];
         const mainPhoto = photos[0] || '';
-        const badgeText = (car.Badge != null && String(car.Badge).trim() !== '') ? escapeHtml(String(car.Badge).trim()) : '';
+        const badgeRaw  = carBadgeFromData(car);
+        const badgeText = badgeRaw ? escapeHtml(badgeRaw) : '';
 
         const card = document.createElement('div');
         card.className = 'car-card';
         card.innerHTML = `
           <div class="car-img">
             ${badgeText ? `<div class="car-tag">${badgeText}</div>` : ''}
-            ${mainPhoto ? `<img src="${mainPhoto}" alt="${escapeHtml(`${car.Make || ''} ${car.Model || ''}`)}" class="car-photo">` : ''}
+            ${mainPhoto ? `<img src="${escapeHtml(mainPhoto)}" alt="${escapeHtml(`${car.Make || ''} ${car.Model || ''}`)}" class="car-photo">` : ''}
           </div>
           <div class="car-info">
             <div class="car-make">${escapeHtml(car.Make || '')}</div>
@@ -278,7 +317,7 @@
               <div class="car-spec"><strong>${escapeHtml(car.Year || '—')}</strong> Year</div>
               <div class="car-spec"><strong>${escapeHtml(car.Mileage || '—')}</strong></div>
               <div class="car-spec"><strong>${escapeHtml(car.Fuel || '—')}</strong></div>
-              <div class="car-spec"><strong>${escapeHtml(car.Trans || '—')}</strong> Trans</div>
+              <div class="car-spec"><strong>${escapeHtml(carTransmissionFromData(car) || '—')}</strong></div>
             </div>
             <div class="car-bottom">
               <div class="car-price">${escapeHtml(car.Price || '—')}</div>

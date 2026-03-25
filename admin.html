@@ -155,6 +155,15 @@
     .badge-gray { background: var(--light-gray); color: var(--gray); }
     .delete-btn { background: transparent; color: var(--red); border: 1px solid var(--red); padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all .2s; }
     .delete-btn:hover { background: var(--red); color: var(--white); }
+    .more-info-btn { background: var(--off-white); color: var(--black); border: 1px solid var(--light-gray); padding: 8px 14px; font-family: var(--font-body); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; cursor: pointer; transition: all .2s; white-space: nowrap; }
+    .more-info-btn:hover { border-color: var(--red); color: var(--red); }
+    .admin-car-detail-inner { background: var(--off-white); padding: 20px 24px; border-bottom: 1px solid var(--light-gray); }
+    .admin-car-detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 14px 20px; font-size: 13px; }
+    .admin-car-detail-label { color: var(--gray); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; }
+    .admin-car-detail-value { font-weight: 600; margin-top: 4px; color: var(--black); word-break: break-word; }
+    .admin-car-detail-desc { grid-column: 1 / -1; margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--light-gray); font-size: 13px; line-height: 1.5; color: #333; white-space: pre-wrap; }
+    .admin-car-detail-photos { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .admin-car-detail-photos img { width: 72px; height: 52px; object-fit: cover; border: 2px solid var(--light-gray); }
     .loading { text-align: center; padding: 60px; color: var(--gray); font-size: 14px; }
     .loading i { font-size: 32px; color: var(--red); display: block; margin-bottom: 12px; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -180,6 +189,12 @@
       .admin-nav-right { gap: 8px; }
       .admin-nav-right a { font-size: 11px; }
       .logout-btn { padding: 5px 10px; font-size: 11px; }
+      .cars-table-wrap {
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+        border: 1px solid var(--light-gray);
+      }
+      #section-manage-cars .section-header .submit-btn { flex-shrink: 0; }
     }
 
     @media (max-width: 600px) {
@@ -218,20 +233,85 @@
       .upload-area span { font-size: 10px; }
       .photos-preview-grid { grid-template-columns: repeat(4, 1fr); gap: 5px; }
       .photo-preview-item img { height: 48px; }
-      .cars-table-wrap { overflow-x: auto; width: 100%; }
-      .cars-table { min-width: 420px; }
-      .cars-table th { padding: 7px 8px; font-size: 9px; }
-      .cars-table td { padding: 7px 8px; font-size: 11px; }
-      .cars-table img { width: 40px; height: 30px; }
-      .delete-btn { padding: 4px 7px; font-size: 10px; }
-      .edit-btn { padding: 4px 7px; font-size: 10px; }
-      .rent-btn { padding: 4px 7px; font-size: 10px; }
+      #section-manage-cars .section-header { flex-direction: column; align-items: stretch; }
+      #section-manage-cars .section-header h2 { width: 100%; }
+      #section-manage-cars .section-header .submit-btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 16px;
+      }
+      .manage-tabs { gap: 6px; margin-bottom: 12px; flex-wrap: nowrap; }
+      .manage-tab {
+        flex: 1;
+        min-width: 0;
+        padding: 10px 8px;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        text-align: center;
+      }
+      .cars-table-wrap {
+        overflow-x: auto;
+        width: 100%;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+        border-radius: 8px;
+        border: 1px solid var(--light-gray);
+      }
+      .cars-table {
+        min-width: 100%;
+        width: 100%;
+        table-layout: fixed;
+      }
+      .cars-table th { padding: 8px 6px; font-size: 8px; letter-spacing: 0.4px; line-height: 1.2; }
+      .cars-table td { padding: 8px 6px; font-size: 11px; vertical-align: top; word-break: break-word; }
+      .cars-table th:nth-child(1),
+      .cars-table tbody tr:not(.car-detail-row) td:nth-child(1) { width: 48px; padding-left: 6px; padding-right: 4px; }
+      .cars-table th:nth-child(3),
+      .cars-table tbody tr:not(.car-detail-row) td:nth-child(3) { width: 88px; }
+      .cars-table th:nth-child(4),
+      .cars-table tbody tr:not(.car-detail-row) td:nth-child(4) { width: 112px; }
+      .cars-table tbody tr:not(.car-detail-row) td:nth-child(2) { min-width: 0; }
+      .cars-table img { width: 44px; height: 34px; object-fit: cover; display: block; }
+      .more-info-btn {
+        width: 100%;
+        padding: 8px 6px;
+        font-size: 10px;
+        white-space: normal;
+        line-height: 1.2;
+        text-align: center;
+      }
+      .cars-table tbody tr:not(.car-detail-row) td:last-child .edit-btn,
+      .cars-table tbody tr:not(.car-detail-row) td:last-child .rent-btn,
+      .cars-table tbody tr:not(.car-detail-row) td:last-child .delete-btn {
+        display: block;
+        width: 100%;
+        margin-right: 0 !important;
+        margin-bottom: 5px;
+        padding: 8px 6px;
+        font-size: 10px;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      .cars-table tbody tr:not(.car-detail-row) td:last-child > button:last-child { margin-bottom: 0; }
+      .car-detail-row td { padding: 0 !important; border-bottom: none; }
+      .admin-car-detail-inner { padding: 14px 12px; }
+      .admin-car-detail-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px 10px;
+        font-size: 12px;
+      }
+      .admin-car-detail-desc { font-size: 12px; padding-top: 10px; }
+      .admin-car-detail-photos { gap: 6px; }
+      .admin-car-detail-photos img { width: 60px; height: 44px; }
+      .cars-table tr.car-detail-row:hover td { background: transparent; }
       .badge { font-size: 9px; padding: 2px 4px; }
       .mobile-nav-item { font-size: 9px; padding: 7px 4px; }
       .mobile-nav-item i { font-size: 15px; }
       .message { padding: 10px 12px; font-size: 12px; }
-      .manage-tabs { gap: 6px; margin-bottom: 12px; }
-      .manage-tab { padding: 7px 14px; font-size: 12px; }
     }
   </style>
 </head>
@@ -464,7 +544,7 @@
                 <tr>
                   <th>Photo</th>
                   <th>Model</th>
-                  <th>Price</th>
+                  <th>Details</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -485,7 +565,7 @@
                 <tr>
                   <th>Photo</th>
                   <th>Model</th>
-                  <th>Price/Day</th>
+                  <th>Details</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -792,6 +872,31 @@
 
   function escapeQ(str) { return (str || '').toString().replace(/'/g, "\\'"); }
 
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function adminTransLabel(t) {
+    const s = String(t ?? '').trim();
+    if (!s) return '—';
+    const low = s.toLowerCase();
+    if (low === 'auto' || low === 'automatic') return 'Automatic';
+    if (low === 'manual') return 'Manual';
+    return s;
+  }
+
+  function toggleCarDetail(rowKey, btn) {
+    const el = document.getElementById('car-detail-' + rowKey);
+    if (!el) return;
+    const show = el.style.display === 'none' || el.style.display === '';
+    el.style.display = show ? 'table-row' : 'none';
+    if (btn) btn.textContent = show ? 'Less info' : 'More info';
+  }
+
   /* --- NAVIGATION --- */
   function showSection(name, el) {
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
@@ -994,11 +1099,21 @@
           : ((car.Photo != null && car.Photo !== '') ? car.Photo : (car.photos || ''))).toString().trim();
         const photo = photosRaw ? photosRaw.split(',')[0].trim() : '';
         const photosForEdit = photosRaw || '';
+        const photoUrls = photosRaw ? photosRaw.split(/[,;\n\r]+/).map(function(p) { return p.trim(); }).filter(Boolean) : [];
+        const rowKey = 'r' + i;
+        const detailPhotos = photoUrls.slice(0, 8).map(function(u) {
+          return '<img src="' + escapeHtml(u) + '" alt="" onerror="this.style.display=\'none\'">';
+        }).join('');
         tbody.innerHTML += `
           <tr>
-            <td>${photo ? `<img src="${photo}" onerror="this.style.display='none'">` : '—'}</td>
-            <td><strong>${car.Model || '—'}</strong></td>
-            <td style="color:var(--red);font-weight:600;">${car.Price || '—'}</td>
+            <td>${photo ? `<img src="${escapeHtml(photo)}" onerror="this.style.display='none'">` : '—'}</td>
+            <td>
+              <div style="font-size:11px;color:var(--gray);letter-spacing:0.5px;text-transform:uppercase;">${escapeHtml(car.Make || '')}</div>
+              <strong>${escapeHtml(car.Model || '—')}</strong>
+            </td>
+            <td>
+              <button type="button" class="more-info-btn" onclick="toggleCarDetail('${rowKey}', this)">More info</button>
+            </td>
             <td>
               <button class="edit-btn" onclick="openEditModal(${i + 2}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photosForEdit)}')">
                 <i class="fa-solid fa-pen"></i> Edit
@@ -1009,6 +1124,27 @@
               <button class="delete-btn" onclick="deleteCar(${i + 2})">
                 <i class="fa-solid fa-trash"></i> Delete
               </button>
+            </td>
+          </tr>
+          <tr class="car-detail-row" id="car-detail-${rowKey}" style="display:none;">
+            <td colspan="4">
+              <div class="admin-car-detail-inner">
+                <div class="admin-car-detail-grid">
+                  <div><div class="admin-car-detail-label">Make</div><div class="admin-car-detail-value">${escapeHtml(car.Make || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Model</div><div class="admin-car-detail-value">${escapeHtml(car.Model || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Price</div><div class="admin-car-detail-value" style="color:var(--red);">${escapeHtml(car.Price || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Year</div><div class="admin-car-detail-value">${escapeHtml(car.Year || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Mileage</div><div class="admin-car-detail-value">${escapeHtml(car.Mileage || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Fuel</div><div class="admin-car-detail-value">${escapeHtml(car.Fuel || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Color</div><div class="admin-car-detail-value">${escapeHtml(car.Color || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Engine</div><div class="admin-car-detail-value">${escapeHtml(car.Engine || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Seats</div><div class="admin-car-detail-value">${escapeHtml(car.Seats || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Transmission</div><div class="admin-car-detail-value">${escapeHtml(adminTransLabel(car.Trans))}</div></div>
+                  <div><div class="admin-car-detail-label">Badge</div><div class="admin-car-detail-value">${escapeHtml(car.Badge || '—')}</div></div>
+                  ${detailPhotos ? '<div class="admin-car-detail-photos">' + detailPhotos + '</div>' : ''}
+                  <div class="admin-car-detail-desc">${escapeHtml(car.Description || '') || '<span style="color:var(--gray);">No description</span>'}</div>
+                </div>
+              </div>
             </td>
           </tr>`;
       });
@@ -1045,11 +1181,21 @@
         const rentalPhotosRaw = ((car.Photos != null && car.Photos !== '') ? car.Photos : (car.Photo || '')).toString().trim();
         const rentalThumb = rentalPhotosRaw ? rentalPhotosRaw.split(',')[0].trim() : '';
         const rentalPhotosForEdit = rentalPhotosRaw || '';
+        const photoUrls = rentalPhotosRaw ? rentalPhotosRaw.split(/[,;\n\r]+/).map(function(p) { return p.trim(); }).filter(Boolean) : [];
+        const rowKey = 'rental-' + i;
+        const detailPhotos = photoUrls.slice(0, 8).map(function(u) {
+          return '<img src="' + escapeHtml(u) + '" alt="" onerror="this.style.display=\'none\'">';
+        }).join('');
         tbody.innerHTML += `
           <tr>
-            <td>${rentalThumb ? `<img src="${rentalThumb}" onerror="this.style.display='none'">` : '—'}</td>
-            <td><strong>${car.Model || '—'}</strong></td>
-            <td style="color:var(--red);font-weight:600;">${car.Price || '—'}</td>
+            <td>${rentalThumb ? `<img src="${escapeHtml(rentalThumb)}" onerror="this.style.display='none'">` : '—'}</td>
+            <td>
+              <div style="font-size:11px;color:var(--gray);letter-spacing:0.5px;text-transform:uppercase;">${escapeHtml(car.Make || '')}</div>
+              <strong>${escapeHtml(car.Model || '—')}</strong>
+            </td>
+            <td>
+              <button type="button" class="more-info-btn" onclick="toggleCarDetail('${rowKey}', this)">More info</button>
+            </td>
             <td>
               <button class="edit-btn" onclick="openEditModal(${i + 2}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(rentalPhotosForEdit)}')">
                 <i class="fa-solid fa-pen"></i> Edit
@@ -1057,6 +1203,23 @@
               <button class="delete-btn" onclick="deleteRental(${i + 2})">
                 <i class="fa-solid fa-trash"></i> Delete
               </button>
+            </td>
+          </tr>
+          <tr class="car-detail-row" id="car-detail-${rowKey}" style="display:none;">
+            <td colspan="4">
+              <div class="admin-car-detail-inner">
+                <div class="admin-car-detail-grid">
+                  <div><div class="admin-car-detail-label">Make</div><div class="admin-car-detail-value">${escapeHtml(car.Make || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Model</div><div class="admin-car-detail-value">${escapeHtml(car.Model || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Daily rate</div><div class="admin-car-detail-value" style="color:var(--red);">${escapeHtml(car.Price || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Seats</div><div class="admin-car-detail-value">${escapeHtml(car.Seats || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Fuel</div><div class="admin-car-detail-value">${escapeHtml(car.Fuel || '—')}</div></div>
+                  <div><div class="admin-car-detail-label">Transmission</div><div class="admin-car-detail-value">${escapeHtml(adminTransLabel(car.Trans))}</div></div>
+                  <div><div class="admin-car-detail-label">Badge</div><div class="admin-car-detail-value">${escapeHtml(car.Badge || '—')}</div></div>
+                  ${detailPhotos ? '<div class="admin-car-detail-photos">' + detailPhotos + '</div>' : ''}
+                  <div class="admin-car-detail-desc">${escapeHtml(car.Description || '') || '<span style="color:var(--gray);">No description</span>'}</div>
+                </div>
+              </div>
             </td>
           </tr>`;
       });

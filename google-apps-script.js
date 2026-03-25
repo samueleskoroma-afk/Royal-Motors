@@ -33,6 +33,10 @@ function normalizeRentalRow_(row, headers) {
   return obj;
 }
 
+function looksLikeUrl_(s) {
+  return typeof s === 'string' && /^https?:\/\//i.test(String(s).trim());
+}
+
 /** If headers are wrong/missing, still map Photo(s) to `Photo` / `Photos` keys */
 function normalizeCarRow_(row, headers) {
   const obj = {};
@@ -42,6 +46,25 @@ function normalizeCarRow_(row, headers) {
 
   const headerStrs = headers.map(h => (h == null ? '' : String(h)).trim());
   const lower = headerStrs.map(s => s.toLowerCase());
+
+  const transIdx = lower.findIndex(function(h) {
+    return h === 'trans' || h === 'transmission';
+  });
+  if (transIdx >= 0 && row[transIdx] != null && String(row[transIdx]).trim() !== '' && !looksLikeUrl_(row[transIdx])) {
+    obj.Trans = row[transIdx];
+  }
+  if ((obj.Trans == null || String(obj.Trans).trim() === '' || looksLikeUrl_(obj.Trans)) && row.length > 10 && row[10] != null && String(row[10]).trim() !== '' && !looksLikeUrl_(row[10])) {
+    obj.Trans = row[10];
+  }
+  if (obj.Trans != null && looksLikeUrl_(obj.Trans)) delete obj.Trans;
+
+  const badgeIdx = lower.findIndex(function(h) { return h === 'badge' || h === 'badge label'; });
+  if (badgeIdx >= 0 && row[badgeIdx] != null && String(row[badgeIdx]).trim() !== '' && !looksLikeUrl_(row[badgeIdx])) {
+    obj.Badge = row[badgeIdx];
+  }
+  if ((obj.Badge == null || String(obj.Badge).trim() === '') && row.length > 11 && row[11] != null && String(row[11]).trim() !== '' && !looksLikeUrl_(row[11])) {
+    obj.Badge = row[11];
+  }
 
   let photosIdx = -1;
   let photoIdx = -1;
@@ -67,6 +90,11 @@ function normalizeCarRow_(row, headers) {
     const lastVal = row[headers.length - 1];
     if (typeof lastVal === 'string' && lastVal.toLowerCase().includes('http')) obj.Photos = lastVal;
   }
+  // Column N (index 13) is Photos in the standard 14-column Cars layout
+  if ((obj.Photos == null || String(obj.Photos).trim() === '') && row.length > 13 && row[13] != null && String(row[13]).trim() !== '' && looksLikeUrl_(row[13])) {
+    obj.Photos = row[13];
+  }
+  if (obj.Badge != null && looksLikeUrl_(obj.Badge)) delete obj.Badge;
 
   return obj;
 }
@@ -148,6 +176,7 @@ function doPost(e) {
         targetSheet.getRange(row, 9).setValue(photosStr || firstPhoto);
         targetSheet.getRange(row, 10).setValue(data.badge || '');
       } else {
+        // Columns must match appendRow: K=Trans L=Badge M=Description N=Photos (1-based 11–14)
         targetSheet.getRange(row, 2).setValue(data.make);
         targetSheet.getRange(row, 3).setValue(data.model);
         targetSheet.getRange(row, 4).setValue(data.price);
@@ -157,9 +186,10 @@ function doPost(e) {
         targetSheet.getRange(row, 8).setValue(data.color);
         targetSheet.getRange(row, 9).setValue(data.engine);
         targetSheet.getRange(row, 10).setValue(data.seats);
-        targetSheet.getRange(row, 11).setValue(data.badge);
-        targetSheet.getRange(row, 12).setValue(data.description);
-        if (data.photos) targetSheet.getRange(row, 13).setValue(data.photos);
+        targetSheet.getRange(row, 11).setValue(data.trans || '');
+        targetSheet.getRange(row, 12).setValue(data.badge || '');
+        targetSheet.getRange(row, 13).setValue(data.description || '');
+        if (data.photos) targetSheet.getRange(row, 14).setValue(data.photos);
       }
       return response({ status: 'edited', row: row });
     }
