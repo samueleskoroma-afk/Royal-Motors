@@ -54,6 +54,22 @@ function guessTransmissionFromRow_(row) {
   return '';
 }
 
+function hasValue_(v) {
+  return v !== undefined && v !== null && String(v).trim() !== '';
+}
+
+function pickOrKeep_(incoming, current) {
+  return hasValue_(incoming) ? incoming : current;
+}
+
+function pickTransOrKeep_(incoming, current) {
+  if (!hasValue_(incoming)) return current;
+  const t = String(incoming).trim().toLowerCase();
+  if (t === 'auto' || t === 'automatic') return 'Auto';
+  if (t === 'manual') return 'Manual';
+  return current;
+}
+
 /** If headers are wrong/missing, still map Photo(s) to `Photo` / `Photos` keys */
 function normalizeCarRow_(row, headers) {
   const obj = {};
@@ -183,34 +199,62 @@ function doPost(e) {
         ? (getRentalsSheet_(ss) || ss.getActiveSheet())
         : (ss.getSheetByName(data.sheet) || ss.getActiveSheet());
       const row = Number(data.row);
+      const existing = targetSheet.getRange(row, 1, 1, targetSheet.getLastColumn()).getValues()[0] || [];
       if (data.sheet === 'Rentals') {
-        targetSheet.getRange(row, 1).setValue(data.make);
-        targetSheet.getRange(row, 2).setValue(data.model);
-        targetSheet.getRange(row, 3).setValue(data.price);
-        targetSheet.getRange(row, 4).setValue(data.seats);
-        targetSheet.getRange(row, 5).setValue(data.fuel);
-        targetSheet.getRange(row, 6).setValue(data.trans || '');
-        const photosStr = (data.photos || '').toString().trim();
-        const firstPhoto = photosStr ? photosStr.split(',')[0].trim() : '';
-        targetSheet.getRange(row, 7).setValue(firstPhoto);
-        targetSheet.getRange(row, 8).setValue(data.description || '');
-        targetSheet.getRange(row, 9).setValue(photosStr || firstPhoto);
-        targetSheet.getRange(row, 10).setValue(data.badge || '');
+        const mergedMake = pickOrKeep_(data.make, existing[0] || '');
+        const mergedModel = pickOrKeep_(data.model, existing[1] || '');
+        const mergedPrice = pickOrKeep_(data.price, existing[2] || '');
+        const mergedSeats = pickOrKeep_(data.seats, existing[3] || '');
+        const mergedFuel = pickOrKeep_(data.fuel, existing[4] || '');
+        const mergedTrans = pickTransOrKeep_(data.trans, existing[5] || '');
+        const existingPhotos = (existing[8] != null && String(existing[8]).trim() !== '')
+          ? String(existing[8]).trim()
+          : (existing[6] != null ? String(existing[6]).trim() : '');
+        const incomingPhotos = hasValue_(data.photos) ? String(data.photos).trim() : '';
+        const photosStr = incomingPhotos || existingPhotos;
+        const firstPhoto = photosStr ? photosStr.split(',')[0].trim() : (existing[6] || '');
+        const mergedDescription = pickOrKeep_(data.description, existing[7] || '');
+        const mergedBadge = pickOrKeep_(data.badge, existing[9] || '');
+
+        targetSheet.getRange(row, 1).setValue(mergedMake);
+        targetSheet.getRange(row, 2).setValue(mergedModel);
+        targetSheet.getRange(row, 3).setValue(mergedPrice);
+        targetSheet.getRange(row, 4).setValue(mergedSeats);
+        targetSheet.getRange(row, 5).setValue(mergedFuel);
+        targetSheet.getRange(row, 6).setValue(mergedTrans);
+        targetSheet.getRange(row, 7).setValue(firstPhoto || '');
+        targetSheet.getRange(row, 8).setValue(mergedDescription);
+        targetSheet.getRange(row, 9).setValue(photosStr || '');
+        targetSheet.getRange(row, 10).setValue(mergedBadge);
       } else {
         // Columns must match appendRow: K=Trans L=Badge M=Description N=Photos (1-based 11–14)
-        targetSheet.getRange(row, 2).setValue(data.make);
-        targetSheet.getRange(row, 3).setValue(data.model);
-        targetSheet.getRange(row, 4).setValue(data.price);
-        targetSheet.getRange(row, 5).setValue(data.year);
-        targetSheet.getRange(row, 6).setValue(data.mileage);
-        targetSheet.getRange(row, 7).setValue(data.fuel);
-        targetSheet.getRange(row, 8).setValue(data.color);
-        targetSheet.getRange(row, 9).setValue(data.engine);
-        targetSheet.getRange(row, 10).setValue(data.seats);
-        targetSheet.getRange(row, 11).setValue(data.trans || '');
-        targetSheet.getRange(row, 12).setValue(data.badge || '');
-        targetSheet.getRange(row, 13).setValue(data.description || '');
-        if (data.photos) targetSheet.getRange(row, 14).setValue(data.photos);
+        const mergedMake = pickOrKeep_(data.make, existing[1] || '');
+        const mergedModel = pickOrKeep_(data.model, existing[2] || '');
+        const mergedPrice = pickOrKeep_(data.price, existing[3] || '');
+        const mergedYear = pickOrKeep_(data.year, existing[4] || '');
+        const mergedMileage = pickOrKeep_(data.mileage, existing[5] || '');
+        const mergedFuel = pickOrKeep_(data.fuel, existing[6] || '');
+        const mergedColor = pickOrKeep_(data.color, existing[7] || '');
+        const mergedEngine = pickOrKeep_(data.engine, existing[8] || '');
+        const mergedSeats = pickOrKeep_(data.seats, existing[9] || '');
+        const mergedTrans = pickTransOrKeep_(data.trans, existing[10] || '');
+        const mergedBadge = pickOrKeep_(data.badge, existing[11] || '');
+        const mergedDescription = pickOrKeep_(data.description, existing[12] || '');
+        const mergedPhotos = pickOrKeep_(data.photos, existing[13] || '');
+
+        targetSheet.getRange(row, 2).setValue(mergedMake);
+        targetSheet.getRange(row, 3).setValue(mergedModel);
+        targetSheet.getRange(row, 4).setValue(mergedPrice);
+        targetSheet.getRange(row, 5).setValue(mergedYear);
+        targetSheet.getRange(row, 6).setValue(mergedMileage);
+        targetSheet.getRange(row, 7).setValue(mergedFuel);
+        targetSheet.getRange(row, 8).setValue(mergedColor);
+        targetSheet.getRange(row, 9).setValue(mergedEngine);
+        targetSheet.getRange(row, 10).setValue(mergedSeats);
+        targetSheet.getRange(row, 11).setValue(mergedTrans);
+        targetSheet.getRange(row, 12).setValue(mergedBadge);
+        targetSheet.getRange(row, 13).setValue(mergedDescription);
+        targetSheet.getRange(row, 14).setValue(mergedPhotos);
       }
       return response({ status: 'edited', row: row });
     }
