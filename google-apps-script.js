@@ -37,6 +37,23 @@ function looksLikeUrl_(s) {
   return typeof s === 'string' && /^https?:\/\//i.test(String(s).trim());
 }
 
+function looksLikeTransmission_(s) {
+  const t = String(s ?? '').trim().toLowerCase();
+  if (!t) return false;
+  return t === 'auto' || t === 'automatic' || t === 'manual';
+}
+
+function guessTransmissionFromRow_(row) {
+  // Heuristic fallback: find a cell that looks like Auto/Manual (and is not a URL)
+  for (let i = 0; i < row.length; i++) {
+    const v = row[i];
+    if (v == null) continue;
+    if (looksLikeUrl_(v)) continue;
+    if (looksLikeTransmission_(v)) return v;
+  }
+  return '';
+}
+
 /** If headers are wrong/missing, still map Photo(s) to `Photo` / `Photos` keys */
 function normalizeCarRow_(row, headers) {
   const obj = {};
@@ -57,6 +74,10 @@ function normalizeCarRow_(row, headers) {
     obj.Trans = row[10];
   }
   if (obj.Trans != null && looksLikeUrl_(obj.Trans)) delete obj.Trans;
+  if (obj.Trans == null || String(obj.Trans).trim() === '' || looksLikeUrl_(obj.Trans)) {
+    const guessed = guessTransmissionFromRow_(row);
+    if (guessed) obj.Trans = guessed;
+  }
 
   const badgeIdx = lower.findIndex(function(h) { return h === 'badge' || h === 'badge label'; });
   if (badgeIdx >= 0 && row[badgeIdx] != null && String(row[badgeIdx]).trim() !== '' && !looksLikeUrl_(row[badgeIdx])) {

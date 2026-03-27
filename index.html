@@ -305,6 +305,11 @@
 
         const card = document.createElement('div');
         card.className = 'car-card';
+        const year = escapeHtml(car.Year || '—');
+        const mileage = escapeHtml(car.Mileage || '');
+        const fuel = escapeHtml(car.Fuel || '');
+        const trans = escapeHtml(carTransmissionFromData(car) || '');
+
         card.innerHTML = `
           <div class="car-img">
             ${badgeText ? `<div class="car-tag">${badgeText}</div>` : ''}
@@ -314,10 +319,10 @@
             <div class="car-make">${escapeHtml(car.Make || '')}</div>
             <div class="car-model">${escapeHtml(car.Model || '')}</div>
             <div class="car-specs">
-              <div class="car-spec"><strong>${escapeHtml(car.Year || '—')}</strong> Year</div>
-              <div class="car-spec"><strong>${escapeHtml(car.Mileage || '—')}</strong></div>
-              <div class="car-spec"><strong>${escapeHtml(car.Fuel || '—')}</strong></div>
-              <div class="car-spec"><strong>${escapeHtml(carTransmissionFromData(car) || '—')}</strong></div>
+              <span class="car-spec"><strong>${year}</strong> Year</span>
+              ${mileage ? `<span class="car-spec">${mileage}</span>` : ''}
+              ${fuel ? `<span class="car-spec">${fuel}</span>` : ''}
+              ${trans ? `<span class="car-spec">- ${trans}</span>` : ''}
             </div>
             <div class="car-bottom">
               <div class="car-price">${escapeHtml(car.Price || '—')}</div>
