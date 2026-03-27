@@ -1089,6 +1089,7 @@
       list.forEach((car, i) => {
         if (!car.Make) return;
         count++;
+        const sheetRow = Number(car._row) || (i + 2);
         const photosRaw = ((car.Photos != null && car.Photos !== '') ? car.Photos
           : ((car.Photo != null && car.Photo !== '') ? car.Photo : (car.photos || ''))).toString().trim();
         const photo = photosRaw ? photosRaw.split(',')[0].trim() : '';
@@ -1115,10 +1116,10 @@
             </td>
             <td>
               <div class="manage-cell-stack">
-                <button type="button" class="edit-btn" onclick="openEditModal(${i + 2}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photosForEdit)}')">
+                <button type="button" class="edit-btn" onclick="openEditModal(${sheetRow}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photosForEdit)}')">
                   <i class="fa-solid fa-pen"></i> Edit
                 </button>
-                <button type="button" class="delete-btn" onclick="deleteCar(${i + 2})">
+                <button type="button" class="delete-btn" onclick="deleteCar(${sheetRow})">
                   <i class="fa-solid fa-trash"></i> Delete
                 </button>
               </div>
@@ -1176,6 +1177,7 @@
       cars.forEach((car, i) => {
         if (!car.Make) return;
         count++;
+        const sheetRow = Number(car._row) || (i + 2);
         const rentalPhotosRaw = ((car.Photos != null && car.Photos !== '') ? car.Photos : (car.Photo || '')).toString().trim();
         const rentalThumb = rentalPhotosRaw ? rentalPhotosRaw.split(',')[0].trim() : '';
         const rentalPhotosForEdit = rentalPhotosRaw || '';
@@ -1198,10 +1200,10 @@
             </td>
             <td>
               <div class="manage-cell-stack">
-                <button type="button" class="edit-btn" onclick="openEditModal(${i + 2}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(rentalPhotosForEdit)}')">
+                <button type="button" class="edit-btn" onclick="openEditModal(${sheetRow}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(rentalPhotosForEdit)}')">
                   <i class="fa-solid fa-pen"></i> Edit
                 </button>
-                <button type="button" class="delete-btn" onclick="deleteRental(${i + 2})">
+                <button type="button" class="delete-btn" onclick="deleteRental(${sheetRow})">
                   <i class="fa-solid fa-trash"></i> Delete
                 </button>
               </div>
@@ -1401,12 +1403,16 @@
       description: document.getElementById('edit-description').value.trim(),
       photos:      allPhotos,
     };
+    const saveBtn = document.querySelector('#editModal .submit-btn');
+    if (saveBtn) saveBtn.disabled = true;
     try {
       await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       showMessage('edit-message', 'success', 'Changes saved! Refresh to see updates.');
       setTimeout(() => { closeEditModal(); if (type === 'rental') loadRentalCars(); else loadCars(); }, 2000);
     } catch(err) {
       showMessage('edit-message', 'error', 'Could not save. Please try again.');
+    } finally {
+      if (saveBtn) saveBtn.disabled = false;
     }
   }
 

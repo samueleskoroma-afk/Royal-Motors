@@ -149,11 +149,13 @@ function doGet(e) {
       const data = sheet.getDataRange().getValues();
       if (data.length < 2) return response([]);
       const headers = data[0];
-      const rentals = data.slice(1)
-        .filter(function(row) { return row[0]; })
-        .map(function(row) {
-          return normalizeRentalRow_(row, headers);
-        });
+      const rentals = [];
+      data.slice(1).forEach(function(row, idx) {
+        if (!row[0]) return;
+        const obj = normalizeRentalRow_(row, headers);
+        obj._row = idx + 2; // real sheet row number (1-based, includes header row)
+        rentals.push(obj);
+      });
       return response(rentals);
     }
 
@@ -162,9 +164,13 @@ function doGet(e) {
     const data = sheet.getDataRange().getValues();
     if (data.length < 2) return response([]);
     const headers = data[0];
-    const cars = data.slice(1)
-      .filter(row => row[1])
-      .map(row => normalizeCarRow_(row, headers));
+    const cars = [];
+    data.slice(1).forEach(function(row, idx) {
+      if (!row[1]) return; // Make column
+      const obj = normalizeCarRow_(row, headers);
+      obj._row = idx + 2; // real sheet row number
+      cars.push(obj);
+    });
     return response(cars);
 
   } catch(err) {
