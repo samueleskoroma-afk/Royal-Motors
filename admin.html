@@ -883,6 +883,22 @@
     return s;
   }
 
+  function normalizeTransForSelect(t) {
+    const s = String(t ?? '').trim().toLowerCase();
+    if (s === 'auto' || s === 'automatic') return 'Auto';
+    if (s === 'manual') return 'Manual';
+    return '';
+  }
+
+  function stripUrlsFromText(text) {
+    const raw = String(text ?? '');
+    const cleaned = raw
+      .replace(/https?:\/\/\S+/gi, '')
+      .replace(/[,\s]+/g, ' ')
+      .trim();
+    return cleaned;
+  }
+
   function toggleCarDetail(rowKey, btn) {
     const el = document.getElementById('car-detail-' + rowKey);
     if (!el) return;
@@ -1242,6 +1258,7 @@
   let editMainPhotoUrl = '';
   let editExtraPhotoUrls = [];
   let editExistingPhotos = '';
+  let editOriginalTrans = '';
 
   /* --- CONTEXT AWARE ADD BUTTON --- */
   function handleManageAdd() {
@@ -1336,6 +1353,7 @@
     editMainPhotoUrl = '';
     editExtraPhotoUrls = [];
     editExistingPhotos = existingPhotos || '';
+    editOriginalTrans = normalizeTransForSelect(trans);
     document.getElementById('edit-main-preview').innerHTML = existingPhotos
       ? '<p style="font-size:11px;color:var(--gray);margin-top:4px;">Current photo kept unless you upload a new one.</p>'
       : '';
@@ -1351,9 +1369,10 @@
     document.getElementById('edit-color').value = color || '';
     document.getElementById('edit-engine').value = engine || '';
     document.getElementById('edit-seats').value = seats || '';
-    document.getElementById('edit-trans').value = trans || 'Auto';
+    document.getElementById('edit-trans').value = normalizeTransForSelect(trans) || 'Auto';
     document.getElementById('edit-badge').value = (badge !== undefined && badge !== null) ? badge : '';
-    document.getElementById('edit-description').value = description || '';
+    const descClean = stripUrlsFromText(description || '');
+    document.getElementById('edit-description').value = descClean;
     document.getElementById('editModal').classList.add('active');
     document.body.style.overflow = 'hidden';
   }
@@ -1387,6 +1406,7 @@
     } else {
       allPhotos = editExistingPhotos;
     }
+    const selectedTrans = normalizeTransForSelect(document.getElementById('edit-trans').value) || editOriginalTrans || 'Auto';
     const data = {
       type: 'edit',
       sheet: type === 'rental' ? 'Rentals' : 'Cars',
@@ -1398,9 +1418,9 @@
       color:       document.getElementById('edit-color').value.trim(),
       engine:      document.getElementById('edit-engine').value.trim(),
       seats:       document.getElementById('edit-seats').value.trim(),
-      trans:       document.getElementById('edit-trans').value,
+      trans:       selectedTrans,
       badge:       document.getElementById('edit-badge').value,
-      description: document.getElementById('edit-description').value.trim(),
+      description: stripUrlsFromText(document.getElementById('edit-description').value.trim()),
       photos:      allPhotos,
     };
     const saveBtn = document.querySelector('#editModal .submit-btn');
