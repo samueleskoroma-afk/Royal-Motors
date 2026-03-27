@@ -189,6 +189,7 @@
         <div class="modal-spec-item"><i class="fa-solid fa-calendar"></i><p id="modal-year"></p><span>Year</span></div>
         <div class="modal-spec-item"><i class="fa-solid fa-gauge"></i><p id="modal-mileage"></p><span>Mileage</span></div>
         <div class="modal-spec-item"><i class="fa-solid fa-gas-pump"></i><p id="modal-fuel"></p><span>Fuel</span></div>
+        <div class="modal-spec-item"><i class="fa-solid fa-gears"></i><p id="modal-trans"></p><span>Transmission</span></div>
         <div class="modal-spec-item"><i class="fa-solid fa-palette"></i><p id="modal-color"></p><span>Color</span></div>
         <div class="modal-spec-item"><i class="fa-solid fa-car-side"></i><p id="modal-engine"></p><span>Engine</span></div>
         <div class="modal-spec-item"><i class="fa-solid fa-user-group"></i><p id="modal-seats"></p><span>Seats</span></div>
@@ -272,6 +273,10 @@
     return b;
   }
 
+  function cleanDescriptionText(text) {
+    return String(text ?? '').replace(/https?:\/\/\S+/gi, '').replace(/\s{2,}/g, ' ').trim();
+  }
+
   /* --- POPULATE BRAND FILTER DYNAMICALLY --- */
   function populateBrandFilter() {
     const brands = [...new Set(allCars.map(c => c.Make))].sort();
@@ -336,7 +341,6 @@ function renderCars(cars) {
           <span class="car-spec"><strong>${y}</strong> Year</span>
           ${mi ? `<span class="car-spec">${mi}</span>` : ''}
           ${fu ? `<span class="car-spec">${fu}</span>` : ''}
-          ${tr ? `<span class="car-spec">- ${tr}</span>` : ''}
         </div>
         <div class="car-bottom">
           <div class="car-price">${pr}</div>
@@ -353,6 +357,7 @@ function renderCars(cars) {
         car.Year || '',
         car.Mileage || '',
         car.Fuel || '',
+        carTransmissionFromData(car) || '',
         car.Color || '',
         car.Engine || '',
         car.Seats || '',
@@ -423,17 +428,18 @@ function renderCars(cars) {
   }
 
   /* --- MODAL --- */
-  function openCarModal(make, model, price, photos, year, mileage, fuel, color, engine, seats, description) {
+  function openCarModal(make, model, price, photos, year, mileage, fuel, trans, color, engine, seats, description) {
     document.getElementById('modal-make').textContent        = make;
     document.getElementById('modal-model').textContent       = model;
     document.getElementById('modal-price').textContent       = price;
     document.getElementById('modal-year').textContent        = year;
     document.getElementById('modal-mileage').textContent     = mileage;
     document.getElementById('modal-fuel').textContent        = fuel;
+    document.getElementById('modal-trans').textContent       = trans || '—';
     document.getElementById('modal-color').textContent       = color;
     document.getElementById('modal-engine').textContent      = engine;
     document.getElementById('modal-seats').textContent       = seats;
-    document.getElementById('modal-description').textContent = description;
+    document.getElementById('modal-description').textContent = cleanDescriptionText(description);
     currentPhotos = Array.isArray(photos) ? photos.filter(p => p) : [photos];
     currentPhotoIndex = 0;
     updateMainPhoto();

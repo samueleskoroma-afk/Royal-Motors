@@ -157,8 +157,8 @@ footer { background: #0a0a0a; color: #666; padding: 32px 60px; display: flex; al
 .modal-spec-item p { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
 .modal-spec-item span { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; }
 .modal-description { font-size: 14px; color: var(--gray); line-height: 1.8; margin-bottom: 24px; }
-.modal-whatsapp { background: #25D366; color: var(--white); border: none; padding: 14px 32px; font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; transition: background .2s; }
-.modal-whatsapp:hover { background: #1da851; }
+.modal-whatsapp { background: var(--black); color: var(--white); border: none; padding: 14px 32px; font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; transition: background .2s; }
+.modal-whatsapp:hover { background: var(--red); }
 .modal-whatsapp i { margin-right: 8px; }
 
 /* ===================== RESPONSIVE ===================== */

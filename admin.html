@@ -1037,6 +1037,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'car', make, model, price, year, mileage, fuel, color, engine, seats, trans, badge, description, photos: allPhotos })
       });
+      showPopup('Successfully added a vehicle!', 'success');
       showMessage('car-message', 'success', 'Car added successfully! It will appear on the website shortly.');
       clearCarForm();
     } catch(err) {
@@ -1441,10 +1442,10 @@
     if (!confirm('Are you sure you want to delete this rental car?')) return;
     try {
       await fetch(SCRIPT_URL + '?type=delete-rental&row=' + Number(row), { method: 'GET' });
-      alert('Rental car deleted! Refreshing...');
+      showPopup('Rental car deleted successfully.', 'success');
       loadRentalCars();
     } catch(err) {
-      alert('Could not delete. Please try again.');
+      showPopup('Could not delete rental car. Please try again.', 'error');
     }
   }
 
@@ -1463,10 +1464,10 @@ async function deleteCar(row) {
   try {
     const url = SCRIPT_URL + '?type=delete&row=' + Number(row);
     await fetch(url, { method: 'GET' });
-    alert('Car deleted! Refreshing...');
+    showPopup('Car deleted successfully.', 'success');
     loadCars();
   } catch(err) {
-    alert('Could not delete. Please try again.');
+    showPopup('Could not delete car. Please try again.', 'error');
   }
 }
   /* --- HELPERS --- */
