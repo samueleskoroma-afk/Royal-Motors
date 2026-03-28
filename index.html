@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Royal Motors Sierra Leone</title>
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=3">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -335,7 +335,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
       const cars = await res.json();
       const list = Array.isArray(cars) ? cars.filter(c => c.Make) : [];
       const inStock = list.filter(c => !carIsComingSoon(c));
-      const featured = inStock.slice(0, 3);
+      const featured = inStock.slice(0, 2);
       const grid = document.getElementById('featured-grid');
       grid.innerHTML = '';
 
@@ -412,7 +412,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
         grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--gray);">No “coming soon” vehicles listed yet. Ask us on WhatsApp what’s arriving next.</div>';
         return;
       }
-      list.slice(0, 6).forEach(car => {
+      list.slice(0, 2).forEach(car => {
         const photosRaw = ((car.Photos != null && car.Photos !== '') ? car.Photos : (car.Photo || '')).toString().trim();
         const photos = photosRaw ? splitPhotoUrls(photosRaw) : [];
         const mainPhoto = photos[0] || '';
