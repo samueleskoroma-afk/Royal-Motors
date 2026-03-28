@@ -1,401 +1,274 @@
 // =============================================
-// ROYAL MOTORS — Google Apps Script v4
-// Replace ALL code with this then redeploy
+// ROYAL MOTORS — Google Apps Script v5 (Clean Rebuild)
+// Replace ALL existing code with this, then redeploy as a NEW version.
+//
+// SPREADSHEET SETUP — create exactly these 3 tabs with these headers:
+//
+// Sheet: Cars
+// Row 1: Make | Model | Price | Year | Mileage | Fuel | Color | Engine | Seats | Trans | Badge | Description | Photos | Status
+//
+// Sheet: Rentals
+// Row 1: Make | Model | Price | Seats | Fuel | Trans | Description | Photos | Badge
+//
+// Sheet: Parts
+// Row 1: Category | Name | Brand | Price | Description | Photos | Stock
 // =============================================
 
-const SHEET_ID = '16yRIt44Ilfr8cw7XbewyvhnWoYzv5iQnKbv7gMQROS8';
+const SHEET_ID = '1ZAjr5opL70QUtBVwQLqgYqnquaV6K-1XAsPJu5ScOg4';
+// ── Column positions (1-based, matches the header rows above exactly) ─────────
 
-/** Normalise any status string to exactly 'Coming Soon' or 'In Stock' */
-function normalizeStatus_(val) {
-  const s = String(val ?? '').trim();
-  if (/coming\s*soon/i.test(s)) return 'Coming Soon';
-  if (s === 'In Stock' || s === 'in stock' || s === '') return 'In Stock';
-  // Catch any other truthy value that was intentionally set to Coming Soon
-  if (/coming/i.test(s)) return 'Coming Soon';
-  return 'In Stock';
+const CAR_COLS = {
+  Make: 1, Model: 2, Price: 3, Year: 4, Mileage: 5,
+  Fuel: 6, Color: 7, Engine: 8, Seats: 9, Trans: 10,
+  Badge: 11, Description: 12, Photos: 13, Status: 14
+};
+
+const RENTAL_COLS = {
+  Make: 1, Model: 2, Price: 3, Seats: 4, Fuel: 5,
+  Trans: 6, Description: 7, Photos: 8, Badge: 9
+};
+
+const PART_COLS = {
+  Category: 1, Name: 2, Brand: 3, Price: 4,
+  Description: 5, Photos: 6, Stock: 7
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function str_(v) {
+  return (v === undefined || v === null) ? '' : String(v).trim();
 }
 
-/** Tab names tried in order — must match one tab at the bottom of your spreadsheet */
-function getRentalsSheet_(ss) {
-  const names = ['Rentals', 'Rental Cars', 'RENTALS', 'rental cars'];
-  for (let i = 0; i < names.length; i++) {
-    const sh = ss.getSheetByName(names[i]);
-    if (sh) return sh;
+// Returns ONLY "Coming Soon" or "In Stock" — nothing else, ever.
+function cleanStatus_(v) {
+  return /coming\s*soon/i.test(str_(v)) ? 'Coming Soon' : 'In Stock';
+}
+
+function getSheet_(ss, name) {
+  return ss.getSheetByName(name);
+}
+
+// Creates the sheet with headers if it does not exist yet.
+function ensureSheet_(ss, name, headers) {
+  let sh = ss.getSheetByName(name);
+  if (!sh) {
+    sh = ss.insertSheet(name);
+    sh.appendRow(headers);
   }
-  return null;
+  return sh;
 }
 
-/** If headers are wrong/missing, still map Photo (col G) and Photos (col I) by position */
-function normalizeRentalRow_(row, headers) {
+// Converts a spreadsheet row array + header array into a plain JS object.
+function rowToObj_(row, headers) {
   const obj = {};
-  headers.forEach(function(h, i) {
-    if (h !== '' && h != null) obj[String(h).trim()] = row[i];
+  headers.forEach(function (h, i) {
+    obj[str_(h)] = (row[i] === undefined || row[i] === null) ? '' : row[i];
   });
-  if (row.length >= 7 && (obj.Photo === undefined || obj.Photo === '') && row[6] !== '') {
-    obj.Photo = row[6];
-  }
-  if (row.length >= 9 && (obj.Photos === undefined || obj.Photos === '') && row[8] !== '') {
-    obj.Photos = row[8];
-  }
-  if (row.length >= 10 && (obj.Badge === undefined || obj.Badge === '') && row[9] !== '') {
-    obj.Badge = row[9];
-  }
   return obj;
 }
 
-function looksLikeUrl_(s) {
-  return typeof s === 'string' && /^https?:\/\//i.test(String(s).trim());
+function jsonResponse_(data) {
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
-function looksLikeTransmission_(s) {
-  const t = String(s ?? '').trim().toLowerCase();
-  if (!t) return false;
-  return t === 'auto' || t === 'automatic' || t === 'manual';
-}
-
-function guessTransmissionFromRow_(row) {
-  for (let i = 0; i < row.length; i++) {
-    const v = row[i];
-    if (v == null) continue;
-    if (looksLikeUrl_(v)) continue;
-    if (looksLikeTransmission_(v)) return v;
-  }
-  return '';
-}
-
-function hasValue_(v) {
-  return v !== undefined && v !== null && String(v).trim() !== '';
-}
-
-function pickOrKeep_(incoming, current) {
-  return hasValue_(incoming) ? incoming : current;
-}
-
-function pickTransOrKeep_(incoming, current) {
-  if (!hasValue_(incoming)) return current;
-  const t = String(incoming).trim().toLowerCase();
-  if (t === 'auto' || t === 'automatic') return 'Auto';
-  if (t === 'manual') return 'Manual';
-  return current;
-}
-
-/** If headers are wrong/missing, still map Photo(s) to `Photo` / `Photos` keys */
-function normalizeCarRow_(row, headers) {
-  const obj = {};
-  headers.forEach(function(h, i) {
-    if (h !== '' && h != null) obj[String(h).trim()] = row[i];
-  });
-
-  const headerStrs = headers.map(h => (h == null ? '' : String(h)).trim());
-  const lower = headerStrs.map(s => s.toLowerCase());
-
-  const transIdx = lower.findIndex(function(h) {
-    return h === 'trans' || h === 'transmission';
-  });
-  if (transIdx >= 0 && row[transIdx] != null && String(row[transIdx]).trim() !== '' && !looksLikeUrl_(row[transIdx])) {
-    obj.Trans = row[transIdx];
-  }
-  if ((obj.Trans == null || String(obj.Trans).trim() === '' || looksLikeUrl_(obj.Trans)) && row.length > 10 && row[10] != null && String(row[10]).trim() !== '' && !looksLikeUrl_(row[10])) {
-    obj.Trans = row[10];
-  }
-  if (obj.Trans != null && looksLikeUrl_(obj.Trans)) delete obj.Trans;
-  if (obj.Trans == null || String(obj.Trans).trim() === '' || looksLikeUrl_(obj.Trans)) {
-    const guessed = guessTransmissionFromRow_(row);
-    if (guessed) obj.Trans = guessed;
-  }
-
-  const badgeIdx = lower.findIndex(function(h) { return h === 'badge' || h === 'badge label'; });
-  if (badgeIdx >= 0 && row[badgeIdx] != null && String(row[badgeIdx]).trim() !== '' && !looksLikeUrl_(row[badgeIdx])) {
-    obj.Badge = row[badgeIdx];
-  }
-  if ((obj.Badge == null || String(obj.Badge).trim() === '') && row.length > 11 && row[11] != null && String(row[11]).trim() !== '' && !looksLikeUrl_(row[11])) {
-    obj.Badge = row[11];
-  }
-
-  let photosIdx = -1;
-  let photoIdx = -1;
-  for (let i = 0; i < lower.length; i++) {
-    if (!lower[i]) continue;
-    if (lower[i].includes('photos')) photosIdx = i;
-    else if (lower[i].includes('photo')) photoIdx = i;
-  }
-
-  const photosVal = photosIdx >= 0 ? row[photosIdx] : '';
-  const photoVal = photoIdx >= 0 ? row[photoIdx] : '';
-
-  if ((obj.Photos == null || String(obj.Photos).trim() === '') && photosIdx >= 0 && photosVal) obj.Photos = photosVal;
-  if ((obj.Photo == null || String(obj.Photo).trim() === '') && photoIdx >= 0 && photoVal) obj.Photo = photoVal;
-
-  if ((obj.Photos == null || String(obj.Photos).trim() === '') && obj.photos != null && String(obj.photos).trim() !== '') obj.Photos = obj.photos;
-  if ((obj.Photo == null || String(obj.Photo).trim() === '') && obj.photo != null && String(obj.photo).trim() !== '') obj.Photo = obj.photo;
-
-  if ((obj.Photos == null || String(obj.Photos).trim() === '') && headers.length) {
-    const lastVal = row[headers.length - 1];
-    if (typeof lastVal === 'string' && lastVal.toLowerCase().includes('http')) obj.Photos = lastVal;
-  }
-  if ((obj.Photos == null || String(obj.Photos).trim() === '') && row.length > 13 && row[13] != null && String(row[13]).trim() !== '' && looksLikeUrl_(row[13])) {
-    obj.Photos = row[13];
-  }
-  if (obj.Badge != null && looksLikeUrl_(obj.Badge)) delete obj.Badge;
-
-  // ── STATUS / AVAILABILITY ──────────────────────────────────────────────────
-  // Look for a header named Status, Availability, or Avail (case-insensitive)
-  const statusIdx = lower.findIndex(function(h) {
-    return h === 'status' || h === 'availability' || h === 'avail';
-  });
-  if (statusIdx >= 0 && row[statusIdx] != null && String(row[statusIdx]).trim() !== '') {
-    obj.Status = normalizeStatus_(row[statusIdx]);
-  } else if (row.length > 14 && row[14] != null && String(row[14]).trim() !== '') {
-    // Column O (index 14) is the standard Status column in a 15-column Cars sheet
-    obj.Status = normalizeStatus_(row[14]);
-  } else {
-    obj.Status = 'In Stock';
-  }
-
-  return obj;
-}
-
-function getPartsSheet_(ss) {
-  const names = ['Parts', 'Vehicle Parts', 'PARTS', 'parts'];
-  for (let i = 0; i < names.length; i++) {
-    const sh = ss.getSheetByName(names[i]);
-    if (sh) return sh;
-  }
-  return null;
-}
-
-function normalizePartRow_(row, headers) {
-  const obj = {};
-  headers.forEach(function(h, i) {
-    if (h !== '' && h != null) obj[String(h).trim()] = row[i];
-  });
-  if (row.length >= 5 && (obj.Price === undefined || obj.Price === '') && row[3] !== '') obj.Price = row[3];
-  if (row.length >= 6 && (obj.Photo === undefined || obj.Photo === '') && row[4] !== '') obj.Photo = row[4];
-  if (row.length >= 7 && (obj.Photos === undefined || obj.Photos === '') && row[5] !== '') obj.Photos = row[5];
-  return obj;
-}
+// ── GET handler ───────────────────────────────────────────────────────────────
 
 function doGet(e) {
   try {
-    const type = e && e.parameter && e.parameter.type;
-    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const params = (e && e.parameter) ? e.parameter : {};
+    const type   = str_(params.type);
+    const ss     = SpreadsheetApp.openById(SHEET_ID);
 
-    // DELETE via GET request
-    if (type === 'delete') {
-      const sheet = ss.getSheetByName('Cars') || ss.getActiveSheet();
-      const row = Number(e.parameter.row);
-      sheet.deleteRow(row);
-      return response({ status: 'deleted', row: row });
+    // DELETE CAR
+    if (type === 'delete-car') {
+      const sh  = getSheet_(ss, 'Cars');
+      if (!sh) return jsonResponse_({ error: 'Cars sheet not found' });
+      const row = Number(params.row);
+      if (!row || row < 2) return jsonResponse_({ error: 'Invalid row' });
+      sh.deleteRow(row);
+      return jsonResponse_({ status: 'ok', action: 'car deleted', row: row });
     }
 
-    // DELETE RENTAL via GET request
+    // DELETE RENTAL
     if (type === 'delete-rental') {
-      const sheet = getRentalsSheet_(ss);
-      if (!sheet) return response({ status: 'error', message: 'Rentals sheet not found' });
-      const row = Number(e.parameter.row);
-      sheet.deleteRow(row);
-      return response({ status: 'deleted', row: row });
+      const sh  = getSheet_(ss, 'Rentals');
+      if (!sh) return jsonResponse_({ error: 'Rentals sheet not found' });
+      const row = Number(params.row);
+      if (!row || row < 2) return jsonResponse_({ error: 'Invalid row' });
+      sh.deleteRow(row);
+      return jsonResponse_({ status: 'ok', action: 'rental deleted', row: row });
     }
 
-    // Return PARTS
-    if (type === 'parts') {
-      const sheet = getPartsSheet_(ss);
-      if (!sheet) return response([]);
-      const data = sheet.getDataRange().getValues();
-      if (data.length < 2) return response([]);
-      const headers = data[0];
-      const parts = [];
-      data.slice(1).forEach(function(row, idx) {
-        if (!row[0] && !row[1]) return;
-        const obj = normalizePartRow_(row, headers);
-        obj._row = idx + 2;
-        parts.push(obj);
-      });
-      return response(parts);
+    // DELETE PART
+    if (type === 'delete-part') {
+      const sh  = getSheet_(ss, 'Parts');
+      if (!sh) return jsonResponse_({ error: 'Parts sheet not found' });
+      const row = Number(params.row);
+      if (!row || row < 2) return jsonResponse_({ error: 'Invalid row' });
+      sh.deleteRow(row);
+      return jsonResponse_({ status: 'ok', action: 'part deleted', row: row });
     }
 
-    // Return RENTALS
+    // READ RENTALS
     if (type === 'rentals') {
-      const sheet = getRentalsSheet_(ss);
-      if (!sheet) return response([]);
-      const data = sheet.getDataRange().getValues();
-      if (data.length < 2) return response([]);
-      const headers = data[0];
-      const rentals = [];
-      data.slice(1).forEach(function(row, idx) {
-        if (!row[0]) return;
-        const obj = normalizeRentalRow_(row, headers);
-        obj._row = idx + 2;
-        rentals.push(obj);
+      const sh = getSheet_(ss, 'Rentals');
+      if (!sh) return jsonResponse_([]);
+      const rows = sh.getDataRange().getValues();
+      if (rows.length < 2) return jsonResponse_([]);
+      const headers = rows[0].map(str_);
+      const result  = [];
+      rows.slice(1).forEach(function (row, i) {
+        if (!str_(row[0]) && !str_(row[1])) return;
+        const obj = rowToObj_(row, headers);
+        obj._row  = i + 2;
+        result.push(obj);
       });
-      return response(rentals);
+      return jsonResponse_(result);
     }
 
-    // Return CARS (default)
-    const sheet = ss.getSheetByName('Cars') || ss.getActiveSheet();
-    const data = sheet.getDataRange().getValues();
-    if (data.length < 2) return response([]);
-    const headers = data[0];
-    const cars = [];
-    data.slice(1).forEach(function(row, idx) {
-      if (!row[1]) return;
-      const obj = normalizeCarRow_(row, headers);
-      obj._row = idx + 2;
-      cars.push(obj);
-    });
-    return response(cars);
+    // READ PARTS
+    if (type === 'parts') {
+      const sh = getSheet_(ss, 'Parts');
+      if (!sh) return jsonResponse_([]);
+      const rows = sh.getDataRange().getValues();
+      if (rows.length < 2) return jsonResponse_([]);
+      const headers = rows[0].map(str_);
+      const result  = [];
+      rows.slice(1).forEach(function (row, i) {
+        if (!str_(row[0]) && !str_(row[1])) return;
+        const obj = rowToObj_(row, headers);
+        obj._row  = i + 2;
+        result.push(obj);
+      });
+      return jsonResponse_(result);
+    }
 
-  } catch(err) {
-    return response({ error: err.toString() });
+    // READ CARS (default — no ?type= needed)
+    const sh = getSheet_(ss, 'Cars');
+    if (!sh) return jsonResponse_([]);
+    const rows = sh.getDataRange().getValues();
+    if (rows.length < 2) return jsonResponse_([]);
+    const headers = rows[0].map(str_);
+    const result  = [];
+    rows.slice(1).forEach(function (row, i) {
+      if (!str_(row[0])) return; // skip rows with no Make
+      const obj  = rowToObj_(row, headers);
+      obj.Status = cleanStatus_(obj.Status); // sanitise on the way out
+      obj._row   = i + 2;
+      result.push(obj);
+    });
+    return jsonResponse_(result);
+
+  } catch (err) {
+    return jsonResponse_({ error: err.toString() });
   }
 }
+
+// ── POST handler ──────────────────────────────────────────────────────────────
 
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
-    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const ss   = SpreadsheetApp.openById(SHEET_ID);
+    const type = str_(data.type);
 
-    // EDIT existing car or rental
-    if (data.type === 'edit') {
-      const targetSheet = (data.sheet === 'Rentals')
-        ? (getRentalsSheet_(ss) || ss.getActiveSheet())
-        : (ss.getSheetByName(data.sheet) || ss.getActiveSheet());
-      const row = Number(data.row);
-      const existing = targetSheet.getRange(row, 1, 1, targetSheet.getLastColumn()).getValues()[0] || [];
-      if (data.sheet === 'Rentals') {
-        const mergedMake = pickOrKeep_(data.make, existing[0] || '');
-        const mergedModel = pickOrKeep_(data.model, existing[1] || '');
-        const mergedPrice = pickOrKeep_(data.price, existing[2] || '');
-        const mergedSeats = pickOrKeep_(data.seats, existing[3] || '');
-        const mergedFuel = pickOrKeep_(data.fuel, existing[4] || '');
-        const mergedTrans = pickTransOrKeep_(data.trans, existing[5] || '');
-        const existingPhotos = (existing[8] != null && String(existing[8]).trim() !== '')
-          ? String(existing[8]).trim()
-          : (existing[6] != null ? String(existing[6]).trim() : '');
-        const incomingPhotos = hasValue_(data.photos) ? String(data.photos).trim() : '';
-        const photosStr = incomingPhotos || existingPhotos;
-        const firstPhoto = photosStr ? photosStr.split(',')[0].trim() : (existing[6] || '');
-        const mergedDescription = pickOrKeep_(data.description, existing[7] || '');
-        const mergedBadge = pickOrKeep_(data.badge, existing[9] || '');
-
-        targetSheet.getRange(row, 1).setValue(mergedMake);
-        targetSheet.getRange(row, 2).setValue(mergedModel);
-        targetSheet.getRange(row, 3).setValue(mergedPrice);
-        targetSheet.getRange(row, 4).setValue(mergedSeats);
-        targetSheet.getRange(row, 5).setValue(mergedFuel);
-        targetSheet.getRange(row, 6).setValue(mergedTrans);
-        targetSheet.getRange(row, 7).setValue(firstPhoto || '');
-        targetSheet.getRange(row, 8).setValue(mergedDescription);
-        targetSheet.getRange(row, 9).setValue(photosStr || '');
-        targetSheet.getRange(row, 10).setValue(mergedBadge);
-      } else {
-        // Columns: A=ID B=Make C=Model D=Price E=Year F=Mileage G=Fuel H=Color
-        //          I=Engine J=Seats K=Trans L=Badge M=Description N=Photos O=Status
-        const mergedMake        = pickOrKeep_(data.make,        existing[1]  || '');
-        const mergedModel       = pickOrKeep_(data.model,       existing[2]  || '');
-        const mergedPrice       = pickOrKeep_(data.price,       existing[3]  || '');
-        const mergedYear        = pickOrKeep_(data.year,        existing[4]  || '');
-        const mergedMileage     = pickOrKeep_(data.mileage,     existing[5]  || '');
-        const mergedFuel        = pickOrKeep_(data.fuel,        existing[6]  || '');
-        const mergedColor       = pickOrKeep_(data.color,       existing[7]  || '');
-        const mergedEngine      = pickOrKeep_(data.engine,      existing[8]  || '');
-        const mergedSeats       = pickOrKeep_(data.seats,       existing[9]  || '');
-        const mergedTrans       = pickTransOrKeep_(data.trans,  existing[10] || '');
-        const mergedBadge       = pickOrKeep_(data.badge,       existing[11] || '');
-        const mergedDescription = pickOrKeep_(data.description, existing[12] || '');
-        const mergedPhotos      = pickOrKeep_(data.photos,      existing[13] || '');
-
-        // ── FIX: use normalizeStatus_ so 'Coming Soon' is always preserved ──
-        const existingStatus = (existing[14] != null && String(existing[14]).trim() !== '')
-          ? String(existing[14]).trim()
-          : 'In Stock';
-        const mergedStatus = normalizeStatus_(hasValue_(data.status) ? data.status : existingStatus);
-
-        targetSheet.getRange(row, 2).setValue(mergedMake);
-        targetSheet.getRange(row, 3).setValue(mergedModel);
-        targetSheet.getRange(row, 4).setValue(mergedPrice);
-        targetSheet.getRange(row, 5).setValue(mergedYear);
-        targetSheet.getRange(row, 6).setValue(mergedMileage);
-        targetSheet.getRange(row, 7).setValue(mergedFuel);
-        targetSheet.getRange(row, 8).setValue(mergedColor);
-        targetSheet.getRange(row, 9).setValue(mergedEngine);
-        targetSheet.getRange(row, 10).setValue(mergedSeats);
-        targetSheet.getRange(row, 11).setValue(mergedTrans);
-        targetSheet.getRange(row, 12).setValue(mergedBadge);
-        targetSheet.getRange(row, 13).setValue(mergedDescription);
-        targetSheet.getRange(row, 14).setValue(mergedPhotos);
-        targetSheet.getRange(row, 15).setValue(mergedStatus); // ← FIXED
-      }
-      return response({ status: 'edited', row: row });
+    // ADD CAR
+    if (type === 'add-car') {
+      const sh = ensureSheet_(ss, 'Cars',
+        ['Make','Model','Price','Year','Mileage','Fuel','Color',
+         'Engine','Seats','Trans','Badge','Description','Photos','Status']);
+      sh.appendRow([
+        str_(data.make),        // col 1  Make
+        str_(data.model),       // col 2  Model
+        str_(data.price),       // col 3  Price
+        str_(data.year),        // col 4  Year
+        str_(data.mileage),     // col 5  Mileage
+        str_(data.fuel),        // col 6  Fuel
+        str_(data.color),       // col 7  Color
+        str_(data.engine),      // col 8  Engine
+        str_(data.seats),       // col 9  Seats
+        str_(data.trans),       // col 10 Trans
+        str_(data.badge),       // col 11 Badge
+        str_(data.description), // col 12 Description
+        str_(data.photos),      // col 13 Photos
+        cleanStatus_(data.status) // col 14 Status — ALWAYS clean
+      ]);
+      return jsonResponse_({ status: 'ok', action: 'car added' });
     }
 
-    // ADD RENTAL car
-    if (data.type === 'rental') {
-      let sheet = getRentalsSheet_(ss);
-      if (!sheet) {
-        sheet = ss.insertSheet('Rentals');
-        sheet.appendRow(['Make','Model','Price','Seats','Fuel','Trans','Photo','Description','Photos','Badge']);
-      }
-      sheet.appendRow([
-        data.make, data.model, data.price,
-        data.seats, data.fuel, data.trans,
-        data.photo, data.description, data.photos || data.photo,
-        data.badge || ''
+    // ADD RENTAL
+    if (type === 'add-rental') {
+      const sh = ensureSheet_(ss, 'Rentals',
+        ['Make','Model','Price','Seats','Fuel','Trans','Description','Photos','Badge']);
+      sh.appendRow([
+        str_(data.make),
+        str_(data.model),
+        str_(data.price),
+        str_(data.seats),
+        str_(data.fuel),
+        str_(data.trans),
+        str_(data.description),
+        str_(data.photos),
+        str_(data.badge)
       ]);
-      return response({ status: 'rental added' });
+      return jsonResponse_({ status: 'ok', action: 'rental added' });
+    }
+
+    // EDIT RENTAL
+    if (type === 'edit-rental') {
+      const sh  = getSheet_(ss, 'Rentals');
+      if (!sh) return jsonResponse_({ error: 'Rentals sheet not found' });
+      const row = Number(data.row);
+      if (!row || row < 2) return jsonResponse_({ error: 'Invalid row' });
+      sh.getRange(row, RENTAL_COLS.Make).setValue(str_(data.make));
+      sh.getRange(row, RENTAL_COLS.Model).setValue(str_(data.model));
+      sh.getRange(row, RENTAL_COLS.Price).setValue(str_(data.price));
+      sh.getRange(row, RENTAL_COLS.Seats).setValue(str_(data.seats));
+      sh.getRange(row, RENTAL_COLS.Fuel).setValue(str_(data.fuel));
+      sh.getRange(row, RENTAL_COLS.Trans).setValue(str_(data.trans));
+      sh.getRange(row, RENTAL_COLS.Description).setValue(str_(data.description));
+      sh.getRange(row, RENTAL_COLS.Photos).setValue(str_(data.photos));
+      sh.getRange(row, RENTAL_COLS.Badge).setValue(str_(data.badge));
+      return jsonResponse_({ status: 'ok', action: 'rental edited', row: row });
     }
 
     // ADD PART
-    if (data.type === 'part') {
-      let sheet = getPartsSheet_(ss);
-      if (!sheet) {
-        sheet = ss.insertSheet('Parts');
-        sheet.appendRow(['Category', 'Name', 'Brand', 'Price', 'Photo', 'Photos', 'Description', 'Stock']);
-      }
-      sheet.appendRow([
-        data.category    || '',
-        data.name        || '',
-        data.brand       || '',
-        data.price       || '',
-        data.photo       || '',
-        data.photos      || data.photo || '',
-        data.description || '',
-        data.stock       || ''
+    if (type === 'add-part') {
+      const sh = ensureSheet_(ss, 'Parts',
+        ['Category','Name','Brand','Price','Description','Photos','Stock']);
+      sh.appendRow([
+        str_(data.category),
+        str_(data.name),
+        str_(data.brand),
+        str_(data.price),
+        str_(data.description),
+        str_(data.photos),
+        str_(data.stock)
       ]);
-      return response({ status: 'part added' });
+      return jsonResponse_({ status: 'ok', action: 'part added' });
     }
 
-    // ADD regular CAR
-    let sheet = ss.getSheetByName('Cars');
-    if (!sheet) {
-      sheet = ss.getActiveSheet();
-      if (sheet.getLastRow() === 0) {
-        sheet.appendRow(['ID','Make','Model','Price','Year','Mileage','Fuel','Color','Engine','Seats','Trans','Badge','Description','Photos','Status']);
-      }
+    // EDIT PART
+    if (type === 'edit-part') {
+      const sh  = getSheet_(ss, 'Parts');
+      if (!sh) return jsonResponse_({ error: 'Parts sheet not found' });
+      const row = Number(data.row);
+      if (!row || row < 2) return jsonResponse_({ error: 'Invalid row' });
+      sh.getRange(row, PART_COLS.Category).setValue(str_(data.category));
+      sh.getRange(row, PART_COLS.Name).setValue(str_(data.name));
+      sh.getRange(row, PART_COLS.Brand).setValue(str_(data.brand));
+      sh.getRange(row, PART_COLS.Price).setValue(str_(data.price));
+      sh.getRange(row, PART_COLS.Description).setValue(str_(data.description));
+      sh.getRange(row, PART_COLS.Photos).setValue(str_(data.photos));
+      sh.getRange(row, PART_COLS.Stock).setValue(str_(data.stock));
+      return jsonResponse_({ status: 'ok', action: 'part edited', row: row });
     }
-    const lastRow = sheet.getLastRow();
 
-    // ── FIX: use normalizeStatus_ so 'Coming Soon' is always preserved ──
-    const normStatus = normalizeStatus_(data.status);
+    return jsonResponse_({ error: 'Unknown type: ' + type });
 
-    sheet.appendRow([
-      lastRow,
-      data.make,        data.model,   data.price,
-      data.year,        data.mileage, data.fuel,
-      data.color,       data.engine,  data.seats,
-      data.trans,       data.badge,   data.description,
-      data.photos,
-      normStatus        // ← FIXED
-    ]);
-    return response({ status: 'car added' });
-
-  } catch(err) {
-    return response({ status: 'error', message: err.toString() });
+  } catch (err) {
+    return jsonResponse_({ error: err.toString() });
   }
-}
-
-function response(data) {
-  return ContentService
-    .createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
 }
