@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vehicle Parts — Royal Motors Sierra Leone</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .page-hero { background: var(--black); padding: 60px 60px 40px; border-bottom: 3px solid var(--red); }
+    .parts-hero-label { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: 8px; }
+    .parts-hero-title { font-family: var(--font-display); font-size: 64px; color: var(--white); letter-spacing: 2px; line-height: 1; margin-bottom: 12px; }
+    .parts-hero-title span { color: var(--red); }
+    .parts-hero-sub { color: #888; font-size: 15px; font-weight: 300; max-width: 560px; margin-bottom: 20px; line-height: 1.7; }
+    .hero-rental-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+    .rental-call-btn { background: transparent; color: var(--white); border: 2px solid rgba(255,255,255,0.5); padding: 10px 20px; font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; transition: all .2s; justify-content: center; text-decoration: none; }
+    .rental-call-btn:hover { border-color: var(--white); background: rgba(255,255,255,0.1); }
+    .filter-bar { background: var(--off-white); padding: 24px 60px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--light-gray); position: sticky; top: 64px; z-index: 50; }
+    .filter-search { flex: 1; min-width: 200px; display: flex; align-items: center; background: var(--white); border: 1px solid var(--light-gray); padding: 0 14px; gap: 10px; }
+    .filter-search i { color: var(--gray); }
+    .filter-search input { border: none; outline: none; width: 100%; font-family: var(--font-body); font-size: 14px; padding: 10px 0; background: transparent; }
+    .parts-section { padding: 40px 60px 80px; }
+    .parts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .part-card { background: var(--off-white); overflow: hidden; transition: transform .2s, box-shadow .2s; cursor: pointer; }
+    .part-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.1); }
+    .part-img { height: 200px; background: var(--light-gray); position: relative; overflow: hidden; }
+    .part-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .part-cat { position: absolute; top: 12px; left: 12px; background: var(--red); color: var(--white); font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 8px; max-width: 80%; }
+    .part-info { padding: 20px; }
+    .part-brand { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .part-name { font-size: 17px; font-weight: 600; margin-bottom: 12px; line-height: 1.3; }
+    .part-stock { font-size: 12px; color: var(--gray); margin-bottom: 12px; }
+    .part-bottom { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--light-gray); padding-top: 14px; }
+    .part-price { font-family: var(--font-display); font-size: 26px; color: var(--red); letter-spacing: 1px; }
+    .part-btn { background: var(--black); color: var(--white); border: none; padding: 8px 14px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: background .2s; }
+    .part-btn:hover { background: var(--red); }
+    .loading-parts { grid-column: 1 / -1; text-align: center; padding: 80px 20px; color: var(--gray); }
+    .loading-parts i { font-size: 48px; color: var(--red); display: block; margin-bottom: 16px; animation: spin 1s linear infinite; }
+    .no-parts { grid-column: 1 / -1; text-align: center; padding: 60px; color: var(--gray); }
+    @media (max-width: 900px) {
+      .page-hero { padding: 40px 20px 28px; }
+      .parts-hero-title { font-size: 48px; }
+      .filter-bar { padding: 16px 20px; }
+      .parts-section { padding: 20px 16px 60px; }
+      .parts-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .parts-hero-title { font-size: 36px; }
+      .parts-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo-link">
+    <div class="nav-logo">
+      <img src="images/Logo-removebg-preview.png" alt="Royal Motors Logo" class="nav-logo-img">
+      ROYAL <span>MOTORS</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="inventory.html">Inventory</a></li>
+    <li><a href="parts.html" class="active">Parts</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+    <li><a href="rentals.html">Rentals</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="index.html" class="mobile-home-btn" title="Home"><i class="fa-solid fa-house"></i></a>
+    <div class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="parts-hero-label">Genuine & quality parts</div>
+  <h1 class="parts-hero-title">Vehicle <span>Parts</span></h1>
+  <p class="parts-hero-sub">Browse our parts and accessories catalogue. Message us on WhatsApp with the part name or photo — we’ll confirm fitment, price, and availability.</p>
+  <div class="hero-rental-btns">
+    <a href="https://wa.me/23276784937" target="_blank" class="rental-call-btn"><i class="fa-brands fa-whatsapp"></i> Ask about a part</a>
+    <a href="tel:+23276784937" class="rental-call-btn"><i class="fa-solid fa-phone"></i> Call us</a>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="filter-search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="part-search" placeholder="Search parts, category, brand..." oninput="filterParts()">
+  </div>
+</div>
+
+<section class="parts-section">
+  <div class="parts-grid" id="parts-grid">
+    <div class="loading-parts" style="grid-column:1/-1;">
+      <i class="fa-solid fa-spinner"></i>
+      <p>Loading parts...</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Royal <span>Motors</span></div>
+  <div class="footer-text">© 2026 Royal Motors Sierra Leone. All rights reserved.</div>
+  <div class="footer-location">Freetown, Sierra Leone</div>
+</footer>
+
+<script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMBJiuzYC9VsddpzFWJkGKy-4b13mLaFlhVD05W0DXMopmKb9BGlGLQMaYoyo3OaCY/exec';
+  let allParts = [];
+
+  function escapeHtml(str) {
+    return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function cleanDesc(t) {
+    return String(t ?? '').replace(/https?:\/\/\S+/gi, '').replace(/\s{2,}/g, ' ').trim();
+  }
+
+  function partPhoto(p) {
+    const raw = (p.Photos != null && String(p.Photos).trim()) ? String(p.Photos).trim() : (p.Photo || '');
+    const first = raw.split(/[,;\n\r]+/)[0];
+    return (first || '').trim();
+  }
+
+  function renderParts(list) {
+    const grid = document.getElementById('parts-grid');
+    if (!list.length) {
+      grid.innerHTML = '<div class="no-parts"><i class="fa-solid fa-screwdriver-wrench" style="font-size:40px;color:var(--light-gray);display:block;margin-bottom:12px;"></i><p>No parts listed yet. Check back soon or WhatsApp us.</p></div>';
+      return;
+    }
+    grid.innerHTML = '';
+    list.forEach((item) => {
+      const cat = escapeHtml(item.Category || 'Parts');
+      const name = escapeHtml(item.Name || '—');
+      const brand = escapeHtml(item.Brand || '');
+      const price = escapeHtml(item.Price || '—');
+      const stock = item.Stock != null && String(item.Stock).trim() ? escapeHtml(String(item.Stock).trim()) : '';
+      const desc = cleanDesc(item.Description || '');
+      const img = partPhoto(item);
+      const rawName = `${item.Name || ''}`.trim();
+      const card = document.createElement('div');
+      card.className = 'part-card';
+      card.innerHTML = `
+        <div class="part-img">
+          ${cat ? `<div class="part-cat">${cat}</div>` : ''}
+          ${img ? `<img src="${escapeHtml(img)}" alt="${name}" onerror="this.style.display='none'">` : ''}
+        </div>
+        <div class="part-info">
+          ${brand ? `<div class="part-brand">${brand}</div>` : ''}
+          <div class="part-name">${name}</div>
+          ${stock ? `<div class="part-stock"><i class="fa-solid fa-box" style="margin-right:6px;opacity:0.6;"></i>${stock}</div>` : ''}
+          ${desc ? `<p style="font-size:13px;color:var(--gray);line-height:1.5;margin-bottom:12px;">${escapeHtml(desc)}</p>` : ''}
+          <div class="part-bottom">
+            <div class="part-price">${price}</div>
+            <button type="button" class="part-btn wa-btn-part">Enquire</button>
+          </div>
+        </div>`;
+      card.querySelector('.wa-btn-part').addEventListener('click', function(e) {
+        e.stopPropagation();
+        let msg = `Hello Royal Motors!\n\nI'm looking for this part:\n*${rawName}*`;
+        if (item.Brand && String(item.Brand).trim()) msg += `\nBrand / fitment: ${item.Brand}`;
+        if (item.Price && String(item.Price).trim()) msg += `\nPrice shown: *${item.Price}*`;
+        msg += '\n\nPlease confirm availability.';
+        window.open(`https://wa.me/23276784937?text=${encodeURIComponent(msg)}`, '_blank');
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  function filterParts() {
+    const q = document.getElementById('part-search').value.toLowerCase().trim();
+    if (!q) { renderParts(allParts); return; }
+    const filtered = allParts.filter((p) => {
+      const blob = `${p.Category || ''} ${p.Name || ''} ${p.Brand || ''} ${p.Description || ''}`.toLowerCase();
+      return blob.includes(q);
+    });
+    renderParts(filtered);
+  }
+
+  async function loadParts() {
+    try {
+      const res = await fetch(SCRIPT_URL + '?type=parts');
+      const data = await res.json();
+      allParts = Array.isArray(data) ? data.filter((p) => p.Name || p.Category) : [];
+      renderParts(allParts);
+    } catch (e) {
+      document.getElementById('parts-grid').innerHTML = '<div class="no-parts">Could not load parts. Refresh or check your connection.</div>';
+    }
+  }
+
+  function toggleMenu() {
+    document.querySelector('.nav-links').classList.toggle('open');
+  }
+
+  loadParts();
+</script>
+</body>
+</html>

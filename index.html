@@ -22,6 +22,7 @@
   <ul class="nav-links">
     <li><a href="index.html" class="active">Home</a></li>
     <li><a href="inventory.html">Inventory</a></li>
+    <li><a href="parts.html">Parts</a></li>
     <li><a href="about.html" >About</a></li>
     <li><a href="index.html#contact">Contact</a></li>
     <li><a href="rentals.html">Rentals</a></li>
@@ -43,7 +44,8 @@
     <h1 class="hero-title">Drive Your <span>Dream</span> Car Today</h1>
     <p class="hero-sub">Sierra Leone's premier destination for quality vehicles. New arrivals every week — find the perfect car for you and your family.</p>
     <div class="hero-btns">
-      <a href="inventory.html" class="btn-primary">Browse Inventory</a>
+      <a href="inventory.html?availability=in-stock" class="btn-primary">Cars in stock</a>
+      <a href="inventory.html?availability=coming-soon" class="btn-outline">Coming soon</a>
       <a href="rentals.html" class="btn-outline">Car Rentals</a>
       <a href="#contact" class="btn-outline">Contact Us</a>
     </div>
@@ -91,7 +93,25 @@
     </div>
   </div>
   <div style="text-align:center;margin-top:40px;">
-    <a href="inventory.html" class="btn-primary" style="text-decoration:none;padding:16px 48px;">See More Cars →</a>
+    <a href="inventory.html?availability=in-stock" class="btn-primary" style="text-decoration:none;padding:16px 48px;">Browse cars in stock →</a>
+  </div>
+</section>
+
+<!-- ARRIVING SOON -->
+<section class="section soon-section" style="background:var(--off-white);padding-top:60px;padding-bottom:60px;">
+  <div class="section-header">
+    <div>
+      <div class="section-label">Reserve ahead</div>
+      <div class="section-title">Arriving Soon <span style="color:var(--red);">· Pre-order</span></div>
+    </div>
+    <a class="view-all" href="inventory.html?availability=coming-soon">View all →</a>
+  </div>
+  <p style="max-width:520px;color:var(--gray);font-size:15px;font-weight:300;line-height:1.7;margin:-32px 0 40px;">See what’s on the way. Message us on WhatsApp to pre-order or hold a vehicle.</p>
+  <div class="cars-grid" id="coming-soon-grid">
+    <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--gray);">
+      <i class="fa-solid fa-spinner" style="font-size:28px;color:var(--red);display:block;margin-bottom:12px;animation:spin 1s linear infinite;"></i>
+      Loading…
+    </div>
   </div>
 </section>
 
@@ -174,7 +194,9 @@
         <select>
           <option value="">Interested In...</option>
           <option>New Car Purchase</option>
+          <option>Pre-order / Coming Soon</option>
           <option>Car Rental</option>
+          <option>Vehicle Parts</option>
           <option>Test Drive</option>
           <option>Other</option>
         </select>
@@ -287,17 +309,30 @@
     return String(text ?? '').replace(/https?:\/\/\S+/gi, '').replace(/\s{2,}/g, ' ').trim();
   }
 
-  /* --- LOAD FEATURED CARS FROM GOOGLE SHEET --- */
+  function carIsComingSoon(car) {
+    return /coming/i.test(String(car.Status || 'In Stock').trim());
+  }
+
+  function carAvailPillHtml(car) {
+    if (carIsComingSoon(car)) {
+      return '<div class="car-avail car-avail--soon">Coming soon</div>';
+    }
+    return '<div class="car-avail car-avail--stock">In stock</div>';
+  }
+
+  /* --- LOAD FEATURED CARS (in stock only) --- */
   async function loadFeatured() {
     try {
       const res = await fetch(SCRIPT_URL);
       const cars = await res.json();
-      const featured = cars.filter(c => c.Make).slice(0, 3);
+      const list = Array.isArray(cars) ? cars.filter(c => c.Make) : [];
+      const inStock = list.filter(c => !carIsComingSoon(c));
+      const featured = inStock.slice(0, 3);
       const grid = document.getElementById('featured-grid');
       grid.innerHTML = '';
 
       if (featured.length === 0) {
-        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray);">No vehicles available yet. Check back soon!</div>';
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--gray);">No vehicles in stock to feature yet. Check “Arriving soon” below or the full inventory.</div>';
         return;
       }
 
@@ -313,11 +348,11 @@
         const year = escapeHtml(car.Year || '—');
         const mileage = escapeHtml(car.Mileage || '');
         const fuel = escapeHtml(car.Fuel || '');
-        const trans = escapeHtml(carTransmissionFromData(car) || '');
 
         card.innerHTML = `
           <div class="car-img">
             ${badgeText ? `<div class="car-tag">${badgeText}</div>` : ''}
+            ${carAvailPillHtml(car)}
             ${mainPhoto ? `<img src="${escapeHtml(mainPhoto)}" alt="${escapeHtml(`${car.Make || ''} ${car.Model || ''}`)}" class="car-photo">` : ''}
           </div>
           <div class="car-info">
@@ -330,7 +365,7 @@
             </div>
             <div class="car-bottom">
               <div class="car-price">${escapeHtml(car.Price || '—')}</div>
-              <button class="car-btn enquire-btn">Enquire</button>
+              <button type="button" class="car-btn enquire-btn">Enquire</button>
             </div>
           </div>`;
 
@@ -340,7 +375,7 @@
             photos,
             car.Year || '', car.Mileage || '', car.Fuel || '', carTransmissionFromData(car) || '',
             car.Color || '', car.Engine || '', car.Seats || '',
-            car.Description || ''
+            car.Description || '', false
           );
         });
 
@@ -354,6 +389,68 @@
 
     } catch(err) {
       document.getElementById('featured-grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--gray);">Could not load vehicles. Please refresh.</div>';
+    }
+  }
+
+  async function loadComingSoonSection() {
+    const grid = document.getElementById('coming-soon-grid');
+    if (!grid) return;
+    try {
+      const res = await fetch(SCRIPT_URL);
+      const cars = await res.json();
+      const list = Array.isArray(cars) ? cars.filter(c => c.Make && carIsComingSoon(c)) : [];
+      grid.innerHTML = '';
+      if (list.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--gray);">No “coming soon” vehicles listed yet. Ask us on WhatsApp what’s arriving next.</div>';
+        return;
+      }
+      list.slice(0, 6).forEach(car => {
+        const photosRaw = ((car.Photos != null && car.Photos !== '') ? car.Photos : (car.Photo || '')).toString().trim();
+        const photos = photosRaw ? splitPhotoUrls(photosRaw) : [];
+        const mainPhoto = photos[0] || '';
+        const badgeRaw = carBadgeFromData(car);
+        const badgeText = badgeRaw ? escapeHtml(badgeRaw) : '';
+        const year = escapeHtml(car.Year || '—');
+        const mileage = escapeHtml(car.Mileage || '');
+        const fuel = escapeHtml(car.Fuel || '');
+        const card = document.createElement('div');
+        card.className = 'car-card';
+        card.innerHTML = `
+          <div class="car-img">
+            ${badgeText ? `<div class="car-tag">${badgeText}</div>` : ''}
+            ${carAvailPillHtml(car)}
+            ${mainPhoto ? `<img src="${escapeHtml(mainPhoto)}" alt="${escapeHtml(`${car.Make || ''} ${car.Model || ''}`)}" class="car-photo">` : ''}
+          </div>
+          <div class="car-info">
+            <div class="car-make">${escapeHtml(car.Make || '')}</div>
+            <div class="car-model">${escapeHtml(car.Model || '')}</div>
+            <div class="car-specs">
+              <span class="car-spec"><strong>${year}</strong> Year</span>
+              ${mileage ? `<span class="car-spec">${mileage}</span>` : ''}
+              ${fuel ? `<span class="car-spec">${fuel}</span>` : ''}
+            </div>
+            <div class="car-bottom">
+              <div class="car-price">${escapeHtml(car.Price || '—')}</div>
+              <button type="button" class="car-btn enquire-btn">Pre-order</button>
+            </div>
+          </div>`;
+        card.addEventListener('click', function() {
+          openCarModal(
+            car.Make || '', car.Model || '', car.Price || '', photos,
+            car.Year || '', car.Mileage || '', car.Fuel || '', carTransmissionFromData(car) || '',
+            car.Color || '', car.Engine || '', car.Seats || '',
+            car.Description || '', true
+          );
+        });
+        card.querySelector('.enquire-btn').addEventListener('click', function(e) {
+          e.stopPropagation();
+          const t = `Hello Royal Motors!%0A%0AI want to *pre-order* the *${car.Make} ${car.Model}* (${car.Price}).%0A%0APlease confirm availability!`;
+          window.open(`https://wa.me/23276784937?text=${t}`, '_blank');
+        });
+        grid.appendChild(card);
+      });
+    } catch (e) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--gray);">Could not load arriving vehicles.</div>';
     }
   }
 
@@ -376,7 +473,8 @@
   }
 
   /* --- MODAL --- */
-  function openCarModal(make, model, price, photos, year, mileage, fuel, trans, color, engine, seats, description) {
+  function openCarModal(make, model, price, photos, year, mileage, fuel, trans, color, engine, seats, description, isPreorder) {
+    const preorder = !!isPreorder;
     document.getElementById('modal-make').textContent        = make;
     document.getElementById('modal-model').textContent       = model;
     document.getElementById('modal-price').textContent       = price;
@@ -388,6 +486,8 @@
     document.getElementById('modal-engine').textContent      = engine;
     document.getElementById('modal-seats').textContent       = seats;
     document.getElementById('modal-description').textContent = cleanDescriptionText(description);
+    const fin = document.querySelector('#carModal .modal-finance');
+    if (fin) fin.textContent = preorder ? 'Arriving soon · Pre-order' : 'Finance available';
     currentPhotos = Array.isArray(photos) ? photos.filter(p => p) : [photos];
     currentPhotoIndex = 0;
     updateMainPhoto();
@@ -402,8 +502,14 @@
         thumbs.appendChild(img);
       });
     }
-    document.getElementById('modal-wa-btn').onclick = function() {
-      const text = `Hello Royal Motors!%0A%0AI am interested in the *${make} ${model}* priced at *${price}*%0A%0APlease send me more information!`;
+    const waBtn = document.getElementById('modal-wa-btn');
+    waBtn.innerHTML = preorder
+      ? '<i class="fa-brands fa-whatsapp"></i> Pre-order on WhatsApp'
+      : '<i class="fa-brands fa-whatsapp"></i> Enquire on WhatsApp';
+    waBtn.onclick = function() {
+      const text = preorder
+        ? `Hello Royal Motors!%0A%0AI want to *pre-order* the *${make} ${model}* (${price}).%0A%0APlease confirm availability!`
+        : `Hello Royal Motors!%0A%0AI am interested in the *${make} ${model}* priced at *${price}*%0A%0APlease send me more information!`;
       window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
     };
     document.getElementById('carModal').classList.add('active');
@@ -435,6 +541,7 @@
 
   /* --- INIT --- */
   loadFeatured();
+  loadComingSoonSection();
 </script>
 
 </body>

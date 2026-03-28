@@ -86,6 +86,7 @@
   <ul class="nav-links">
     <li><a href="index.html">Home</a></li>
     <li><a href="inventory.html" class="active" >Inventory</a></li>
+    <li><a href="parts.html">Parts</a></li>
     <li><a href="about.html">About</a></li>
     <li><a href="index.html#contact">Contact</a></li>
     <li><a href="rentals.html" >Rentals</a></li>
@@ -104,9 +105,9 @@
 <div class="page-hero">
   <div class="inventory-hero-label">Browse Our Fleet</div>
   <h1 class="inventory-hero-title">Full <span>Inventory</span></h1>
-  <p class="inventory-hero-sub">Explore our complete collection of quality vehicles. Use the filters to find your perfect match.</p>
+  <p class="inventory-hero-sub">Browse vehicles <strong>in stock</strong> today and <strong>coming soon</strong> for pre-order — filter below or open any card for full details.</p>
   <div class="hero-rental-btns">
-    <a href="https://wa.me/23276784937" target="_blank" class="rental-call-btn"><i class="fa-brands fa-whatsapp"></i> Book Now</a>
+    <a href="https://wa.me/23276784937" target="_blank" class="rental-call-btn"><i class="fa-brands fa-whatsapp"></i> CONTACT US </a>
     <a href="tel:+23276784937" class="rental-call-btn"><i class="fa-solid fa-phone"></i> Call Us Directly</a>
   </div>
 </div>
@@ -117,6 +118,11 @@
     <i class="fa-solid fa-magnifying-glass"></i>
     <input type="text" id="search-input" placeholder="Search by brand or model..." oninput="filterCars()">
   </div>
+  <select class="filter-select" id="filter-availability" onchange="filterCars()">
+    <option value="">Availability</option>
+    <option value="in-stock">In stock</option>
+    <option value="coming-soon">Coming soon</option>
+  </select>
   <select class="filter-select" id="filter-brand" onchange="filterCars()">
     <option value="">Brands</option>
   </select>
@@ -218,6 +224,12 @@
       allCars = cars.filter(c => c.Make);
       populateBrandFilter();
       renderCars(allCars);
+      const urlAvail = new URLSearchParams(window.location.search).get('availability');
+      const fa = document.getElementById('filter-availability');
+      if (fa && (urlAvail === 'in-stock' || urlAvail === 'coming-soon')) {
+        fa.value = urlAvail;
+        filterCars();
+      }
     } catch(err) {
       document.getElementById('inventory-grid').innerHTML = `
         <div class="no-results">
@@ -273,6 +285,17 @@
     return b;
   }
 
+  function carIsComingSoon(car) {
+    return /coming/i.test(String(car.Status || 'In Stock').trim());
+  }
+
+  function carAvailPillHtml(car) {
+    if (carIsComingSoon(car)) {
+      return '<div class="car-avail car-avail--soon">Coming soon</div>';
+    }
+    return '<div class="car-avail car-avail--stock">In stock</div>';
+  }
+
   function cleanDescriptionText(text) {
     return String(text ?? '').replace(/https?:\/\/\S+/gi, '').replace(/\s{2,}/g, ' ').trim();
   }
@@ -314,8 +337,6 @@ function renderCars(cars) {
     const y  = escapeHtml(car.Year || '—');
     const mi = escapeHtml(car.Mileage || '—');
     const fu = escapeHtml(car.Fuel || '—');
-    const trRaw = carTransmissionFromData(car);
-    const tr = escapeHtml(trRaw || '');
     const pr = escapeHtml(car.Price || '—');
     const badgeRaw = carBadgeFromData(car);
     const badgeText = badgeRaw ? escapeHtml(badgeRaw) : '';
@@ -329,9 +350,11 @@ function renderCars(cars) {
     card.dataset.price = priceNum;
     card.dataset.year  = car.Year  || '';
 
+    const soon = carIsComingSoon(car);
     card.innerHTML = `
       <div class="car-img">
         ${badgeText ? `<div class="car-tag">${badgeText}</div>` : ''}
+        ${carAvailPillHtml(car)}
         ${mainPhoto ? `<img src="${safeSrc}" alt="${imgAlt}" class="car-photo">` : ''}
       </div>
       <div class="car-info">
@@ -344,7 +367,7 @@ function renderCars(cars) {
         </div>
         <div class="car-bottom">
           <div class="car-price">${pr}</div>
-          <button type="button" class="car-btn enquire-btn">Enquire</button>
+          <button type="button" class="car-btn enquire-btn">${soon ? 'Pre-order' : 'Enquire'}</button>
         </div>
       </div>`;
 
@@ -361,7 +384,8 @@ function renderCars(cars) {
         car.Color || '',
         car.Engine || '',
         car.Seats || '',
-        car.Description || ''
+        car.Description || '',
+        soon
       );
     });
 
@@ -369,7 +393,12 @@ function renderCars(cars) {
     if (enquireBtn) {
       enquireBtn.addEventListener('click', function(e) {
         e.stopPropagation();
-        enquireCar(`${car.Make} ${car.Model}`, car.Price);
+        if (soon) {
+          const t = `Hello Royal Motors!%0A%0AI want to *pre-order* the *${car.Make} ${car.Model}* (${car.Price}).%0A%0APlease confirm availability!`;
+          window.open(`https://wa.me/23276784937?text=${t}`, '_blank');
+        } else {
+          enquireCar(`${car.Make} ${car.Model}`, car.Price);
+        }
       });
     }
 
@@ -384,6 +413,7 @@ function renderCars(cars) {
   function filterCars() {
     const search = document.getElementById('search-input').value.toLowerCase();
     const brand  = document.getElementById('filter-brand').value;
+    const avail  = document.getElementById('filter-availability').value;
     const fuel   = document.getElementById('filter-fuel').value;
     const price  = document.getElementById('filter-price').value;
     const sort   = document.getElementById('filter-sort').value;
@@ -392,6 +422,8 @@ function renderCars(cars) {
       const text = `${car.Make} ${car.Model} ${car.Fuel} ${car.Year}`.toLowerCase();
       if (search && !text.includes(search)) return false;
       if (brand && car.Make !== brand) return false;
+      if (avail === 'in-stock' && carIsComingSoon(car)) return false;
+      if (avail === 'coming-soon' && !carIsComingSoon(car)) return false;
       if (fuel && car.Fuel !== fuel) return false;
       if (price) {
         const [min, max] = price.split('-').map(Number);
@@ -420,6 +452,7 @@ function renderCars(cars) {
 
   function resetFilters() {
     document.getElementById('search-input').value = '';
+    document.getElementById('filter-availability').value = '';
     document.getElementById('filter-brand').value = '';
     document.getElementById('filter-fuel').value  = '';
     document.getElementById('filter-price').value = '';
@@ -428,7 +461,8 @@ function renderCars(cars) {
   }
 
   /* --- MODAL --- */
-  function openCarModal(make, model, price, photos, year, mileage, fuel, trans, color, engine, seats, description) {
+  function openCarModal(make, model, price, photos, year, mileage, fuel, trans, color, engine, seats, description, isPreorder) {
+    const preorder = !!isPreorder;
     document.getElementById('modal-make').textContent        = make;
     document.getElementById('modal-model').textContent       = model;
     document.getElementById('modal-price').textContent       = price;
@@ -440,6 +474,8 @@ function renderCars(cars) {
     document.getElementById('modal-engine').textContent      = engine;
     document.getElementById('modal-seats').textContent       = seats;
     document.getElementById('modal-description').textContent = cleanDescriptionText(description);
+    const fin = document.querySelector('#carModal .modal-finance');
+    if (fin) fin.textContent = preorder ? 'Arriving soon · Pre-order' : 'Finance available';
     currentPhotos = Array.isArray(photos) ? photos.filter(p => p) : [photos];
     currentPhotoIndex = 0;
     updateMainPhoto();
@@ -454,8 +490,14 @@ function renderCars(cars) {
         thumbs.appendChild(img);
       });
     }
-    document.getElementById('modal-wa-btn').onclick = function() {
-      const text = `Hello Royal Motors! %0A%0AI am interested in the *${make} ${model}* priced at *${price}*%0A%0APlease send me more information!`;
+    const waBtn = document.getElementById('modal-wa-btn');
+    waBtn.innerHTML = preorder
+      ? '<i class="fa-brands fa-whatsapp"></i> Pre-order on WhatsApp'
+      : '<i class="fa-brands fa-whatsapp"></i> Enquire on WhatsApp';
+    waBtn.onclick = function() {
+      const text = preorder
+        ? `Hello Royal Motors! %0A%0AI want to *pre-order* the *${make} ${model}* (${price}).%0A%0APlease confirm availability!`
+        : `Hello Royal Motors! %0A%0AI am interested in the *${make} ${model}* priced at *${price}*%0A%0APlease send me more information!`;
       window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
     };
     document.getElementById('carModal').classList.add('active');

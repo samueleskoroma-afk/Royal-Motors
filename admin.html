@@ -352,6 +352,7 @@
       <div class="sidebar-item" onclick="showSection('add-car', this)"><i class="fa-solid fa-plus"></i> Add New Car</div>
       <div class="sidebar-item" onclick="showSection('manage-cars', this)"><i class="fa-solid fa-list"></i> Manage Cars</div>
       <div class="sidebar-item" onclick="showSection('add-rental', this)"><i class="fa-solid fa-key"></i> Add Rental Car</div>
+      <div class="sidebar-item" onclick="showSection('add-part', this)"><i class="fa-solid fa-screwdriver-wrench"></i> Add Part</div>
     </div>
 
     <div class="admin-main">
@@ -382,8 +383,9 @@
             Use the sidebar to navigate:<br>
             • <strong>Add New Car</strong> — Upload photos and add a car to inventory<br>
             • <strong>Manage Cars</strong> — View, or delete existing cars<br>
-            • <strong>Add Rental Car</strong> — Add a car to the rental fleet<br><br>
-            Photos are uploaded automatically to the cloud — no file paths needed!
+            • <strong>Add Rental Car</strong> — Add a car to the rental fleet<br>
+            • <strong>Add Part</strong> — List parts & accessories for the Parts page<br><br>
+            Set each vehicle’s <strong>Availability</strong> to <em>In stock</em> or <em>Coming soon</em> (column <strong>Status</strong> in the Cars sheet). Photos upload to the cloud automatically.
           </p>
         </div>
       </div>
@@ -450,6 +452,13 @@
                 <option value="Diesel">Diesel</option>
                 <option value="Electric">Electric</option>
                 <option value="Hybrid">Hybrid</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Availability</label>
+              <select id="car-status">
+                <option value="In Stock">In stock — showroom now</option>
+                <option value="Coming Soon">Coming soon — pre-order</option>
               </select>
             </div>
           </div>
@@ -674,6 +683,39 @@
         </div>
       </div>
 
+      <!-- ADD PART -->
+      <div class="page-section" id="section-add-part">
+        <div class="section-header"><h2>Add Vehicle Part</h2></div>
+        <div class="form-card">
+          <h3>Part details</h3>
+          <div class="form-grid">
+            <div class="form-group"><label>Category</label><input type="text" id="part-category" placeholder="e.g. Filters, Brakes, Tyres"></div>
+            <div class="form-group"><label>Part name</label><input type="text" id="part-name" placeholder="e.g. Oil filter — Toyota"></div>
+            <div class="form-group"><label>Brand / fitment</label><input type="text" id="part-brand" placeholder="e.g. OEM / compatible models"></div>
+            <div class="form-group"><label>Price</label><input type="text" id="part-price" placeholder="e.g. NLE 150,000"></div>
+            <div class="form-group"><label>Stock note (optional)</label><input type="text" id="part-stock" placeholder="e.g. In stock / Order only"></div>
+          </div>
+          <div class="form-group full" style="margin-top:16px;">
+            <label>Main photo</label>
+            <div class="upload-area">
+              <input type="file" accept="image/*" onchange="uploadPartMain(this)">
+              <i class="fa-solid fa-camera"></i>
+              <p>Click to upload part photo</p>
+            </div>
+            <div class="upload-progress" id="part-main-progress"><div class="upload-progress-bar" id="part-main-progress-bar"></div></div>
+            <div id="part-main-preview" style="margin-top:8px;"></div>
+          </div>
+          <div class="form-group full">
+            <label>Description</label>
+            <textarea id="part-description" placeholder="Short description, part number, notes..."></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="submit-btn" id="submit-part-btn" onclick="submitPart()"><i class="fa-solid fa-plus"></i> Add part</button>
+          </div>
+          <div class="message" id="part-message"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -696,6 +738,10 @@
     <div class="mobile-nav-item" id="mob-rental" onclick="showSection('add-rental', this)">
       <i class="fa-solid fa-key"></i>
       Rental
+    </div>
+    <div class="mobile-nav-item" id="mob-part" onclick="showSection('add-part', this)">
+      <i class="fa-solid fa-screwdriver-wrench"></i>
+      Part
     </div>
   </div>
 </div>
@@ -771,6 +817,13 @@
           <option value="Available">Available</option>
         </select>
       </div>
+      <div class="form-group full" id="edit-status-wrap" style="display:none;">
+        <label>Availability (inventory cars)</label>
+        <select id="edit-status">
+          <option value="In Stock">In stock</option>
+          <option value="Coming Soon">Coming soon</option>
+        </select>
+      </div>
       <div class="form-group full"><label>Description</label><textarea id="edit-description"></textarea></div>
     </div>
     <div class="form-actions" style="margin-top:20px;">
@@ -795,6 +848,7 @@
   let mainPhotoUrl   = '';
   let extraPhotoUrls = [];
   let rentalPhotoUrl = '';
+  let partMainPhotoUrl = '';
 
   /* --- LOGIN --- */
   /* --- ADD TO RENTALS FROM INVENTORY --- */
@@ -962,6 +1016,70 @@
     }
   }
 
+  async function uploadPartMain(input) {
+    const file = input.files[0];
+    if (!file) return;
+    try {
+      const url = await uploadToCloudinary(file, 'part-main-progress', 'part-main-progress-bar');
+      partMainPhotoUrl = url;
+      document.getElementById('part-main-preview').innerHTML =
+        `<img src="${url}" style="width:120px;height:80px;object-fit:cover;border:2px solid var(--red);">
+         <p style="font-size:11px;color:var(--gray);margin-top:4px;">Photo uploaded</p>`;
+    } catch (err) {
+      alert('Upload failed. Check your connection.');
+    }
+  }
+
+  async function submitPart() {
+    const category = document.getElementById('part-category').value.trim();
+    const name = document.getElementById('part-name').value.trim();
+    const brand = document.getElementById('part-brand').value.trim();
+    const price = document.getElementById('part-price').value.trim();
+    const stock = document.getElementById('part-stock').value.trim();
+    const description = document.getElementById('part-description').value.trim();
+    if (!name || !price) {
+      showMessage('part-message', 'error', 'Please enter at least part name and price.');
+      return;
+    }
+    if (!partMainPhotoUrl) {
+      showMessage('part-message', 'error', 'Please upload a main photo.');
+      return;
+    }
+    const btn = document.getElementById('submit-part-btn');
+    btn.disabled = true;
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'part',
+          category,
+          name,
+          brand,
+          price,
+          photo: partMainPhotoUrl,
+          photos: partMainPhotoUrl,
+          description,
+          stock
+        })
+      });
+      showPopup('Part added successfully!', 'success');
+      showMessage('part-message', 'success', 'Part saved. It will show on the Parts page shortly.');
+      document.getElementById('part-category').value = '';
+      document.getElementById('part-name').value = '';
+      document.getElementById('part-brand').value = '';
+      document.getElementById('part-price').value = '';
+      document.getElementById('part-stock').value = '';
+      document.getElementById('part-description').value = '';
+      document.getElementById('part-main-preview').innerHTML = '';
+      partMainPhotoUrl = '';
+    } catch (e) {
+      showMessage('part-message', 'error', 'Could not save part. Try again.');
+    }
+    btn.disabled = false;
+  }
+
   /* --- UPLOAD EXTRA PHOTOS --- */
   async function uploadExtraPhotos(input, context = 'car') {
     const files = Array.from(input.files).slice(0, 4);
@@ -1014,6 +1132,7 @@
     const seats       = document.getElementById('car-seats').value.trim();
     const trans       = document.getElementById('car-trans').value;
     const badge       = document.getElementById('car-badge').value;
+    const status      = document.getElementById('car-status').value;
     const description = document.getElementById('car-description').value.trim();
 
     if (!make || !model || !price) {
@@ -1035,7 +1154,7 @@
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'car', make, model, price, year, mileage, fuel, color, engine, seats, trans, badge, description, photos: allPhotos })
+        body: JSON.stringify({ type: 'car', make, model, price, year, mileage, fuel, color, engine, seats, trans, badge, status, description, photos: allPhotos })
       });
       showPopup('Successfully added a vehicle!', 'success');
       showMessage('car-message', 'success', 'Car added successfully! It will appear on the website shortly.');
@@ -1133,7 +1252,7 @@
             </td>
             <td>
               <div class="manage-cell-stack">
-                <button type="button" class="edit-btn" onclick="openEditModal(${sheetRow}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photosForEdit)}')">
+                <button type="button" class="edit-btn" onclick="openEditModal(${sheetRow}, 'car', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photosForEdit)}','${escapeQ(car.Status || 'In Stock')}')">
                   <i class="fa-solid fa-pen"></i> Edit
                 </button>
                 <button type="button" class="delete-btn" onclick="deleteCar(${sheetRow})">
@@ -1156,6 +1275,7 @@
                   <div><div class="admin-car-detail-label">Engine</div><div class="admin-car-detail-value">${escapeHtml(car.Engine || '—')}</div></div>
                   <div><div class="admin-car-detail-label">Seats</div><div class="admin-car-detail-value">${escapeHtml(car.Seats || '—')}</div></div>
                   <div><div class="admin-car-detail-label">Transmission</div><div class="admin-car-detail-value">${escapeHtml(adminTransLabel(car.Trans))}</div></div>
+                  <div><div class="admin-car-detail-label">Availability</div><div class="admin-car-detail-value">${escapeHtml(car.Status || 'In Stock')}</div></div>
                   <div><div class="admin-car-detail-label">Badge</div><div class="admin-car-detail-value">${escapeHtml(car.Badge || '—')}</div></div>
                   ${detailPhotos ? '<div class="admin-car-detail-photos">' + detailPhotos + '</div>' : ''}
                   <div class="admin-car-detail-desc">${escapeHtml(car.Description || '') || '<span style="color:var(--gray);">No description</span>'}</div>
@@ -1217,7 +1337,7 @@
             </td>
             <td>
               <div class="manage-cell-stack">
-                <button type="button" class="edit-btn" onclick="openEditModal(${sheetRow}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(rentalPhotosForEdit)}')">
+                <button type="button" class="edit-btn" onclick="openEditModal(${sheetRow}, 'rental', '${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(rentalPhotosForEdit)}','')">
                   <i class="fa-solid fa-pen"></i> Edit
                 </button>
                 <button type="button" class="delete-btn" onclick="deleteRental(${sheetRow})">
@@ -1350,11 +1470,17 @@
   }
 
   /* --- EDIT MODAL --- */
-  function openEditModal(row, type, make, model, price, year, mileage, fuel, color, engine, seats, trans, badge, description, existingPhotos) {
+  function openEditModal(row, type, make, model, price, year, mileage, fuel, color, engine, seats, trans, badge, description, existingPhotos, status) {
     editMainPhotoUrl = '';
     editExtraPhotoUrls = [];
     editExistingPhotos = existingPhotos || '';
     editOriginalTrans = normalizeTransForSelect(trans);
+    const isCar = type === 'car';
+    const statusWrap = document.getElementById('edit-status-wrap');
+    if (statusWrap) statusWrap.style.display = isCar ? 'block' : 'none';
+    if (isCar) {
+      document.getElementById('edit-status').value = /coming/i.test(String(status || '')) ? 'Coming Soon' : 'In Stock';
+    }
     document.getElementById('edit-main-preview').innerHTML = existingPhotos
       ? '<p style="font-size:11px;color:var(--gray);margin-top:4px;">Current photo kept unless you upload a new one.</p>'
       : '';
@@ -1424,6 +1550,7 @@
       description: stripUrlsFromText(document.getElementById('edit-description').value.trim()),
       photos:      allPhotos,
     };
+    if (type === 'car') data.status = document.getElementById('edit-status').value;
     const saveBtn = document.querySelector('#editModal .submit-btn');
     if (saveBtn) saveBtn.disabled = true;
     try {
@@ -1485,6 +1612,7 @@ async function deleteCar(row) {
     .forEach(id => document.getElementById(id).value = '');
     document.getElementById('car-fuel').value = '';
     document.getElementById('car-badge').value = '';
+    document.getElementById('car-status').value = 'In Stock';
     document.getElementById('main-preview').innerHTML = '';
     document.getElementById('extra-previews').innerHTML = '';
     mainPhotoUrl = '';

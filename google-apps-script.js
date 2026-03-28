@@ -133,6 +133,38 @@ function normalizeCarRow_(row, headers) {
   }
   if (obj.Badge != null && looksLikeUrl_(obj.Badge)) delete obj.Badge;
 
+  const statusIdx = lower.findIndex(function(h) {
+    return h === 'status' || h === 'availability' || h === 'avail';
+  });
+  if (statusIdx >= 0 && row[statusIdx] != null && String(row[statusIdx]).trim() !== '') {
+    obj.Status = String(row[statusIdx]).trim();
+  } else if (row.length > 14 && row[14] != null && String(row[14]).trim() !== '') {
+    obj.Status = String(row[14]).trim();
+  } else {
+    obj.Status = 'In Stock';
+  }
+  if (/coming\s*soon/i.test(String(obj.Status))) obj.Status = 'Coming Soon';
+
+  return obj;
+}
+
+function getPartsSheet_(ss) {
+  const names = ['Parts', 'Vehicle Parts', 'PARTS', 'parts'];
+  for (let i = 0; i < names.length; i++) {
+    const sh = ss.getSheetByName(names[i]);
+    if (sh) return sh;
+  }
+  return null;
+}
+
+function normalizePartRow_(row, headers) {
+  const obj = {};
+  headers.forEach(function(h, i) {
+    if (h !== '' && h != null) obj[String(h).trim()] = row[i];
+  });
+  if (row.length >= 5 && (obj.Price === undefined || obj.Price === '') && row[3] !== '') obj.Price = row[3];
+  if (row.length >= 6 && (obj.Photo === undefined || obj.Photo === '') && row[4] !== '') obj.Photo = row[4];
+  if (row.length >= 7 && (obj.Photos === undefined || obj.Photos === '') && row[5] !== '') obj.Photos = row[5];
   return obj;
 }
 
@@ -158,6 +190,23 @@ function doGet(e) {
       return response({ status: 'deleted', row: row });
     }
 
+    // Return PARTS
+    if (type === 'parts') {
+      const sheet = getPartsSheet_(ss);
+      if (!sheet) return response([]);
+      const data = sheet.getDataRange().getValues();
+      if (data.length < 2) return response([]);
+      const headers = data[0];
+      const parts = [];
+      data.slice(1).forEach(function(row, idx) {
+        if (!row[0] && !row[1]) return;
+        const obj = normalizePartRow_(row, headers);
+        obj._row = idx + 2;
+        parts.push(obj);
+      });
+      return response(parts);
+    }
+
     // Return RENTALS
     if (type === 'rentals') {
       const sheet = getRentalsSheet_(ss);
@@ -165,11 +214,13 @@ function doGet(e) {
       const data = sheet.getDataRange().getValues();
       if (data.length < 2) return response([]);
       const headers = data[0];
-      const rentals = data.slice(1)
-        .filter(function(row) { return row[0]; })
-        .map(function(row) {
-          return normalizeRentalRow_(row, headers);
-        });
+      const rentals = [];
+      data.slice(1).forEach(function(row, idx) {
+        if (!row[0]) return;
+        const obj = normalizeRentalRow_(row, headers);
+        obj._row = idx + 2;
+        rentals.push(obj);
+      });
       return response(rentals);
     }
 
@@ -178,9 +229,13 @@ function doGet(e) {
     const data = sheet.getDataRange().getValues();
     if (data.length < 2) return response([]);
     const headers = data[0];
-    const cars = data.slice(1)
-      .filter(row => row[1])
-      .map(row => normalizeCarRow_(row, headers));
+    const cars = [];
+    data.slice(1).forEach(function(row, idx) {
+      if (!row[1]) return;
+      const obj = normalizeCarRow_(row, headers);
+      obj._row = idx + 2;
+      cars.push(obj);
+    });
     return response(cars);
 
   } catch(err) {
@@ -241,6 +296,7 @@ function doPost(e) {
         const mergedBadge = pickOrKeep_(data.badge, existing[11] || '');
         const mergedDescription = pickOrKeep_(data.description, existing[12] || '');
         const mergedPhotos = pickOrKeep_(data.photos, existing[13] || '');
+        const mergedStatus = pickOrKeep_(data.status, (existing[14] != null && String(existing[14]).trim() !== '') ? String(existing[14]).trim() : 'In Stock');
 
         targetSheet.getRange(row, 2).setValue(mergedMake);
         targetSheet.getRange(row, 3).setValue(mergedModel);
@@ -255,6 +311,7 @@ function doPost(e) {
         targetSheet.getRange(row, 12).setValue(mergedBadge);
         targetSheet.getRange(row, 13).setValue(mergedDescription);
         targetSheet.getRange(row, 14).setValue(mergedPhotos);
+        targetSheet.getRange(row, 15).setValue(/coming/i.test(String(mergedStatus)) ? 'Coming Soon' : 'In Stock');
       }
       return response({ status: 'edited', row: row });
     }
@@ -275,21 +332,44 @@ function doPost(e) {
       return response({ status: 'rental added' });
     }
 
+    // ADD PART
+    if (data.type === 'part') {
+      let sheet = getPartsSheet_(ss);
+      if (!sheet) {
+        sheet = ss.insertSheet('Parts');
+        sheet.appendRow(['Category', 'Name', 'Brand', 'Price', 'Photo', 'Photos', 'Description', 'Stock']);
+      }
+      sheet.appendRow([
+        data.category || '',
+        data.name || '',
+        data.brand || '',
+        data.price || '',
+        data.photo || '',
+        data.photos || data.photo || '',
+        data.description || '',
+        data.stock || ''
+      ]);
+      return response({ status: 'part added' });
+    }
+
     // ADD regular CAR
     let sheet = ss.getSheetByName('Cars');
     if (!sheet) {
       sheet = ss.getActiveSheet();
       if (sheet.getLastRow() === 0) {
-        sheet.appendRow(['ID','Make','Model','Price','Year','Mileage','Fuel','Color','Engine','Seats','Trans','Badge','Description','Photos']);
+        sheet.appendRow(['ID','Make','Model','Price','Year','Mileage','Fuel','Color','Engine','Seats','Trans','Badge','Description','Photos','Status']);
       }
     }
     const lastRow = sheet.getLastRow();
+    const statusVal = (data.status && String(data.status).trim()) ? String(data.status).trim() : 'In Stock';
+    const normStatus = /coming/i.test(statusVal) ? 'Coming Soon' : 'In Stock';
     sheet.appendRow([
       lastRow,
       data.make, data.model, data.price,
       data.year, data.mileage, data.fuel,
       data.color, data.engine, data.seats,
-      data.trans, data.badge, data.description, data.photos
+      data.trans, data.badge, data.description, data.photos,
+      normStatus
     ]);
     return response({ status: 'car added' });
 
@@ -301,5 +381,5 @@ function doPost(e) {
 function response(data) {
   return ContentService
     .createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);z
+    .setMimeType(ContentService.MimeType.JSON);
 }
