@@ -16,6 +16,15 @@
     .hero-rental-btns { display: flex; gap: 14px; flex-wrap: wrap; }
     .rental-call-btn { background: transparent; color: var(--white); border: 2px solid rgba(255,255,255,0.5); padding: 10px 20px; font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; transition: all .2s; justify-content: center; text-decoration: none; }
     .rental-call-btn:hover { border-color: var(--white); background: rgba(255,255,255,0.1); }
+    button.rental-call-btn { cursor: pointer; }
+    .hero-call-dialog { border: none; padding: 0; border-radius: 8px; max-width: calc(100vw - 32px); width: 320px; box-shadow: 0 16px 48px rgba(0,0,0,0.35); z-index: 10000; }
+    .hero-call-dialog::backdrop { background: rgba(0,0,0,0.55); }
+    .hero-call-dialog-inner { padding: 24px; }
+    .hero-call-dialog-title { font-size: 14px; font-weight: 600; margin: 0 0 16px; color: var(--black); }
+    .hero-call-dialog-link { display: flex; align-items: center; gap: 10px; padding: 14px 16px; margin-bottom: 10px; background: var(--off-white); color: var(--black); text-decoration: none; font-weight: 600; font-size: 15px; border: 1px solid var(--light-gray); transition: border-color .2s, background .2s; }
+    .hero-call-dialog-link:hover { border-color: var(--red); background: #fff; }
+    .hero-call-dialog-cancel { width: 100%; margin-top: 8px; padding: 10px; background: transparent; border: 1px solid var(--light-gray); color: var(--gray); font-family: var(--font-body); font-size: 13px; cursor: pointer; }
+    .hero-call-dialog-cancel:hover { border-color: var(--black); color: var(--black); }
     .filter-bar { background: var(--off-white); padding: 24px 60px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--light-gray); position: sticky; top: 64px; z-index: 50; }
     .filter-search { flex: 1; min-width: 200px; display: flex; align-items: center; background: var(--white); border: 1px solid var(--light-gray); padding: 0 14px; gap: 10px; }
     .filter-search i { color: var(--gray); }
@@ -81,9 +90,18 @@
   <p class="parts-hero-sub">Browse our parts and accessories catalogue. Message us on WhatsApp with the part name or photo — we’ll confirm fitment, price, and availability.</p>
   <div class="hero-rental-btns">
     <a href="https://wa.me/23276784937" target="_blank" class="rental-call-btn"><i class="fa-brands fa-whatsapp"></i> Ask about a part</a>
-    <a href="tel:+23276784937" class="rental-call-btn"><i class="fa-solid fa-phone"></i> Call us</a>
+    <button type="button" class="rental-call-btn" onclick="document.getElementById('hero-call-dialog').showModal()"><i class="fa-solid fa-phone"></i> Call us</button>
   </div>
 </div>
+
+<dialog id="hero-call-dialog" class="hero-call-dialog">
+  <form method="dialog" class="hero-call-dialog-inner">
+    <p class="hero-call-dialog-title">Choose a number to call</p>
+    <a href="tel:+23290777888" class="hero-call-dialog-link" onclick="document.getElementById('hero-call-dialog').close()"><i class="fa-solid fa-phone"></i> +232 90 777 888</a>
+    <a href="tel:+23288505880" class="hero-call-dialog-link" onclick="document.getElementById('hero-call-dialog').close()"><i class="fa-solid fa-phone"></i> +232 88 505 880</a>
+    <button type="submit" class="hero-call-dialog-cancel">Cancel</button>
+  </form>
+</dialog>
 
 <div class="filter-bar">
   <div class="filter-search">
