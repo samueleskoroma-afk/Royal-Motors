@@ -1,9 +1,19 @@
 // =============================================
-// ROYAL MOTORS — Google Apps Script v3
+// ROYAL MOTORS — Google Apps Script v4
 // Replace ALL code with this then redeploy
 // =============================================
 
 const SHEET_ID = '16yRIt44Ilfr8cw7XbewyvhnWoYzv5iQnKbv7gMQROS8';
+
+/** Normalise any status string to exactly 'Coming Soon' or 'In Stock' */
+function normalizeStatus_(val) {
+  const s = String(val ?? '').trim();
+  if (/coming\s*soon/i.test(s)) return 'Coming Soon';
+  if (s === 'In Stock' || s === 'in stock' || s === '') return 'In Stock';
+  // Catch any other truthy value that was intentionally set to Coming Soon
+  if (/coming/i.test(s)) return 'Coming Soon';
+  return 'In Stock';
+}
 
 /** Tab names tried in order — must match one tab at the bottom of your spreadsheet */
 function getRentalsSheet_(ss) {
@@ -44,7 +54,6 @@ function looksLikeTransmission_(s) {
 }
 
 function guessTransmissionFromRow_(row) {
-  // Heuristic fallback: find a cell that looks like Auto/Manual (and is not a URL)
   for (let i = 0; i < row.length; i++) {
     const v = row[i];
     if (v == null) continue;
@@ -114,36 +123,34 @@ function normalizeCarRow_(row, headers) {
   const photosVal = photosIdx >= 0 ? row[photosIdx] : '';
   const photoVal = photoIdx >= 0 ? row[photoIdx] : '';
 
-  // Prefer the plural key used by the frontend
   if ((obj.Photos == null || String(obj.Photos).trim() === '') && photosIdx >= 0 && photosVal) obj.Photos = photosVal;
   if ((obj.Photo == null || String(obj.Photo).trim() === '') && photoIdx >= 0 && photoVal) obj.Photo = photoVal;
 
-  // Also handle lowercase variants like `photos` / `photo`
   if ((obj.Photos == null || String(obj.Photos).trim() === '') && obj.photos != null && String(obj.photos).trim() !== '') obj.Photos = obj.photos;
   if ((obj.Photo == null || String(obj.Photo).trim() === '') && obj.photo != null && String(obj.photo).trim() !== '') obj.Photo = obj.photo;
 
-  // Final fallback: if last column looks like a URL(s), treat it as Photos
   if ((obj.Photos == null || String(obj.Photos).trim() === '') && headers.length) {
     const lastVal = row[headers.length - 1];
     if (typeof lastVal === 'string' && lastVal.toLowerCase().includes('http')) obj.Photos = lastVal;
   }
-  // Column N (index 13) is Photos in the standard 14-column Cars layout
   if ((obj.Photos == null || String(obj.Photos).trim() === '') && row.length > 13 && row[13] != null && String(row[13]).trim() !== '' && looksLikeUrl_(row[13])) {
     obj.Photos = row[13];
   }
   if (obj.Badge != null && looksLikeUrl_(obj.Badge)) delete obj.Badge;
 
+  // ── STATUS / AVAILABILITY ──────────────────────────────────────────────────
+  // Look for a header named Status, Availability, or Avail (case-insensitive)
   const statusIdx = lower.findIndex(function(h) {
     return h === 'status' || h === 'availability' || h === 'avail';
   });
   if (statusIdx >= 0 && row[statusIdx] != null && String(row[statusIdx]).trim() !== '') {
-    obj.Status = String(row[statusIdx]).trim();
+    obj.Status = normalizeStatus_(row[statusIdx]);
   } else if (row.length > 14 && row[14] != null && String(row[14]).trim() !== '') {
-    obj.Status = String(row[14]).trim();
+    // Column O (index 14) is the standard Status column in a 15-column Cars sheet
+    obj.Status = normalizeStatus_(row[14]);
   } else {
     obj.Status = 'In Stock';
   }
-  if (/coming\s*soon/i.test(String(obj.Status))) obj.Status = 'Coming Soon';
 
   return obj;
 }
@@ -282,21 +289,27 @@ function doPost(e) {
         targetSheet.getRange(row, 9).setValue(photosStr || '');
         targetSheet.getRange(row, 10).setValue(mergedBadge);
       } else {
-        // Columns must match appendRow: K=Trans L=Badge M=Description N=Photos (1-based 11–14)
-        const mergedMake = pickOrKeep_(data.make, existing[1] || '');
-        const mergedModel = pickOrKeep_(data.model, existing[2] || '');
-        const mergedPrice = pickOrKeep_(data.price, existing[3] || '');
-        const mergedYear = pickOrKeep_(data.year, existing[4] || '');
-        const mergedMileage = pickOrKeep_(data.mileage, existing[5] || '');
-        const mergedFuel = pickOrKeep_(data.fuel, existing[6] || '');
-        const mergedColor = pickOrKeep_(data.color, existing[7] || '');
-        const mergedEngine = pickOrKeep_(data.engine, existing[8] || '');
-        const mergedSeats = pickOrKeep_(data.seats, existing[9] || '');
-        const mergedTrans = pickTransOrKeep_(data.trans, existing[10] || '');
-        const mergedBadge = pickOrKeep_(data.badge, existing[11] || '');
+        // Columns: A=ID B=Make C=Model D=Price E=Year F=Mileage G=Fuel H=Color
+        //          I=Engine J=Seats K=Trans L=Badge M=Description N=Photos O=Status
+        const mergedMake        = pickOrKeep_(data.make,        existing[1]  || '');
+        const mergedModel       = pickOrKeep_(data.model,       existing[2]  || '');
+        const mergedPrice       = pickOrKeep_(data.price,       existing[3]  || '');
+        const mergedYear        = pickOrKeep_(data.year,        existing[4]  || '');
+        const mergedMileage     = pickOrKeep_(data.mileage,     existing[5]  || '');
+        const mergedFuel        = pickOrKeep_(data.fuel,        existing[6]  || '');
+        const mergedColor       = pickOrKeep_(data.color,       existing[7]  || '');
+        const mergedEngine      = pickOrKeep_(data.engine,      existing[8]  || '');
+        const mergedSeats       = pickOrKeep_(data.seats,       existing[9]  || '');
+        const mergedTrans       = pickTransOrKeep_(data.trans,  existing[10] || '');
+        const mergedBadge       = pickOrKeep_(data.badge,       existing[11] || '');
         const mergedDescription = pickOrKeep_(data.description, existing[12] || '');
-        const mergedPhotos = pickOrKeep_(data.photos, existing[13] || '');
-        const mergedStatus = pickOrKeep_(data.status, (existing[14] != null && String(existing[14]).trim() !== '') ? String(existing[14]).trim() : 'In Stock');
+        const mergedPhotos      = pickOrKeep_(data.photos,      existing[13] || '');
+
+        // ── FIX: use normalizeStatus_ so 'Coming Soon' is always preserved ──
+        const existingStatus = (existing[14] != null && String(existing[14]).trim() !== '')
+          ? String(existing[14]).trim()
+          : 'In Stock';
+        const mergedStatus = normalizeStatus_(hasValue_(data.status) ? data.status : existingStatus);
 
         targetSheet.getRange(row, 2).setValue(mergedMake);
         targetSheet.getRange(row, 3).setValue(mergedModel);
@@ -311,7 +324,7 @@ function doPost(e) {
         targetSheet.getRange(row, 12).setValue(mergedBadge);
         targetSheet.getRange(row, 13).setValue(mergedDescription);
         targetSheet.getRange(row, 14).setValue(mergedPhotos);
-        targetSheet.getRange(row, 15).setValue(/coming/i.test(String(mergedStatus)) ? 'Coming Soon' : 'In Stock');
+        targetSheet.getRange(row, 15).setValue(mergedStatus); // ← FIXED
       }
       return response({ status: 'edited', row: row });
     }
@@ -340,14 +353,14 @@ function doPost(e) {
         sheet.appendRow(['Category', 'Name', 'Brand', 'Price', 'Photo', 'Photos', 'Description', 'Stock']);
       }
       sheet.appendRow([
-        data.category || '',
-        data.name || '',
-        data.brand || '',
-        data.price || '',
-        data.photo || '',
-        data.photos || data.photo || '',
+        data.category    || '',
+        data.name        || '',
+        data.brand       || '',
+        data.price       || '',
+        data.photo       || '',
+        data.photos      || data.photo || '',
         data.description || '',
-        data.stock || ''
+        data.stock       || ''
       ]);
       return response({ status: 'part added' });
     }
@@ -361,15 +374,18 @@ function doPost(e) {
       }
     }
     const lastRow = sheet.getLastRow();
-    const statusVal = (data.status && String(data.status).trim()) ? String(data.status).trim() : 'In Stock';
-    const normStatus = /coming/i.test(statusVal) ? 'Coming Soon' : 'In Stock';
+
+    // ── FIX: use normalizeStatus_ so 'Coming Soon' is always preserved ──
+    const normStatus = normalizeStatus_(data.status);
+
     sheet.appendRow([
       lastRow,
-      data.make, data.model, data.price,
-      data.year, data.mileage, data.fuel,
-      data.color, data.engine, data.seats,
-      data.trans, data.badge, data.description, data.photos,
-      normStatus
+      data.make,        data.model,   data.price,
+      data.year,        data.mileage, data.fuel,
+      data.color,       data.engine,  data.seats,
+      data.trans,       data.badge,   data.description,
+      data.photos,
+      normStatus        // ← FIXED
     ]);
     return response({ status: 'car added' });
 
