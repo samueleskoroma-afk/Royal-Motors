@@ -203,7 +203,12 @@ footer { background: #0a0a0a; color: #666; padding: 32px 60px; display: flex; al
   .hero-visual { display: none; }
   .hero-stats { position: relative; bottom: auto; left: auto; padding: 0 40px 40px; max-width: none; }
   .section-header { flex-wrap: wrap; gap: 16px; align-items: flex-end; }
-  .cars-grid { grid-template-columns: 1fr 1fr; }
+  /* index.html: two cars per row (same idea as inventory on tablet/phone) */
+  .index-cars-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
   .why-grid { grid-template-columns: 1fr 1fr; }
   .contact-section { grid-template-columns: 1fr; gap: 40px; }
 }
@@ -249,19 +254,23 @@ footer { background: #0a0a0a; color: #666; padding: 32px 60px; display: flex; al
   .section-title { font-size: clamp(28px, 8vw, 36px); }
   .contact-title { font-size: clamp(28px, 8vw, 36px); margin-bottom: 20px; }
   .soon-section { padding-top: 36px; padding-bottom: 36px; }
-  /* index.html featured + coming soon: two cards per row (same as inventory mobile) */
-  .cars-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .cars-grid .car-img { height: 130px; }
-  .cars-grid .car-info { padding: 10px; }
-  .cars-grid .car-make { font-size: 10px; }
-  .cars-grid .car-model { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-  .cars-grid .car-specs { gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-  .cars-grid .car-spec { font-size: 10px; }
-  .cars-grid .car-price { font-size: 18px; }
-  .cars-grid .car-btn { padding: 6px 10px; font-size: 10px; }
-  .cars-grid .car-bottom { padding-top: 8px; }
-  .cars-grid .car-tag { font-size: 9px; padding: 2px 6px; }
-  .cars-grid .car-avail { font-size: 8px; padding: 3px 6px; }
+  /* index.html featured + coming soon: two cards per row (match inventory mobile) */
+  .index-cars-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .index-cars-grid .car-img { height: 130px; }
+  .index-cars-grid .car-info { padding: 10px; }
+  .index-cars-grid .car-make { font-size: 10px; }
+  .index-cars-grid .car-model { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .index-cars-grid .car-specs { gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .index-cars-grid .car-spec { font-size: 10px; }
+  .index-cars-grid .car-price { font-size: 18px; }
+  .index-cars-grid .car-btn { padding: 6px 10px; font-size: 10px; }
+  .index-cars-grid .car-bottom { padding-top: 8px; }
+  .index-cars-grid .car-tag { font-size: 9px; padding: 2px 6px; }
+  .index-cars-grid .car-avail { font-size: 8px; padding: 3px 6px; }
   .why-grid { grid-template-columns: 1fr; gap: 16px; }
   .why-section { padding: 36px 16px; }
   .contact-section { padding: 36px 16px; gap: 28px; grid-template-columns: 1fr; }
