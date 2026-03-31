@@ -353,6 +353,7 @@
       <div class="sidebar-item" onclick="showSection('manage-cars', this)"><i class="fa-solid fa-list"></i> Manage Cars</div>
       <div class="sidebar-item" onclick="showSection('add-rental', this)"><i class="fa-solid fa-key"></i> Add Rental Car</div>
       <div class="sidebar-item" onclick="showSection('add-part', this)"><i class="fa-solid fa-screwdriver-wrench"></i> Add Part</div>
+      <div class="sidebar-item" onclick="showSection('about-inbox', this)"><i class="fa-solid fa-inbox"></i> About Form Inbox</div>
     </div>
 
     <div class="admin-main">
@@ -738,6 +739,39 @@
         </div>
       </div>
 
+      <!-- ABOUT FORM INBOX -->
+      <div class="page-section" id="section-about-inbox">
+        <div class="section-header">
+          <h2>About Form Inbox</h2>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+            <button type="button" class="submit-btn" id="about-refresh-btn" onclick="loadAboutInbox()">
+              <i class="fa-solid fa-rotate"></i> Refresh
+            </button>
+            <button type="button" class="clear-btn" id="about-export-csv" onclick="exportAboutCsv()">
+              <i class="fa-solid fa-file-csv"></i> Download CSV
+            </button>
+            <button type="button" class="clear-btn" id="about-export-json" onclick="exportAboutJson()">
+              <i class="fa-solid fa-file-code"></i> Download JSON
+            </button>
+          </div>
+        </div>
+
+        <div class="form-card" style="padding:18px 16px;">
+          <div style="color:var(--gray);font-size:13px;line-height:1.8;">
+            This shows submissions from Firestore collection <b><code>aboutSubmissions</code></b>.
+            Click <b>Download CSV</b> to open it neatly in Excel/Google Sheets, or use <b>WhatsApp</b> on any submission.
+          </div>
+        </div>
+
+        <div class="cars-table-wrap" style="background:transparent;">
+          <div class="loading" id="about-loading">
+            <i class="fa-solid fa-spinner"></i>
+            Loading submissions...
+          </div>
+          <div id="about-list" style="display:none;"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -764,6 +798,10 @@
     <div class="mobile-nav-item" id="mob-part" onclick="showSection('add-part', this)">
       <i class="fa-solid fa-screwdriver-wrench"></i>
       Part
+    </div>
+    <div class="mobile-nav-item" id="mob-inbox" onclick="showSection('about-inbox', this)">
+      <i class="fa-solid fa-inbox"></i>
+      Inbox
     </div>
   </div>
 </div>
@@ -968,6 +1006,186 @@
     return rm;
   }
 
+  // ── ABOUT FORM INBOX (Firestore: aboutSubmissions) ─────────────────────────
+  let __aboutInboxCache = [];
+
+  function escHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function fmtDate(ts) {
+    try { return new Date(ts).toLocaleString(); } catch { return String(ts ?? ''); }
+  }
+
+  async function loadAboutInbox() {
+    const loading = document.getElementById('about-loading');
+    const list = document.getElementById('about-list');
+    if (!loading || !list) return;
+    loading.style.display = 'block';
+    list.style.display = 'none';
+    list.innerHTML = '';
+
+    try {
+      const rm = ensureDb();
+      const snap = await rm.getDocs(
+        rm.query(rm.collection(rm.db, 'aboutSubmissions'), rm.orderBy('submittedAt', 'desc'), rm.limit(100))
+      );
+      const rows = [];
+      snap.forEach(d => {
+        const entry = d.data() || {};
+        rows.push({ id: d.id, ...entry });
+      });
+      __aboutInboxCache = rows;
+
+      if (!rows.length) {
+        list.innerHTML = `<div class="form-card" style="padding:16px 14px;">
+          <div style="font-weight:600;">No submissions yet</div>
+          <div class="small">Submit the form once in <code>about-form.html</code>, then click Refresh.</div>
+        </div>`;
+        loading.style.display = 'none';
+        list.style.display = 'block';
+        return;
+      }
+
+      const wrap = document.createElement('div');
+      wrap.style.display = 'grid';
+      wrap.style.gap = '12px';
+
+      rows.forEach((r, idx) => {
+        const d = r.data || {};
+        const name = d.businessName || d.business_name || d.name || 'Submission';
+        const phone = d.phone || d.whatsapp || d.contact || '';
+        const email = d.email || '';
+        const submittedAt = r.submittedAt || 0;
+        const card = document.createElement('div');
+        card.className = 'form-card';
+        card.style.padding = '16px 14px';
+        const waText =
+          `Royal Motors — About Form Submission #%0A` +
+          `Name: ${encodeURIComponent(String(name || ''))}%0A` +
+          (phone ? `Phone: ${encodeURIComponent(String(phone))}%0A` : '') +
+          (email ? `Email: ${encodeURIComponent(String(email))}%0A` : '') +
+          `Submitted: ${encodeURIComponent(fmtDate(submittedAt))}%0A%0A` +
+          `${encodeURIComponent(JSON.stringify(d, null, 2))}`;
+
+        card.innerHTML = `
+          <div style="display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;align-items:flex-start;">
+            <div>
+              <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gray);font-weight:600;">#${idx + 1} · ${escHtml(fmtDate(submittedAt))}</div>
+              <div style="font-weight:700;margin-top:6px;">${escHtml(String(name))}</div>
+              <div class="small">${phone ? escHtml(String(phone)) : ''} ${email ? (' · ' + escHtml(String(email))) : ''}</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+              <button type="button" class="clear-btn" onclick="copyAboutJson(${idx})"><i class="fa-solid fa-copy"></i> Copy</button>
+              <button type="button" class="submit-btn" onclick="sendAboutWhatsApp(${idx})"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <pre class="mono" style="margin:0;">${escHtml(JSON.stringify(d, null, 2))}</pre>
+          </div>
+        `;
+        wrap.appendChild(card);
+      });
+
+      list.appendChild(wrap);
+      loading.style.display = 'none';
+      list.style.display = 'block';
+    } catch (e) {
+      loading.style.display = 'none';
+      list.style.display = 'block';
+      list.innerHTML = `<div class="form-card" style="padding:16px 14px;">
+        <div style="font-weight:700;color:var(--red);">Cannot load inbox</div>
+        <div class="small">Make sure you are logged in, and your Firestore rules allow admin read for <code>aboutSubmissions</code>.</div>
+      </div>`;
+    }
+  }
+
+  function exportAboutJson() {
+    const blob = new Blob([JSON.stringify(__aboutInboxCache, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'aboutSubmissions.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function toCsvValue(v) {
+    const s = (v == null) ? '' : String(v);
+    return `"${s.replace(/"/g, '""')}"`;
+  }
+
+  function exportAboutCsv() {
+    const rows = __aboutInboxCache || [];
+    const flat = rows.map(r => {
+      const d = r.data || {};
+      return {
+        submittedAt: r.submittedAt || '',
+        businessName: d.businessName || '',
+        phone: d.phone || '',
+        email: d.email || '',
+        json: JSON.stringify(d)
+      };
+    });
+    const header = ['submittedAt','businessName','phone','email','json'];
+    const lines = [header.join(',')].concat(
+      flat.map(o => header.map(k => toCsvValue(o[k])).join(','))
+    );
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'aboutSubmissions.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function copyAboutJson(idx) {
+    const row = (__aboutInboxCache || [])[idx];
+    const d = row ? (row.data || {}) : {};
+    const text = JSON.stringify(d, null, 2);
+    try {
+      await navigator.clipboard.writeText(text);
+      showPopup('Copied to clipboard.', 'success');
+    } catch {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      showPopup('Copied to clipboard.', 'success');
+    }
+  }
+
+  function sendAboutWhatsApp(idx) {
+    const row = (__aboutInboxCache || [])[idx];
+    if (!row) return;
+    const d = row.data || {};
+    const name = d.businessName || d.name || 'Submission';
+    const phone = d.phone || '';
+    const email = d.email || '';
+    const msg =
+      `Royal Motors — About Form Submission\n` +
+      `Name: ${name}\n` +
+      (phone ? `Phone: ${phone}\n` : '') +
+      (email ? `Email: ${email}\n` : '') +
+      `Submitted: ${fmtDate(row.submittedAt || 0)}\n\n` +
+      `${JSON.stringify(d, null, 2)}`;
+
+    // NOTE: user chooses recipient inside WhatsApp.
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
   // ── Navigation ─────────────────────────────────────────────────────────────
   function showSection(name, el) {
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
@@ -979,6 +1197,8 @@
       if (currentManageTab === 'rentals') loadRentalCars();
       else if (currentManageTab === 'parts') loadPartsTable();
       else loadCars();
+    } else if (name === 'about-inbox') {
+      loadAboutInbox();
     }
   }
 
