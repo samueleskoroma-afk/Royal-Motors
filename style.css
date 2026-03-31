@@ -48,8 +48,10 @@ nav {
 .mobile-home-btn { display: none; color: var(--white); font-size: 18px; text-decoration: none; transition: color .2s; align-items: center; justify-content: center; }
 
 /* ===================== HERO ===================== */
-.hero { background: var(--black); min-height: 520px; display: grid; grid-template-columns: 1fr 1fr; align-items: center; position: relative; overflow: hidden; min-width: 0; }
-.hero-text { padding: 60px 40px 100px 60px; }
+.hero { background: var(--black); min-height: 520px; display: block; position: relative; overflow: hidden; min-width: 0; }
+.hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.48) 45%, rgba(0,0,0,0.62) 100%); z-index: 2; }
+.hero.hero-no-video::before { background: none; }
+.hero-text { position: relative; z-index: 3; padding: 60px 40px 100px 60px; max-width: 760px; }
 .hero-badge { display: inline-block; background: var(--red); color: var(--white); font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 4px 12px; margin-bottom: 20px; }
 .hero-title { font-family: var(--font-display); font-size: 76px; line-height: 0.9; color: var(--white); letter-spacing: 2px; margin-bottom: 20px; }
 .hero-title span { color: var(--red); }
@@ -59,9 +61,10 @@ nav {
 .btn-primary:hover { background: var(--red-dark); }
 .btn-outline { background: transparent; color: var(--white); border: 1.5px solid rgba(255,255,255,0.3); padding: 14px 32px; font-family: var(--font-body); font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .2s; display: inline-block; text-decoration: none; }
 .btn-outline:hover { border-color: var(--red); color: var(--red); }
-.hero-visual { display: flex; align-items: center; justify-content: center; padding: 40px; }
-.hero-brands-img { width: 100%; max-width: 480px; }
-.hero-stats { position: absolute; bottom: 30px; left: 60px; display: flex; gap: 40px; flex-wrap: wrap; max-width: calc(100% - 120px); }
+.hero-visual { position: absolute; inset: 0; z-index: 1; display: block; padding: 0; }
+.hero-brands-img { width: 100%; height: 100%; object-fit: cover; }
+.hero-car-video { width: 100%; height: 100%; object-fit: cover; border: none; box-shadow: none; display: block; background: #000; backface-visibility: hidden; transform: translateZ(0); will-change: transform; }
+.hero-stats { position: relative; z-index: 3; padding: 0 60px 30px; display: flex; gap: 40px; flex-wrap: wrap; max-width: calc(100% - 120px); }
 .stat-num { font-family: var(--font-display); font-size: 36px; color: var(--white); letter-spacing: 1px; }
 .stat-num span { color: var(--red); }
 .stat-label { font-size: 11px; color: #777; letter-spacing: 1.5px; text-transform: uppercase; }
@@ -221,9 +224,11 @@ footer { background: #0a0a0a; color: #666; padding: 32px 60px; display: flex; al
 
 /* ===================== RESPONSIVE ===================== */
 @media (max-width: 900px) {
-  .hero { grid-template-columns: 1fr; min-height: 0; }
-  .hero-visual { display: none; }
-  .hero-stats { position: relative; bottom: auto; left: auto; padding: 0 40px 40px; max-width: none; }
+  .hero { min-height: 480px; }
+  .hero::before { background: linear-gradient(180deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.58) 55%, rgba(0,0,0,0.72) 100%); }
+  .hero-text { padding: 44px 28px 22px; max-width: 100%; }
+  .hero-title { font-size: clamp(44px, 9vw, 62px); }
+  .hero-stats { padding: 0 40px 40px; max-width: none; }
   .section-header { flex-wrap: wrap; gap: 16px; align-items: flex-end; }
   .why-grid { grid-template-columns: 1fr 1fr; }
   .contact-section { grid-template-columns: 1fr; gap: 40px; }
@@ -232,7 +237,7 @@ footer { background: #0a0a0a; color: #666; padding: 32px 60px; display: flex; al
   nav { padding: 0 12px; min-height: 56px; flex-wrap: nowrap; }
   .nav-logo { font-size: 16px; letter-spacing: 1px; gap: 8px; max-width: calc(100vw - 120px); }
   .nav-logo-img { max-height: 32px; }
-  .hero { min-height: unset; }
+  .hero { min-height: 430px; }
   .nav-links {
     display: none;
     position: absolute;
@@ -254,8 +259,8 @@ footer { background: #0a0a0a; color: #666; padding: 32px 60px; display: flex; al
   .hero-text { padding: 28px 16px 12px; }
   .hero-title { font-size: clamp(28px, 9vw, 40px); line-height: 0.95; }
   .hero-sub { font-size: 13px; max-width: none; }
-  .hero-btns { gap: 8px; }
-  .btn-primary, .btn-outline { padding: 12px 18px; font-size: 11px; letter-spacing: 0.8px; }
+  .hero-btns { gap: 8px; display: grid; grid-template-columns: 1fr 1fr; }
+  .hero-btns .btn-primary, .hero-btns .btn-outline { text-align: center; width: 100%; padding: 12px 10px; font-size: 10px; letter-spacing: 0.7px; }
   .hero-stats {
     padding: 0 16px 24px;
     gap: 12px 20px;
