@@ -363,19 +363,19 @@
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-card-num" id="total-cars">—</div>
-            <div class="stat-card-label">Total Cars</div>
+            <div class="stat-card-label">Cars</div>
           </div>
           <div class="stat-card">
-            <div class="stat-card-num">5K+</div>
-            <div class="stat-card-label">Happy Clients</div>
+            <div class="stat-card-num" id="total-rentals">—</div>
+            <div class="stat-card-label">Rentals</div>
           </div>
           <div class="stat-card">
-            <div class="stat-card-num">10+</div>
-            <div class="stat-card-label">Years Active</div>
+            <div class="stat-card-num" id="total-parts">—</div>
+            <div class="stat-card-label">Parts</div>
           </div>
           <div class="stat-card">
-            <div class="stat-card-num">SL</div>
-            <div class="stat-card-label">Sierra Leone</div>
+            <div class="stat-card-num" id="total-inbox">—</div>
+            <div class="stat-card-label">Inbox</div>
           </div>
         </div>
         <div class="form-card">
@@ -386,7 +386,7 @@
             • <strong>Manage Cars</strong> — View, or delete existing cars<br>
             • <strong>Add Rental Car</strong> — Add a car to the rental fleet<br>
             • <strong>Add Part</strong> — List parts & accessories for the Parts page<br><br>
-            Set each vehicle’s <strong>Availability</strong> to <em>In stock</em> or <em>Coming soon</em> (column <strong>Status</strong> in the Cars sheet). Photos upload to the cloud automatically.
+            Photos upload to Cloudinary automatically. Your inventory now saves securely to Firebase (Firestore).
           </p>
         </div>
       </div>
@@ -902,7 +902,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-    import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDocs, query, orderBy, limit, serverTimestamp, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
     const cfg = window.ROYALMOTORS_FIREBASE_CONFIG || {};
     const ok = cfg && cfg.apiKey && cfg.apiKey !== "PASTE_ME" && cfg.projectId && cfg.projectId !== "PASTE_ME";
@@ -910,7 +910,7 @@
       const app = initializeApp(cfg);
       const auth = getAuth(app);
       const db = getFirestore(app);
-      window.__RM = { ok, auth, db, collection, addDoc, deleteDoc, doc, getDocs, query, orderBy, limit, serverTimestamp, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+      window.__RM = { ok, auth, db, collection, addDoc, deleteDoc, doc, updateDoc, getDocs, query, orderBy, limit, serverTimestamp, getCountFromServer, signInWithEmailAndPassword, signOut, onAuthStateChanged };
       onAuthStateChanged(auth, (user) => {
         if (typeof window.__rmOnAuth === 'function') window.__rmOnAuth(user);
       });
@@ -976,8 +976,26 @@
       document.getElementById('login-pass').value = '';
       return;
     }
-    loadCarsCount();
+    loadDashboardCounts();
   };
+
+  async function loadDashboardCounts() {
+    try {
+      const rm = ensureDb();
+      const cars = await rm.getCountFromServer(rm.collection(rm.db, 'cars'));
+      const rentals = await rm.getCountFromServer(rm.collection(rm.db, 'rentals'));
+      const parts = await rm.getCountFromServer(rm.collection(rm.db, 'parts'));
+      const inbox = await rm.getCountFromServer(rm.collection(rm.db, 'aboutSubmissions'));
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v); };
+      set('total-cars', cars.data().count);
+      set('total-rentals', rentals.data().count);
+      set('total-parts', parts.data().count);
+      set('total-inbox', inbox.data().count);
+    } catch {
+      const set = (id) => { const el = document.getElementById(id); if (el) el.textContent = '—'; };
+      set('total-cars'); set('total-rentals'); set('total-parts'); set('total-inbox');
+    }
+  }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   function escapeHtml(str) {
@@ -1544,6 +1562,9 @@
             </td>
             <td>
               <div class="manage-cell-stack">
+                <button type="button" class="edit-btn" onclick="openEditModal('${escapeQ(car._id)}','car','${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photos)}','${escapeQ(status)}')">
+                  <i class="fa-solid fa-pen"></i> Edit
+                </button>
                 <button type="button" class="delete-btn" onclick="deleteCar('${escapeQ(car._id)}')">
                   <i class="fa-solid fa-trash"></i> Delete
                 </button>
@@ -1585,15 +1606,9 @@
     }
   }
 
+  // Kept for backward compatibility (dashboard now uses loadDashboardCounts)
   async function loadCarsCount() {
-    try {
-      const rm = window.__RM || {};
-      if (!rm.ok || !rm.db) { document.getElementById('total-cars').textContent = '—'; return; }
-      const snap = await rm.getDocs(rm.query(rm.collection(rm.db, 'cars'), rm.orderBy('submittedAt','desc'), rm.limit(500)));
-      let count = 0;
-      snap.forEach(d => { const e = d.data() || {}; if (e.data && e.data.Make) count++; });
-      document.getElementById('total-cars').textContent = count;
-    } catch(err) {}
+    try { await loadDashboardCounts(); } catch {}
   }
 
   function toggleCarDetail(rowKey, btn) {
@@ -1653,6 +1668,9 @@
             </td>
             <td>
               <div class="manage-cell-stack">
+                <button type="button" class="edit-btn" onclick="openEditModal('${escapeQ(car._id)}','rental','${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photos)}','')">
+                  <i class="fa-solid fa-pen"></i> Edit
+                </button>
                 <button type="button" class="delete-btn" onclick="deleteRental('${escapeQ(car._id)}')">
                   <i class="fa-solid fa-trash"></i> Delete
                 </button>
@@ -1720,6 +1738,9 @@
             </td>
             <td>
               <div class="manage-cell-stack">
+                <button type="button" class="edit-btn" onclick="openEditModal('${escapeQ(part._id)}','part','${escapeQ(part.Category)}','${escapeQ(part.Name)}','${escapeQ(part.Price)}','','','${escapeQ(part.Brand)}','','','${escapeQ(part.Stock)}','','','${escapeQ(part.Description)}','${escapeQ(photos)}','')">
+                  <i class="fa-solid fa-pen"></i> Edit
+                </button>
                 <button type="button" class="delete-btn" onclick="deletePart('${escapeQ(part._id)}')">
                   <i class="fa-solid fa-trash"></i> Delete
                 </button>
@@ -1752,11 +1773,11 @@
   }
 
   // ── EDIT MODAL ─────────────────────────────────────────────────────────────
-  function openEditModal(row, type, make, model, price, year, mileage, fuel, color, engine, seats, trans, badge, description, existingPhotos, status) {
+  function openEditModal(docId, type, make, model, price, year, mileage, fuel, color, engine, seats, trans, badge, description, existingPhotos, status) {
     editMainPhotoUrl   = '';
     editExtraPhotoUrls = [];
     editExistingPhotos = existingPhotos || '';
-    editCurrentRow     = row;
+    editCurrentRow     = docId;
     editCurrentType    = type;
 
     // Show/hide status field — only for cars
@@ -1771,7 +1792,7 @@
     document.getElementById('edit-main-preview').innerHTML = existingPhotos
       ? '<p style="font-size:11px;color:var(--gray);margin-top:4px;">Current photo kept unless you upload a new one.</p>' : '';
     document.getElementById('edit-extra-previews').innerHTML = '';
-    document.getElementById('edit-row').value   = row;
+    document.getElementById('edit-row').value   = docId;
     document.getElementById('edit-type').value  = type;
     document.getElementById('edit-make').value  = make  || '';
     document.getElementById('edit-model').value = model || '';
@@ -1825,9 +1846,7 @@
   }
 
   async function saveEdit() {
-    alert('Editing is temporarily disabled in the secure Firebase version. Please delete and re-add the item.');
-    return;
-    const row    = Number(document.getElementById('edit-row').value);
+    const docId  = String(document.getElementById('edit-row').value || '').trim();
     const type   = document.getElementById('edit-type').value;
     const make   = document.getElementById('edit-make').value.trim();
     const model  = document.getElementById('edit-model').value.trim();
@@ -1850,7 +1869,6 @@
     }
 
     const payload = {
-      row,
       make, model, price,
       year:        document.getElementById('edit-year').value.trim(),
       mileage:     document.getElementById('edit-mileage').value.trim(),
@@ -1873,47 +1891,52 @@
       payload.type = 'edit-rental';
     }
 
-    // Cars: we delete and re-add to guarantee the Status column is correct
-    // This is the simplest, most reliable approach.
     const saveBtn = document.querySelector('#editModal .submit-btn');
     if (saveBtn) saveBtn.disabled = true;
     try {
+      if (!docId) throw new Error('Missing document id');
+      const rm = ensureDb();
       if (type === 'car') {
-        // Step 1: delete the old row
-        await fetch(SCRIPT_URL + '?type=delete-car&row=' + row);
-        // Step 2: re-add with full correct data
-        await postToScript({
-          type: 'add-car',
-          make, model,
-          price:       payload.price,
-          year:        payload.year,
-          mileage:     payload.mileage,
-          fuel:        payload.fuel,
-          color:       payload.color,
-          engine:      payload.engine,
-          seats:       payload.seats,
-          trans:       payload.trans,
-          badge:       payload.badge,
-          description: payload.description,
-          photos,
-          status:      payload.status  // "In Stock" or "Coming Soon" — always correct
+        await rm.updateDoc(rm.doc(rm.db, 'cars', docId), {
+          submittedAt: Date.now(),
+          data: {
+            Make: make, Model: model, Price: payload.price,
+            Year: payload.year, Mileage: payload.mileage,
+            Fuel: payload.fuel, Color: payload.color,
+            Engine: payload.engine, Seats: payload.seats,
+            Trans: payload.trans, Badge: payload.badge,
+            Description: payload.description,
+            Photos: photos,
+            Status: payload.status
+          }
+        });
+      } else if (type === 'rental') {
+        await rm.updateDoc(rm.doc(rm.db, 'rentals', docId), {
+          submittedAt: Date.now(),
+          data: {
+            Make: make, Model: model, Price: payload.price,
+            Seats: payload.seats,
+            Fuel: payload.fuel,
+            Trans: payload.trans,
+            Badge: payload.badge,
+            Description: payload.description,
+            Photos: photos
+          }
         });
       } else if (type === 'part') {
-        await postToScript({
-          type: 'edit-part',
-          row,
-          category: payload.make,
-          name: payload.model,
-          brand: payload.fuel,
-          price: payload.price,
-          description: payload.description,
-          photos,
-          stock: payload.seats
+        // Note: this modal reuses fields, so map them to part fields.
+        await rm.updateDoc(rm.doc(rm.db, 'parts', docId), {
+          submittedAt: Date.now(),
+          data: {
+            Category: make,
+            Name: model,
+            Price: payload.price,
+            Brand: payload.fuel,
+            Stock: payload.seats,
+            Description: payload.description,
+            Photos: photos
+          }
         });
-      } else {
-        // Rentals: use the edit-rental endpoint
-        payload.type = 'edit-rental';
-        await postToScript(payload);
       }
       showMessage('edit-message', 'success', 'Saved! Refreshing list...');
       setTimeout(() => {
