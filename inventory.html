@@ -579,9 +579,9 @@ function renderCars(cars) {
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
   }
 
-  function toggleMenu() {
+  window.toggleMenu = function() {
     document.querySelector('.nav-links').classList.toggle('open');
-  }
+  };
 
   /* --- INIT --- */
   loadInventory();
