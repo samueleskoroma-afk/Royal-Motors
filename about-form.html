@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Royal Motors — Business Information Form</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red: #D0191A;
+      --black: #111111;
+      --white: #FFFFFF;
+      --off-white: #F7F5F2;
+      --gray: #888;
+      --light-gray: #E8E8E8;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body: 'Barlow', sans-serif;
+    }
+    body { font-family: var(--font-body); background: var(--off-white); color: var(--black); }
+
+    /* HEADER */
+    .form-header { background: var(--black); padding: 32px 40px; border-bottom: 4px solid var(--red); text-align: center; }
+    .form-header-logo { font-family: var(--font-display); font-size: 36px; color: var(--white); letter-spacing: 3px; margin-bottom: 8px; }
+    .form-header-logo span { color: var(--red); }
+    .form-header-sub { color: #888; font-size: 14px; font-weight: 300; }
+
+    /* INTRO CARD */
+    .intro-card { max-width: 760px; margin: 32px auto 0; padding: 0 20px; }
+    .intro-box { background: var(--white); border-left: 4px solid var(--red); padding: 20px 24px; }
+    .intro-box h2 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+    .intro-box p { font-size: 14px; color: var(--gray); line-height: 1.7; font-weight: 300; }
+
+    /* FORM WRAPPER */
+    .form-wrap { max-width: 760px; margin: 24px auto 60px; padding: 0 20px; }
+
+    /* SECTION */
+    .form-section { background: var(--white); padding: 28px 32px; margin-bottom: 20px; border-top: 3px solid var(--red); }
+    .form-section-title { font-family: var(--font-display); font-size: 24px; letter-spacing: 1px; color: var(--black); margin-bottom: 4px; }
+    .form-section-sub { font-size: 13px; color: var(--gray); margin-bottom: 24px; font-weight: 300; }
+    .form-divider { height: 1px; background: var(--light-gray); margin-bottom: 24px; }
+
+    /* FORM GROUPS */
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--black); margin-bottom: 6px; }
+    .form-group .hint { font-size: 12px; color: var(--gray); margin-bottom: 6px; font-weight: 300; font-style: italic; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 12px 16px;
+      border: 1px solid var(--light-gray);
+      font-family: var(--font-body); font-size: 14px;
+      color: var(--black); outline: none;
+      transition: border-color .2s;
+      background: var(--white);
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--red); }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* REPEATABLE ROWS */
+    .repeat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; align-items: start; }
+    .repeat-row.three { grid-template-columns: 1fr 1fr 1fr; }
+    .repeat-row input, .repeat-row textarea { margin-bottom: 0; }
+    .add-row-btn { background: transparent; border: 1.5px dashed var(--red); color: var(--red); padding: 8px 16px; font-family: var(--font-body); font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .2s; margin-top: 8px; }
+    .add-row-btn:hover { background: var(--red); color: var(--white); }
+    .remove-btn { background: transparent; border: 1px solid #ddd; color: #bbb; padding: 8px 12px; font-size: 12px; cursor: pointer; transition: all .2s; align-self: center; }
+    .remove-btn:hover { border-color: var(--red); color: var(--red); }
+    
+    /* TEAM PHOTO UPLOAD */
+    .team-photo-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; margin-bottom: 12px; }
+    .team-photo-preview { width: 56px; height: 56px; border-radius: 8px; border: 1px solid var(--light-gray); background: var(--off-white); object-fit: cover; display: none; }
+    .team-photo-placeholder { width: 56px; height: 56px; border-radius: 8px; border: 1px dashed var(--light-gray); background: var(--off-white); display: grid; place-items: center; color: #bbb; font-size: 12px; }
+    .team-photo-btn { background: var(--black); color: var(--white); border: none; padding: 10px 14px; font-family: var(--font-body); font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: background .2s; }
+    .team-photo-btn:hover { background: #000; }
+
+    /* SUBMIT */
+    .form-submit-wrap { text-align: center; margin-top: 32px; }
+    .form-submit { background: var(--red); color: var(--white); border: none; padding: 16px 60px; font-family: var(--font-body); font-size: 16px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: background .2s; }
+    .form-submit:hover { background: #A01215; }
+
+    /* SUCCESS */
+    .success-box { display: none; background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 20px 24px; margin-top: 24px; }
+    .success-box h3 { color: #2e7d32; font-size: 16px; margin-bottom: 6px; }
+    .success-box p { color: #555; font-size: 14px; }
+
+    /* PROGRESS */
+    .progress-bar-wrap { max-width: 760px; margin: 24px auto 0; padding: 0 20px; }
+    .progress-label { font-size: 12px; color: var(--gray); margin-bottom: 6px; text-align: right; }
+    .progress-bar { height: 4px; background: var(--light-gray); }
+    .progress-fill { height: 100%; background: var(--red); width: 0%; transition: width .3s; }
+
+    @media (max-width: 600px) {
+      .form-header { padding: 24px 16px; }
+      .form-section { padding: 20px 16px; }
+      .form-row { grid-template-columns: 1fr; }
+      .repeat-row { grid-template-columns: 1fr; }
+      .repeat-row.three { grid-template-columns: 1fr; }
+
+      /* Team photo upload: stack to avoid extra horizontal space */
+      .team-photo-row { grid-template-columns: 1fr; align-items: start; }
+      .team-photo-btn { width: 100%; }
+      .team-photo-preview,
+      .team-photo-placeholder { width: 48px; height: 48px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="form-header">
+  <div class="form-header-logo">Royal <span>Motors</span></div>
+  <div class="form-header-sub">Business Information Form — About Page Setup</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar-wrap">
+  <div class="progress-label" id="progress-label">0% complete</div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<!-- INTRO -->
+<div class="intro-card">
+  <div class="intro-box">
+    <h2>👋 Hello!</h2>
+    <p>This form will help us build a professional About page for the Royal Motors website. Please fill in as much detail as possible — the more information you provide, the better your About page will look. This should take about 10 minutes to complete.</p>
+  </div>
+</div>
+
+<!-- FORM -->
+<div class="form-wrap">
+  <form id="info-form">
+
+    <!-- SECTION 1 — COMPANY BASICS -->
+    <div class="form-section">
+      <div class="form-section-title">01 — Company Basics</div>
+      <div class="form-section-sub">Basic information about Royal Motors</div>
+      <div class="form-divider"></div>
+
+      <div class="form-group">
+        <label>Full Official Business Name *</label>
+        <input type="text" id="business-name" placeholder="e.g. Royal Motors Sierra Leone Ltd" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Year Founded *</label>
+          <input type="number" id="year-founded" placeholder="e.g. 2014" min="1900" max="2026" required>
+        </div>
+        <div class="form-group">
+          <label>Years in Business</label>
+          <input type="text" id="years-business" placeholder="e.g. 10+ years">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Showroom Full Address *</label>
+        <input type="text" id="address" placeholder="e.g. 45 Wilkinson Road, Freetown, Sierra Leone" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone / WhatsApp Number *</label>
+          <input type="tel" id="phone" placeholder="e.g. +232 76 784 937" required>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="email" placeholder="e.g. info@royalmotors.sl">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Opening Hours (Weekdays)</label>
+          <input type="text" id="hours-weekday" placeholder="e.g. Mon – Fri: 8:00am – 6:00pm">
+        </div>
+        <div class="form-group">
+          <label>Opening Hours (Weekend)</label>
+          <input type="text" id="hours-weekend" placeholder="e.g. Sat: 9:00am – 4:00pm">
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 — STATS -->
+    <div class="form-section">
+      <div class="form-section-title">02 — Business Stats</div>
+      <div class="form-section-sub">Numbers that show the scale of your business</div>
+      <div class="form-divider"></div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cars Currently in Stock</label>
+          <input type="text" id="cars-stock" placeholder="e.g. 200+">
+        </div>
+        <div class="form-group">
+          <label>Total Customers Served</label>
+          <input type="text" id="customers" placeholder="e.g. 5,000+">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Number of Staff</label>
+          <input type="text" id="staff-count" placeholder="e.g. 15">
+        </div>
+        <div class="form-group">
+          <label>Branches / Locations</label>
+          <input type="text" id="branches" placeholder="e.g. 1 (Freetown)">
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 — THE STORY -->
+    <div class="form-section">
+      <div class="form-section-title">03 — Your Story</div>
+      <div class="form-section-sub">Tell us the story of Royal Motors</div>
+      <div class="form-divider"></div>
+
+      <div class="form-group">
+        <label>How did Royal Motors start? *</label>
+        <div class="hint">Tell us the founding story — who started it, why, and how it grew</div>
+        <textarea id="founding-story" placeholder="e.g. Royal Motors was founded in 2014 with a vision to give Sierra Leoneans access to quality vehicles at fair prices. What started as a small lot of 10 cars has grown into..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>What makes Royal Motors different?</label>
+        <div class="hint">What do you do better than other dealerships in Sierra Leone?</div>
+        <textarea id="what-different" placeholder="e.g. We are the only dealership in Freetown that offers..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>What is your mission statement?</label>
+        <div class="hint">One or two sentences describing your business purpose</div>
+        <input type="text" id="mission" placeholder="e.g. To provide every Sierra Leonean with access to a quality, reliable vehicle at a fair price.">
+      </div>
+    </div>
+
+    <!-- SECTION 4 — CORE VALUES -->
+    <div class="form-section">
+      <div class="form-section-title">04 — Core Values</div>
+      <div class="form-section-sub">The values that guide your business (up to 6)</div>
+      <div class="form-divider"></div>
+
+      <div id="values-container">
+        <div class="repeat-row" id="value-row-1">
+          <div class="form-group">
+            <label>Value Name</label>
+            <input type="text" placeholder="e.g. Integrity">
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" placeholder="e.g. We are honest and transparent in everything we do">
+          </div>
+        </div>
+        <div class="repeat-row" id="value-row-2">
+          <div class="form-group">
+            <input type="text" placeholder="e.g. Quality">
+          </div>
+          <div class="form-group">
+            <input type="text" placeholder="e.g. Every vehicle is thoroughly inspected before sale">
+          </div>
+        </div>
+        <div class="repeat-row" id="value-row-3">
+          <div class="form-group">
+            <input type="text" placeholder="e.g. Customer First">
+          </div>
+          <div class="form-group">
+            <input type="text" placeholder="e.g. Our customers are the reason we exist">
+          </div>
+        </div>
+      </div>
+      <button type="button" class="add-row-btn" onclick="addValue()">+ Add Another Value</button>
+    </div>
+
+    <!-- SECTION 5 — TEAM -->
+    <div class="form-section">
+      <div class="form-section-title">05 — Meet The Team</div>
+      <div class="form-section-sub">Key people at Royal Motors</div>
+      <div class="form-divider"></div>
+
+      <div id="team-container">
+        <div class="team-member-block" style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--light-gray);" data-team-photo="">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" class="team-name" placeholder="e.g. John Koroma" required>
+            </div>
+            <div class="form-group">
+              <label>Job Title / Role *</label>
+              <input type="text" class="team-role" placeholder="e.g. Founder & CEO" required>
+            </div>
+          </div>
+          <div class="team-photo-row">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div class="team-photo-placeholder" aria-hidden="true">IMG</div>
+              <img class="team-photo-preview" alt="Team member photo preview">
+              <input type="file" class="team-photo-input" accept="image/*" hidden>
+              <div style="font-size:12px;color:var(--gray);font-weight:300;">
+                Optional staff photo (JPG/PNG)
+              </div>
+            </div>
+            <button type="button" class="team-photo-btn" onclick="triggerTeamPhoto(this)">Upload Photo</button>
+          </div>
+          <div class="form-group">
+            <label>Short Bio</label>
+            <textarea class="team-bio" style="min-height:70px;" placeholder="e.g. John founded Royal Motors in 2014 with over 15 years of experience in the automotive industry..."></textarea>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="add-row-btn" onclick="addTeamMember()">+ Add Team Member</button>
+    </div>
+
+    <!-- SECTION 6 — MILESTONES -->
+    <div class="form-section">
+      <div class="form-section-title">06 — Key Milestones</div>
+      <div class="form-section-sub">Important events in Royal Motors history</div>
+      <div class="form-divider"></div>
+
+      <div id="milestones-container">
+        <div class="repeat-row three" id="milestone-row-1">
+          <div class="form-group">
+            <label>Year</label>
+            <input type="number" class="milestone-year" placeholder="e.g. 2014" min="1900" max="2030">
+          </div>
+          <div class="form-group">
+            <label>Milestone Title</label>
+            <input type="text" class="milestone-title" placeholder="e.g. Royal Motors Founded">
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" class="milestone-desc" placeholder="e.g. Started with 10 vehicles in Freetown">
+          </div>
+        </div>
+      </div>
+      <button type="button" class="add-row-btn" onclick="addMilestone()">+ Add Milestone</button>
+    </div>
+
+    <!-- SECTION 7 — EXTRA -->
+    <div class="form-section">
+      <div class="form-section-title">07 — Additional Information</div>
+      <div class="form-section-sub">Anything else you want on the About page</div>
+      <div class="form-divider"></div>
+
+      <div class="form-group">
+        <label>Do you offer vehicle financing?</label>
+        <select id="financing">
+          <option value="">Select...</option>
+          <option value="Yes — flexible payment plans available">Yes — flexible payment plans available</option>
+          <option value="Yes — in partnership with a bank">Yes — in partnership with a bank</option>
+          <option value="No — cash only">No — cash only</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Do you offer after-sales service / maintenance?</label>
+        <select id="aftersales">
+          <option value="">Select...</option>
+          <option value="Yes — full service center on site">Yes — full service center on site</option>
+          <option value="Yes — basic maintenance available">Yes — basic maintenance available</option>
+          <option value="No — sales only">No — sales only</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Social Media Handles</label>
+        <div class="hint">Leave blank if you don't have them</div>
+        <div class="form-row">
+          <input type="text" id="facebook" placeholder="Facebook page name or URL">
+          <input type="text" id="instagram" placeholder="Instagram handle e.g. @royalmotorssl">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Anything else you want on the About page?</label>
+        <textarea id="extra-info" placeholder="Any awards, certifications, partnerships, special services or anything else you want customers to know about Royal Motors..."></textarea>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="form-submit-wrap">
+      <button type="button" class="form-submit" onclick="submitForm()">
+        Submit Information →
+      </button>
+      <div class="success-box" id="success-box">
+        <h3>✅ Thank you! Information received!</h3>
+        <p>Samuel will use this information to build your professional About page. You will be contacted once it is ready for your review.</p>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  /* --- PROGRESS TRACKER --- */
+  const requiredFields = ['business-name', 'year-founded', 'address', 'phone', 'founding-story'];
+  function updateProgress() {
+    let filled = 0;
+    requiredFields.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.value.trim()) filled++;
+    });
+    const pct = Math.round((filled / requiredFields.length) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = pct + '% complete';
+  }
+  document.querySelectorAll('input, textarea, select').forEach(el => {
+    el.addEventListener('input', updateProgress);
+    el.addEventListener('change', updateProgress);
+  });
+
+  /* --- ADD VALUE --- */
+  let valueCount = 3;
+  function addValue() {
+    if (valueCount >= 6) { alert('Maximum 6 values!'); return; }
+    valueCount++;
+    const container = document.getElementById('values-container');
+    const row = document.createElement('div');
+    row.className = 'repeat-row';
+    row.innerHTML = `
+      <div class="form-group"><input type="text" placeholder="Value name"></div>
+      <div class="form-group"><input type="text" placeholder="Description"></div>
+      <button type="button" class="remove-btn" onclick="this.parentElement.remove()">✕</button>`;
+    container.appendChild(row);
+  }
+
+  /* --- ADD TEAM MEMBER --- */
+  function addTeamMember() {
+    const container = document.getElementById('team-container');
+    const div = document.createElement('div');
+    div.className = 'team-member-block';
+    div.dataset.teamPhoto = '';
+    div.style.cssText = 'margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--light-gray);position:relative;';
+    div.innerHTML = `
+      <button type="button" class="remove-btn" style="position:absolute;top:0;right:0;" onclick="this.parentElement.remove()">✕ Remove</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px;">
+        <div class="form-group"><label>Full Name</label><input type="text" class="team-name" placeholder="Full name"></div>
+        <div class="form-group"><label>Job Title / Role</label><input type="text" class="team-role" placeholder="e.g. Sales Manager"></div>
+      </div>
+      <div class="team-photo-row">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="team-photo-placeholder" aria-hidden="true">IMG</div>
+          <img class="team-photo-preview" alt="Team member photo preview">
+          <input type="file" class="team-photo-input" accept="image/*" hidden>
+          <div style="font-size:12px;color:var(--gray);font-weight:300;">
+            Optional staff photo (JPG/PNG)
+          </div>
+        </div>
+        <button type="button" class="team-photo-btn" onclick="triggerTeamPhoto(this)">Upload Photo</button>
+      </div>
+      <div class="form-group"><label>Short Bio</label><textarea class="team-bio" style="min-height:70px;" placeholder="Brief description..."></textarea></div>`;
+    container.appendChild(div);
+  }
+
+  function triggerTeamPhoto(btnEl) {
+    const block = btnEl.closest('.team-member-block');
+    const input = block?.querySelector('.team-photo-input');
+    if (input) input.click();
+  }
+
+  function handleTeamPhotoFile(inputEl) {
+    const file = inputEl.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file.');
+      inputEl.value = '';
+      return;
+    }
+    const block = inputEl.closest('.team-member-block');
+    const preview = block?.querySelector('.team-photo-preview');
+    const placeholder = block?.querySelector('.team-photo-placeholder');
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      if (block) block.dataset.teamPhoto = dataUrl;
+      if (preview) {
+        preview.src = dataUrl;
+        preview.style.display = 'block';
+      }
+      if (placeholder) placeholder.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.addEventListener('change', (e) => {
+    const el = e.target;
+    if (el && el.classList && el.classList.contains('team-photo-input')) {
+      handleTeamPhotoFile(el);
+    }
+  });
+
+  /* --- ADD MILESTONE --- */
+  function addMilestone() {
+    const container = document.getElementById('milestones-container');
+    const row = document.createElement('div');
+    row.className = 'repeat-row three';
+    row.innerHTML = `
+      <div class="form-group"><input type="number" class="milestone-year" placeholder="Year" min="1900" max="2030"></div>
+      <div class="form-group"><input type="text" class="milestone-title" placeholder="Milestone title"></div>
+      <div class="form-group"><input type="text" class="milestone-desc" placeholder="Brief description"></div>
+      <button type="button" class="remove-btn" onclick="this.parentElement.remove()">✕</button>`;
+    container.appendChild(row);
+  }
+
+  /* --- SUBMIT --- */
+  function submitForm() {
+    const required = ['business-name', 'year-founded', 'address', 'phone', 'founding-story'];
+    for (const id of required) {
+      const el = document.getElementById(id);
+      if (!el || !el.value.trim()) {
+        el.style.borderColor = '#D0191A';
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        alert('Please fill in all required fields marked with *');
+        return;
+      }
+    }
+
+    /* Collect all data */
+    const teamMembers = [];
+    document.querySelectorAll('.team-name').forEach((el, i) => {
+      const block = el.closest('.team-member-block');
+      teamMembers.push({
+        name: el.value,
+        role: document.querySelectorAll('.team-role')[i]?.value || '',
+        bio:  document.querySelectorAll('.team-bio')[i]?.value  || '',
+        photo: block?.dataset?.teamPhoto || ''
+      });
+    });
+
+    const milestones = [];
+    document.querySelectorAll('.milestone-year').forEach((el, i) => {
+      if (el.value) milestones.push({
+        year:  el.value,
+        title: document.querySelectorAll('.milestone-title')[i]?.value || '',
+        desc:  document.querySelectorAll('.milestone-desc')[i]?.value  || ''
+      });
+    });
+
+    const values = [];
+    document.querySelectorAll('#values-container .repeat-row').forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      if (inputs[0]?.value) values.push({ name: inputs[0].value, desc: inputs[1]?.value || '' });
+    });
+
+    const formData = {
+      businessName:  document.getElementById('business-name').value,
+      yearFounded:   document.getElementById('year-founded').value,
+      yearsBusiness: document.getElementById('years-business').value,
+      address:       document.getElementById('address').value,
+      phone:         document.getElementById('phone').value,
+      email:         document.getElementById('email').value,
+      hoursWeekday:  document.getElementById('hours-weekday').value,
+      hoursWeekend:  document.getElementById('hours-weekend').value,
+      carsStock:     document.getElementById('cars-stock').value,
+      customers:     document.getElementById('customers').value,
+      staffCount:    document.getElementById('staff-count').value,
+      branches:      document.getElementById('branches').value,
+      foundingStory: document.getElementById('founding-story').value,
+      whatDifferent: document.getElementById('what-different').value,
+      mission:       document.getElementById('mission').value,
+      financing:     document.getElementById('financing').value,
+      aftersales:    document.getElementById('aftersales').value,
+      facebook:      document.getElementById('facebook').value,
+      instagram:     document.getElementById('instagram').value,
+      extraInfo:     document.getElementById('extra-info').value,
+      team:          teamMembers,
+      milestones:    milestones,
+      values:        values
+    };
+
+    /* Send to WhatsApp as formatted summary */
+    const summary = `*ROYAL MOTORS — About Page Info*%0A%0A`
+      + `*Business:* ${formData.businessName}%0A`
+      + `*Founded:* ${formData.yearFounded}%0A`
+      + `*Address:* ${formData.address}%0A`
+      + `*Phone:* ${formData.phone}%0A`
+      + `*Email:* ${formData.email}%0A`
+      + `*Hours:* ${formData.hoursWeekday} | ${formData.hoursWeekend}%0A%0A`
+      + `*Stats:*%0A`
+      + `Cars: ${formData.carsStock} | Customers: ${formData.customers} | Staff: ${formData.staffCount}%0A%0A`
+      + `*Story:* ${formData.foundingStory.substring(0, 200)}...%0A%0A`
+      + `*Team:* ${formData.team.map(t => t.name + ' — ' + t.role).join(', ')}%0A%0A`
+      + `*Milestones:* ${formData.milestones.map(m => m.year + ': ' + m.title).join(' | ')}`;
+
+    /* Save to localStorage as backup */
+    localStorage.setItem('royalmotors-about-form', JSON.stringify(formData));
+
+    /* Show success */
+    document.getElementById('success-box').style.display = 'block';
+    document.getElementById('success-box').scrollIntoView({ behavior: 'smooth' });
+    document.querySelector('.form-submit').textContent = '✅ Submitted!';
+    document.querySelector('.form-submit').style.background = '#2e7d32';
+
+    /* Send to WhatsApp */
+    setTimeout(() => {
+      window.open(`https://wa.me/23276784937?text=${summary}`, '_blank');
+    }, 1000);
+  }
+</script>
+
+</body>
+</html>
