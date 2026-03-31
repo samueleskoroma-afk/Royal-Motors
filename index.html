@@ -604,9 +604,9 @@ firebaseDb = initFirebaseDb();
     if (e.target === document.getElementById('carModal')) closeCarModal();
   }
 
-  function toggleMenu() {
+  window.toggleMenu = function() {
     document.querySelector('.nav-links').classList.toggle('open');
-  }
+  };
 
   /* --- INIT --- */
   loadFeatured();
