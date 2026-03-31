@@ -99,7 +99,7 @@ nav {
 .car-photo { width: 100%; height: 100%; object-fit: cover; display: block; }
 .car-tag { position: absolute; top: 12px; left: 12px; background: var(--red); color: var(--white); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 8px; z-index: 1; }
 .car-avail { position: absolute; bottom: 10px; right: 10px; font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; padding: 4px 9px; z-index: 1; }
-.car-avail--stock { background: rgba(20, 126, 6, 0.95); color: var(--whiteS); border: 1px solid var(--light-gray); }
+.car-avail--stock { background: rgba(20, 126, 6, 0.95); color: var(--white); border: 1px solid var(--light-gray); }
 .car-avail--soon { background: var(--red); color: var(--white); border: 1px solid rgba(255,255,255,0.2); }
 .car-info { padding: 20px; }
 .car-make { font-size: 11px; color: var(--gray); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
@@ -176,6 +176,16 @@ footer { background: #0a0a0a; color: #666; padding: 32px 60px; display: flex; al
 /* ===================== WHATSAPP ===================== */
 .wa-btn { position: fixed; bottom: 24px; right: 24px; z-index: 999; background: #25D366; width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; transition: transform .2s; text-decoration: none; }
 .wa-btn:hover { transform: scale(1.1); }
+
+/* ===================== DIALOGS (Call / WhatsApp chooser) ===================== */
+.hero-call-dialog { border: none; padding: 0; border-radius: 8px; max-width: calc(100vw - 32px); width: 320px; box-shadow: 0 16px 48px rgba(0,0,0,0.35); z-index: 10000; }
+.hero-call-dialog::backdrop { background: rgba(0,0,0,0.55); }
+.hero-call-dialog-inner { padding: 24px; }
+.hero-call-dialog-title { font-size: 14px; font-weight: 600; margin: 0 0 16px; color: var(--black); }
+.hero-call-dialog-link { display: flex; align-items: center; gap: 10px; padding: 14px 16px; margin-bottom: 10px; background: var(--off-white); color: var(--black); text-decoration: none; font-weight: 600; font-size: 15px; border: 1px solid var(--light-gray); transition: border-color .2s, background .2s; }
+.hero-call-dialog-link:hover { border-color: var(--red); background: #fff; }
+.hero-call-dialog-cancel { width: 100%; margin-top: 8px; padding: 10px; background: transparent; border: 1px solid var(--light-gray); color: var(--gray); font-family: var(--font-body); font-size: 13px; cursor: pointer; }
+.hero-call-dialog-cancel:hover { border-color: var(--black); color: var(--black); }
 
 /* ===================== CAR MODAL ===================== */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; padding: 12px; padding-bottom: max(12px, env(safe-area-inset-bottom, 0px)); }

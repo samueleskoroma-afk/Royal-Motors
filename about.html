@@ -166,7 +166,7 @@
 <section class="team-section">
   <div class="section-label">The People Behind Royal Motors</div>
   <div class="section-title">Meet Our Team</div>
-  <div class="team-grid">
+  <div class="team-grid" id="team-grid">
     <div class="team-card">
       <div class="team-img-wrap"><i class="fa-solid fa-user"></i></div>
       <div class="team-info">
@@ -227,6 +227,71 @@
 
 <script>
   function toggleMenu() { document.querySelector('.nav-links').classList.toggle('open'); }
+
+  function renderTeamFromSavedForm() {
+    const raw = localStorage.getItem('royalmotors-about-form');
+    if (!raw) return;
+    let data;
+    try { data = JSON.parse(raw); } catch { return; }
+
+    const team = Array.isArray(data?.team) ? data.team : [];
+    if (!team.length) return;
+
+    const grid = document.getElementById('team-grid');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+
+    team.forEach(member => {
+      const name = String(member?.name || '').trim();
+      const role = String(member?.role || '').trim();
+      const bio = String(member?.bio || '').trim();
+      const photo = String(member?.photo || '').trim();
+      if (!name && !role && !bio && !photo) return;
+
+      const card = document.createElement('div');
+      card.className = 'team-card';
+
+      const imgWrap = document.createElement('div');
+      imgWrap.className = 'team-img-wrap';
+
+      if (photo && photo.startsWith('data:image/')) {
+        const img = document.createElement('img');
+        img.alt = name ? `${name} photo` : 'Team member photo';
+        img.src = photo;
+        imgWrap.appendChild(img);
+      } else {
+        const icon = document.createElement('i');
+        icon.className = 'fa-solid fa-user';
+        imgWrap.appendChild(icon);
+      }
+
+      const info = document.createElement('div');
+      info.className = 'team-info';
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'team-name';
+      nameEl.textContent = name || 'Team Member';
+
+      const roleEl = document.createElement('div');
+      roleEl.className = 'team-role';
+      roleEl.textContent = role || 'Staff';
+
+      const bioEl = document.createElement('div');
+      bioEl.className = 'team-bio';
+      bioEl.textContent = bio || '';
+
+      info.appendChild(nameEl);
+      info.appendChild(roleEl);
+      if (bio) info.appendChild(bioEl);
+
+      card.appendChild(imgWrap);
+      card.appendChild(info);
+      grid.appendChild(card);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', renderTeamFromSavedForm);
 </script>
 </body>
 </html>

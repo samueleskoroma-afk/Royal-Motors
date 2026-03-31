@@ -150,7 +150,7 @@
   <h1 class="page-hero-title">Car <span>Rentals</span></h1>
   <p class="page-hero-sub">Contact our team today to check availability, get a custom quote for longer rentals, or ask any questions.</p>
   <div class="hero-rental-btns">
-    <a href="https://wa.me/23276784937" target="_blank" class="rental-call-btn"><i class="fa-brands fa-whatsapp"></i> Book Now</a>
+    <a href="https://wa.me/23290777888" target="_blank" class="rental-call-btn"><i class="fa-brands fa-whatsapp"></i> Book Now</a>
     <button type="button" class="rental-call-btn" onclick="document.getElementById('hero-call-dialog').showModal()"><i class="fa-solid fa-phone"></i> Call Us Directly</button>
   </div>
 </div>
@@ -252,9 +252,28 @@
   </div>
 </div>
 
-<script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYsSi6o3cKHXA8ggdvWbK5XQteNc4xblr6bxHiS_GnMhLK2bqfqQ/exec';  let currentPhotos = [];
+<script src="firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYsSi6o3cKHXA8ggdvWbK5XQteNc4xblr6bxHiS_GnMhLK2bqfqQ/exec';
+let currentPhotos = [];
   let currentPhotoIndex = 0;
+let firebaseDb = null;
+
+function initFirebaseDb() {
+  try {
+    const cfg = window.ROYALMOTORS_FIREBASE_CONFIG || {};
+    const ok = cfg && cfg.apiKey && cfg.apiKey !== 'PASTE_ME' && cfg.projectId && cfg.projectId !== 'PASTE_ME';
+    if (!ok) return null;
+    const app = initializeApp(cfg);
+    return getFirestore(app);
+  } catch (e) {
+    return null;
+  }
+}
+firebaseDb = initFirebaseDb();
 
   function escapeHtml(str) {
     return String(str ?? '')
@@ -293,9 +312,20 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
   /* --- LOAD RENTALS --- */
   async function loadRentals() {
     try {
-      const res  = await fetch(SCRIPT_URL + '?type=rentals');
-      const data = await res.json();
-      const rentals = Array.isArray(data) ? data.filter(r => r.Make) : [];
+      let rentals = [];
+      if (firebaseDb) {
+        const q = query(collection(firebaseDb, 'rentals'), orderBy('submittedAt', 'desc'), limit(300));
+        const snap = await getDocs(q);
+        snap.forEach(d => {
+          const entry = d.data() || {};
+          if (entry.data) rentals.push(entry.data);
+        });
+        rentals = rentals.filter(r => r.Make);
+      } else {
+        const res  = await fetch(SCRIPT_URL + '?type=rentals');
+        const data = await res.json();
+        rentals = Array.isArray(data) ? data.filter(r => r.Make) : [];
+      }
       const grid = document.getElementById('rental-grid');
       grid.innerHTML = '';
 
@@ -349,7 +379,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
         card.querySelector('.book-btn').addEventListener('click', function(e) {
           e.stopPropagation();
           const text = `Hello Royal Motors! %0A%0AI would like to rent the *${car.Make} ${car.Model}* at *${car.Price}/day*%0A%0APlease let me know availability!`;
-          window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+          window.open(`https://wa.me/23290777888?text=${text}`, '_blank');
         });
 
         grid.appendChild(card);
@@ -388,7 +418,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
     }
     document.getElementById('modal-wa-btn').onclick = function() {
       const text = `Hello Royal Motors! %0A%0AI would like to rent the *${make} ${model}* at *${price}*%0A%0APlease let me know availability!`;
-      window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+      window.open(`https://wa.me/23290777888?text=${text}`, '_blank');
     };
     document.getElementById('carModal').classList.add('active');
     document.body.style.overflow = 'hidden';

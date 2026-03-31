@@ -176,7 +176,6 @@
 
         <p class="contact-group-label">Send us a message</p>
       <a href="mailto:royalmotorssl@gmail.com" class="social-row"><img src="https://cdn-icons-png.flaticon.com/512/732/732200.png" class="social-icon-img"><span>Email</span></a>
-    </a>
 
 
         <p class="contact-group-label">Visit us at</p>
@@ -267,9 +266,34 @@
 </div>
 
 <!-- JAVASCRIPT -->
-<script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYsSi6o3cKHXA8ggdvWbK5XQteNc4xblr6bxHiS_GnMhLK2bqfqQ/exec';  let currentPhotos = [];
+<script src="firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYsSi6o3cKHXA8ggdvWbK5XQteNc4xblr6bxHiS_GnMhLK2bqfqQ/exec';
+let currentPhotos = [];
   let currentPhotoIndex = 0;
+  const WHATSAPP_NUMBER = '23290777888';
+let firebaseDb = null;
+
+function initFirebaseDb() {
+  try {
+    const cfg = window.ROYALMOTORS_FIREBASE_CONFIG || {};
+    const ok = cfg && cfg.apiKey && cfg.apiKey !== 'PASTE_ME' && cfg.projectId && cfg.projectId !== 'PASTE_ME';
+    if (!ok) return null;
+    const app = initializeApp(cfg);
+    return getFirestore(app);
+  } catch (e) {
+    return null;
+  }
+}
+firebaseDb = initFirebaseDb();
+  function openWhatsApp(message) {
+    const msg = String(message || '').trim();
+    const url = 'https://wa.me/' + WHATSAPP_NUMBER + (msg ? ('?text=' + encodeURIComponent(msg)) : '');
+    window.open(url, '_blank');
+  }
 
   function escapeHtml(str) {
     return String(str ?? '')
@@ -344,9 +368,20 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
   /* --- LOAD FEATURED CARS (in stock only) --- */
   async function loadFeatured() {
     try {
-      const res = await fetch(SCRIPT_URL);
-      const cars = await res.json();
-      const list = Array.isArray(cars) ? cars.filter(c => c.Make) : [];
+      let list = [];
+      if (firebaseDb) {
+        const q = query(collection(firebaseDb, 'cars'), orderBy('submittedAt', 'desc'), limit(200));
+        const snap = await getDocs(q);
+        snap.forEach(d => {
+          const entry = d.data() || {};
+          if (entry.data) list.push(entry.data);
+        });
+        list = list.filter(c => c.Make);
+      } else {
+        const res = await fetch(SCRIPT_URL);
+        const cars = await res.json();
+        list = Array.isArray(cars) ? cars.filter(c => c.Make) : [];
+      }
       const inStock = list.filter(c => !carIsComingSoon(c));
       const featured = inStock.slice(0, homeCardLimit());
       const grid = document.getElementById('featured-grid');
@@ -417,9 +452,21 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
     const grid = document.getElementById('coming-soon-grid');
     if (!grid) return;
     try {
-      const res = await fetch(SCRIPT_URL);
-      const cars = await res.json();
-      const list = Array.isArray(cars) ? cars.filter(c => c.Make && carIsComingSoon(c)) : [];
+      let list = [];
+      if (firebaseDb) {
+        const q = query(collection(firebaseDb, 'cars'), orderBy('submittedAt', 'desc'), limit(300));
+        const snap = await getDocs(q);
+        const cars = [];
+        snap.forEach(d => {
+          const entry = d.data() || {};
+          if (entry.data) cars.push(entry.data);
+        });
+        list = cars.filter(c => c.Make && carIsComingSoon(c));
+      } else {
+        const res = await fetch(SCRIPT_URL);
+        const cars = await res.json();
+        list = Array.isArray(cars) ? cars.filter(c => c.Make && carIsComingSoon(c)) : [];
+      }
       grid.innerHTML = '';
       if (list.length === 0) {
         grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--gray);">No “coming soon” vehicles listed yet. Ask us on WhatsApp what’s arriving next.</div>';
@@ -465,8 +512,8 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
         });
         card.querySelector('.enquire-btn').addEventListener('click', function(e) {
           e.stopPropagation();
-          const t = `Hello Royal Motors!%0A%0AI want to *pre-order* the *${car.Make} ${car.Model}* (${car.Price}).%0A%0APlease confirm availability!`;
-          window.open(`https://wa.me/23276784937?text=${t}`, '_blank');
+          const t = `Hello Royal Motors!\n\nI want to pre-order the ${car.Make} ${car.Model} (${car.Price}).\n\nPlease confirm availability!`;
+          openWhatsApp(t);
         });
         grid.appendChild(card);
       });
@@ -483,14 +530,14 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
     const interest  = document.querySelector('select').value;
     const message   = document.querySelector('textarea').value;
     if (!firstName || !phone) { alert('Please fill in your name and phone number!'); return; }
-    const text = `Hello Royal Motors!%0A%0AName: ${firstName} ${lastName}%0APhone: ${phone}%0AInterested In: ${interest}%0AMessage: ${message}`;
-    window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+    const text = `Hello Royal Motors!\n\nName: ${firstName} ${lastName}\nPhone: ${phone}\nInterested In: ${interest}\nMessage: ${message}`;
+    openWhatsApp(text);
   }
 
   /* --- CAR ENQUIRE → WHATSAPP --- */
   function enquireCar(name, price) {
-    const text = `Hello Royal Motors!%0A%0AI am interested in the *${name}* priced at *${price}*%0A%0APlease send me more information!`;
-    window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+    const text = `Hello Royal Motors!\n\nI am interested in the ${name} priced at ${price}.\n\nPlease send me more information!`;
+    openWhatsApp(text);
   }
 
   /* --- MODAL --- */
@@ -529,9 +576,9 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
       : '<i class="fa-brands fa-whatsapp"></i> Enquire on WhatsApp';
     waBtn.onclick = function() {
       const text = preorder
-        ? `Hello Royal Motors!%0A%0AI want to *pre-order* the *${make} ${model}* (${price}).%0A%0APlease confirm availability!`
-        : `Hello Royal Motors!%0A%0AI am interested in the *${make} ${model}* priced at *${price}*%0A%0APlease send me more information!`;
-      window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+        ? `Hello Royal Motors!\n\nI want to pre-order the ${make} ${model} (${price}).\n\nPlease confirm availability!`
+        : `Hello Royal Motors!\n\nI am interested in the ${make} ${model} priced at ${price}.\n\nPlease send me more information!`;
+      openWhatsApp(text);
     };
     document.getElementById('carModal').classList.add('active');
     document.body.style.overflow = 'hidden';

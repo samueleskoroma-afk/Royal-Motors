@@ -88,6 +88,13 @@
     .progress-bar { height: 4px; background: var(--light-gray); }
     .progress-fill { height: 100%; background: var(--red); width: 0%; transition: width .3s; }
 
+    /* STEPS (multi-section navigation) */
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+    .step-nav { display: flex; gap: 16px; justify-content: space-between; margin-top: 28px; }
+    .step-nav button { flex: 1; }
+    #prev-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
     @media (max-width: 600px) {
       .form-header { padding: 24px 16px; }
       .form-section { padding: 20px 16px; }
@@ -100,6 +107,9 @@
       .team-photo-btn { width: 100%; }
       .team-photo-preview,
       .team-photo-placeholder { width: 48px; height: 48px; }
+
+      .step-nav { flex-direction: column; }
+      .step-nav button { width: 100%; }
     }
   </style>
 </head>
@@ -130,7 +140,7 @@
   <form id="info-form">
 
     <!-- SECTION 1 — COMPANY BASICS -->
-    <div class="form-section">
+    <div class="form-section active">
       <div class="form-section-title">01 — Company Basics</div>
       <div class="form-section-sub">Basic information about Royal Motors</div>
       <div class="form-divider"></div>
@@ -374,37 +384,119 @@
       </div>
     </div>
 
-    <!-- SUBMIT -->
+    <!-- FORM NAV -->
     <div class="form-submit-wrap">
-      <button type="button" class="form-submit" onclick="submitForm()">
-        Submit Information →
-      </button>
       <div class="success-box" id="success-box">
         <h3>✅ Thank you! Information received!</h3>
         <p>Samuel will use this information to build your professional About page. You will be contacted once it is ready for your review.</p>
+        <button type="button" id="send-whatsapp-btn" class="team-photo-btn" style="display:none; margin-top:14px;" onclick="openWhatsAppFromSummary()">
+          Open WhatsApp
+        </button>
+      </div>
+      <div class="step-nav" id="step-nav">
+        <button type="button" class="remove-btn" id="prev-btn" disabled>← Previous</button>
+        <button type="button" class="form-submit" id="next-btn">Next →</button>
       </div>
     </div>
 
   </form>
 </div>
 
-<script>
-  /* --- PROGRESS TRACKER --- */
-  const requiredFields = ['business-name', 'year-founded', 'address', 'phone', 'founding-story'];
-  function updateProgress() {
-    let filled = 0;
-    requiredFields.forEach(id => {
-      const el = document.getElementById(id);
-      if (el && el.value.trim()) filled++;
-    });
-    const pct = Math.round((filled / requiredFields.length) * 100);
-    document.getElementById('progress-fill').style.width = pct + '%';
-    document.getElementById('progress-label').textContent = pct + '% complete';
+  <script src="firebase-config.js"></script>
+  <script>
+  /* --- MULTI-STEP FORM --- */
+  const stepSections = Array.from(document.querySelectorAll('#info-form .form-section'));
+  const progressFillEl = document.getElementById('progress-fill');
+  const progressLabelEl = document.getElementById('progress-label');
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const successBox = document.getElementById('success-box');
+
+  let currentStep = Math.max(0, stepSections.findIndex(s => s.classList.contains('active')));
+  let lastWhatsAppUrl = '';
+  let firebaseReady = false;
+  let firebaseDb = null;
+
+  function updateProgressBar(stepIndex) {
+    const total = Math.max(1, stepSections.length);
+    const pct = Math.round(((stepIndex + 1) / total) * 100);
+    progressFillEl.style.width = pct + '%';
+    progressLabelEl.textContent = pct + '% complete';
   }
-  document.querySelectorAll('input, textarea, select').forEach(el => {
-    el.addEventListener('input', updateProgress);
-    el.addEventListener('change', updateProgress);
-  });
+
+  function setStep(stepIndex) {
+    stepSections.forEach((sec, idx) => sec.classList.toggle('active', idx === stepIndex));
+    currentStep = stepIndex;
+
+    // UI state
+    if (prevBtn) prevBtn.disabled = currentStep === 0;
+    if (nextBtn) {
+      nextBtn.textContent = (currentStep === stepSections.length - 1) ? 'Submit Information →' : 'Next →';
+    }
+    if (successBox && successBox.style.display !== 'none') {
+      successBox.style.display = 'none';
+    }
+    updateProgressBar(currentStep);
+
+    // Helpful: move user focus to top of visible section
+    const activeSection = stepSections[currentStep];
+    if (activeSection) activeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function validateCurrentSection() {
+    const sec = stepSections[currentStep];
+    if (!sec) return true;
+    const requiredEls = sec.querySelectorAll('[required]');
+
+    for (const el of requiredEls) {
+      const value = (el.value || '').toString().trim();
+      if (!value) {
+        el.style.borderColor = '#D0191A';
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.focus?.();
+        alert('Please fill in all required fields marked with *');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function nextOrSubmit() {
+    if (!validateCurrentSection()) return;
+    if (currentStep < stepSections.length - 1) {
+      setStep(currentStep + 1);
+      return;
+    }
+    submitForm();
+  }
+
+  if (prevBtn && nextBtn && stepSections.length) {
+    prevBtn.addEventListener('click', () => {
+      if (currentStep > 0) setStep(currentStep - 1);
+    });
+    nextBtn.addEventListener('click', nextOrSubmit);
+    setStep(currentStep);
+  }
+
+  // Optional: Online secure inbox (Firebase). If not configured, form still works offline.
+  async function initFirebaseIfConfigured() {
+    try {
+      const cfg = window.ROYALMOTORS_FIREBASE_CONFIG || {};
+      const looksConfigured = cfg && cfg.apiKey && cfg.apiKey !== 'PASTE_ME' && cfg.projectId && cfg.projectId !== 'PASTE_ME';
+      if (!looksConfigured) return;
+
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js');
+      const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js');
+      const app = initializeApp(cfg);
+      firebaseDb = getFirestore(app);
+      firebaseReady = true;
+    } catch (e) {
+      firebaseReady = false;
+      firebaseDb = null;
+    }
+  }
+
+  initFirebaseIfConfigured();
 
   /* --- ADD VALUE --- */
   let valueCount = 3;
@@ -500,7 +592,7 @@
   }
 
   /* --- SUBMIT --- */
-  function submitForm() {
+  async function submitForm() {
     const required = ['business-name', 'year-founded', 'address', 'phone', 'founding-story'];
     for (const id of required) {
       const el = document.getElementById(id);
@@ -566,32 +658,78 @@
     };
 
     /* Send to WhatsApp as formatted summary */
-    const summary = `*ROYAL MOTORS — About Page Info*%0A%0A`
-      + `*Business:* ${formData.businessName}%0A`
-      + `*Founded:* ${formData.yearFounded}%0A`
-      + `*Address:* ${formData.address}%0A`
-      + `*Phone:* ${formData.phone}%0A`
-      + `*Email:* ${formData.email}%0A`
-      + `*Hours:* ${formData.hoursWeekday} | ${formData.hoursWeekend}%0A%0A`
-      + `*Stats:*%0A`
-      + `Cars: ${formData.carsStock} | Customers: ${formData.customers} | Staff: ${formData.staffCount}%0A%0A`
-      + `*Story:* ${formData.foundingStory.substring(0, 200)}...%0A%0A`
-      + `*Team:* ${formData.team.map(t => t.name + ' — ' + t.role).join(', ')}%0A%0A`
+    const summary =
+      `*ROYAL MOTORS — About Page Info*\n\n`
+      + `*Business:* ${formData.businessName}\n`
+      + `*Founded:* ${formData.yearFounded}\n`
+      + `*Address:* ${formData.address}\n`
+      + `*Phone:* ${formData.phone}\n`
+      + `*Email:* ${formData.email}\n`
+      + `*Hours:* ${formData.hoursWeekday} | ${formData.hoursWeekend}\n\n`
+      + `*Stats:*\n`
+      + `Cars: ${formData.carsStock} | Customers: ${formData.customers} | Staff: ${formData.staffCount}\n\n`
+      + `*Story:* ${formData.foundingStory.substring(0, 200)}...\n\n`
+      + `*Team:* ${formData.team.map(t => t.name + ' — ' + t.role).join(', ')}\n\n`
       + `*Milestones:* ${formData.milestones.map(m => m.year + ': ' + m.title).join(' | ')}`;
 
     /* Save to localStorage as backup */
     localStorage.setItem('royalmotors-about-form', JSON.stringify(formData));
 
-    /* Show success */
-    document.getElementById('success-box').style.display = 'block';
-    document.getElementById('success-box').scrollIntoView({ behavior: 'smooth' });
-    document.querySelector('.form-submit').textContent = '✅ Submitted!';
-    document.querySelector('.form-submit').style.background = '#2e7d32';
+    /* Save to Admin Inbox (submissions list) */
+    try {
+      const inboxKey = 'royalmotors-about-submissions';
+      const rawInbox = localStorage.getItem(inboxKey);
+      const inbox = rawInbox ? JSON.parse(rawInbox) : [];
+      const safeInbox = Array.isArray(inbox) ? inbox : [];
+      safeInbox.push({
+        submittedAt: Date.now(),
+        data: formData
+      });
+      localStorage.setItem(inboxKey, JSON.stringify(safeInbox));
+    } catch (e) {
+      // ignore inbox errors (storage may be full)
+    }
 
-    /* Send to WhatsApp */
-    setTimeout(() => {
-      window.open(`https://wa.me/23276784937?text=${summary}`, '_blank');
-    }, 1000);
+    // Save online (Firebase) if configured (free). Reading should be locked down by Firestore Rules.
+    if (firebaseReady && firebaseDb) {
+      try {
+        const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js');
+        await addDoc(collection(firebaseDb, 'aboutSubmissions'), {
+          submittedAt: Date.now(),
+          createdAt: serverTimestamp(),
+          data: formData
+        });
+      } catch (e) {
+        // if this fails, localStorage inbox still works
+      }
+    }
+
+    /* Show success */
+    successBox.style.display = 'block';
+    successBox.scrollIntoView({ behavior: 'smooth' });
+
+    // Create WhatsApp URL (use encodeURIComponent for reliability)
+    lastWhatsAppUrl = `https://wa.me/23276784937?text=${encodeURIComponent(summary)}`;
+    const sendBtn = document.getElementById('send-whatsapp-btn');
+    if (sendBtn) {
+      sendBtn.style.display = 'inline-block';
+      sendBtn.disabled = false;
+    }
+
+    // Disable navigation to prevent duplicate submissions
+    if (prevBtn) prevBtn.disabled = true;
+    if (nextBtn) {
+      nextBtn.disabled = true;
+      nextBtn.textContent = 'Submitted!';
+    }
+  }
+
+  function openWhatsAppFromSummary() {
+    if (!lastWhatsAppUrl) {
+      alert('WhatsApp message is not ready yet. Please submit again.');
+      return;
+    }
+    window.open(lastWhatsAppUrl, '_blank');
   }
 </script>
 

@@ -317,8 +317,8 @@
     <div class="login-logo">Royal <span>Motors</span></div>
     <p class="login-sub">Admin Panel — Staff Only</p>
     <div class="login-field">
-      <label>Username</label>
-      <input type="text" id="login-user" placeholder="Enter username">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="you@example.com">
     </div>
     <div class="login-field">
       <label>Password</label>
@@ -533,6 +533,7 @@
         <div class="manage-tabs">
           <button class="manage-tab active" id="tab-cars" onclick="switchManageTab('cars')">Inventory Cars</button>
           <button class="manage-tab" id="tab-rentals" onclick="switchManageTab('rentals')">Rental Cars</button>
+          <button class="manage-tab" id="tab-parts" onclick="switchManageTab('parts')">Parts</button>
         </div>
 
         <!-- CARS TABLE -->
@@ -573,6 +574,27 @@
                 </tr>
               </thead>
               <tbody id="rentals-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PARTS TABLE -->
+        <div id="manage-parts-section" style="display:none;">
+          <div class="cars-table-wrap">
+            <div class="loading" id="parts-loading">
+              <i class="fa-solid fa-spinner"></i>
+              Loading parts...
+            </div>
+            <table class="cars-table" id="parts-table" style="display:none;">
+              <thead>
+                <tr>
+                  <th>Photo</th>
+                  <th>Part</th>
+                  <th>Details</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="parts-tbody"></tbody>
             </table>
           </div>
         </div>
@@ -838,12 +860,31 @@
 
 <div class="popup-notify" id="popup-notify"></div>
 
+  <script src="firebase-config.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const cfg = window.ROYALMOTORS_FIREBASE_CONFIG || {};
+    const ok = cfg && cfg.apiKey && cfg.apiKey !== "PASTE_ME" && cfg.projectId && cfg.projectId !== "PASTE_ME";
+    if (ok) {
+      const app = initializeApp(cfg);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      window.__RM = { ok, auth, db, collection, addDoc, deleteDoc, doc, getDocs, query, orderBy, limit, serverTimestamp, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+      onAuthStateChanged(auth, (user) => {
+        if (typeof window.__rmOnAuth === 'function') window.__rmOnAuth(user);
+      });
+    } else {
+      window.__RM = { ok: false };
+    }
+  </script>
+
 <script>
-  // ── CONFIG — update SCRIPT_URL after you redeploy ─────────────────────────
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYsSi6o3cKHXA8ggdvWbK5XQteNc4xblr6bxHiS_GnMhLK2bqfqQ/exec';  const CLOUD_NAME    = 'dukqrrhsi';
+  // ── CONFIG (Cloudinary stays the same) ─────────────────────────────────────
+  const CLOUD_NAME    = 'dukqrrhsi';
   const UPLOAD_PRESET = 'Royalmotors';
-  const ADMIN_USER    = 'Royalmotors';
-  const ADMIN_PASS    = 'admin123';
 
   // ── State ──────────────────────────────────────────────────────────────────
   let mainPhotoUrl     = '';
@@ -868,25 +909,37 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
 
   // ── Login ──────────────────────────────────────────────────────────────────
   function doLogin() {
-    const user = document.getElementById('login-user').value;
-    const pass = document.getElementById('login-pass').value;
-    if (user === ADMIN_USER && pass === ADMIN_PASS) {
-      document.getElementById('login-page').style.display = 'none';
-      document.getElementById('admin-page').style.display = 'block';
-      document.getElementById('mobile-nav').classList.add('visible');
-      loadCarsCount();
-    } else {
-      document.getElementById('login-error').style.display = 'block';
+    const rm = window.__RM || {};
+    if (!rm.ok || !rm.auth) {
+      alert('Firebase is not configured. Check firebase-config.js');
+      return;
     }
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    document.getElementById('login-error').style.display = 'none';
+    rm.signInWithEmailAndPassword(rm.auth, email, pass).catch(() => {
+      document.getElementById('login-error').style.display = 'block';
+    });
   }
 
   function doLogout() {
-    document.getElementById('login-page').style.display = 'flex';
-    document.getElementById('admin-page').style.display = 'none';
-    document.getElementById('mobile-nav').classList.remove('visible');
-    document.getElementById('login-user').value = '';
-    document.getElementById('login-pass').value = '';
+    const rm = window.__RM || {};
+    try { if (rm.auth) rm.signOut(rm.auth); } catch {}
   }
+
+  // Called by Firebase auth listener (module script)
+  window.__rmOnAuth = function(user) {
+    const loggedIn = !!user;
+    document.getElementById('login-page').style.display = loggedIn ? 'none' : 'flex';
+    document.getElementById('admin-page').style.display = loggedIn ? 'block' : 'none';
+    document.getElementById('mobile-nav').classList.toggle('visible', loggedIn);
+    if (!loggedIn) {
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-pass').value = '';
+      return;
+    }
+    loadCarsCount();
+  };
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   function escapeHtml(str) {
@@ -909,15 +962,10 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
     setTimeout(() => el.style.display = 'none', 6000);
   }
 
-  // Sends data as JSON to the Apps Script — no mode:no-cors so we can read errors
-  async function postToScript(payload) {
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',           // required for Apps Script deployed as "anyone"
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    // no-cors means we can't read the response body — that's OK, we trust the script
+  function ensureDb() {
+    const rm = window.__RM || {};
+    if (!rm.ok || !rm.db) throw new Error('Firebase not configured');
+    return rm;
   }
 
   // ── Navigation ─────────────────────────────────────────────────────────────
@@ -927,12 +975,18 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
     document.querySelectorAll('.mobile-nav-item').forEach(s => s.classList.remove('active'));
     document.getElementById(`section-${name}`).classList.add('active');
     if (el) el.classList.add('active');
-    if (name === 'manage-cars') loadCars();
+    if (name === 'manage-cars') {
+      if (currentManageTab === 'rentals') loadRentalCars();
+      else if (currentManageTab === 'parts') loadPartsTable();
+      else loadCars();
+    }
   }
 
   function handleManageAdd() {
     if (currentManageTab === 'rentals') {
       showSection('add-rental', document.querySelector('.sidebar-item:nth-child(4)'));
+    } else if (currentManageTab === 'parts') {
+      showSection('add-part', document.querySelector('.sidebar-item:nth-child(5)'));
     } else {
       showSection('add-car', document.querySelector('.sidebar-item:nth-child(2)'));
     }
@@ -942,10 +996,17 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
     currentManageTab = tab;
     document.getElementById('tab-cars').classList.toggle('active', tab === 'cars');
     document.getElementById('tab-rentals').classList.toggle('active', tab === 'rentals');
+    document.getElementById('tab-parts').classList.toggle('active', tab === 'parts');
     document.getElementById('manage-cars-section').style.display    = tab === 'cars'    ? 'block' : 'none';
     document.getElementById('manage-rentals-section').style.display = tab === 'rentals' ? 'block' : 'none';
-    document.getElementById('manage-add-label').textContent = tab === 'rentals' ? 'Add Rental Car' : 'Add New Car';
+    document.getElementById('manage-parts-section').style.display   = tab === 'parts'   ? 'block' : 'none';
+    document.getElementById('manage-add-label').textContent =
+      tab === 'rentals' ? 'Add Rental Car' :
+      tab === 'parts'   ? 'Add Part' :
+      'Add New Car';
     if (tab === 'rentals') loadRentalCars();
+    else if (tab === 'parts') loadPartsTable();
+    else loadCars();
   }
 
   // ── Step indicators ────────────────────────────────────────────────────────
@@ -1076,17 +1137,25 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
     btn.disabled = true;
 
     try {
-      await postToScript({
-        type: 'add-car',   // ← new type name
-        make, model, price, year, mileage, fuel, color, engine,
-        seats, trans, badge, description, photos,
-        status   // sent exactly as chosen — "In Stock" or "Coming Soon"
+      const rm = ensureDb();
+      await rm.addDoc(rm.collection(rm.db, 'cars'), {
+        submittedAt: Date.now(),
+        createdAt: rm.serverTimestamp(),
+        data: {
+          Make: make, Model: model, Price: price,
+          Year: year, Mileage: mileage, Fuel: fuel,
+          Color: color, Engine: engine, Seats: seats,
+          Trans: trans, Badge: badge, Description: description,
+          Photos: photos,
+          Status: status
+        }
       });
       showPopup('Vehicle added successfully!', 'success');
       showMessage('car-message', 'success', 'Car added! It will appear on the website shortly.');
       clearCarForm();
+      loadCars();
     } catch(err) {
-      showMessage('car-message', 'error', 'Something went wrong. Please try again.');
+      showMessage('car-message', 'error', 'Could not save. Check Firebase rules/login.');
     }
     btn.textContent = 'Add Car to Inventory';
     btn.disabled = false;
@@ -1130,11 +1199,22 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
     btn.disabled = true;
 
     try {
-      await postToScript({ type: 'add-rental', make, model, price, seats, fuel, trans, description, photos, badge });
+      const rm = ensureDb();
+      await rm.addDoc(rm.collection(rm.db, 'rentals'), {
+        submittedAt: Date.now(),
+        createdAt: rm.serverTimestamp(),
+        data: {
+          Make: make, Model: model, Price: price,
+          Seats: seats, Fuel: fuel, Trans: trans,
+          Badge: badge, Description: description,
+          Photos: photos
+        }
+      });
       showPopup('Rental car added successfully!', 'success');
       clearRentalForm();
+      loadRentalCars();
     } catch(err) {
-      showMessage('rental-message', 'error', 'Something went wrong. Please try again.');
+      showMessage('rental-message', 'error', 'Could not save. Check Firebase rules/login.');
     }
     btn.textContent = 'Add Rental Car';
     btn.disabled = false;
@@ -1172,15 +1252,29 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
     const btn = document.getElementById('submit-part-btn');
     btn.disabled = true;
     try {
-      await postToScript({ type: 'add-part', category, name, brand, price, description, photos: partMainPhotoUrl, stock });
+      const rm = ensureDb();
+      await rm.addDoc(rm.collection(rm.db, 'parts'), {
+        submittedAt: Date.now(),
+        createdAt: rm.serverTimestamp(),
+        data: {
+          Category: category,
+          Name: name,
+          Brand: brand,
+          Price: price,
+          Stock: stock,
+          Description: description,
+          Photos: partMainPhotoUrl
+        }
+      });
       showPopup('Part added successfully!', 'success');
       showMessage('part-message', 'success', 'Part saved. It will show on the Parts page shortly.');
       ['part-category','part-name','part-brand','part-price','part-stock','part-description']
         .forEach(id => document.getElementById(id).value = '');
       document.getElementById('part-main-preview').innerHTML = '';
       partMainPhotoUrl = '';
+      loadPartsTable();
     } catch(e) {
-      showMessage('part-message', 'error', 'Could not save part. Try again.');
+      showMessage('part-message', 'error', 'Could not save. Check Firebase rules/login.');
     }
     btn.disabled = false;
   }
@@ -1192,16 +1286,19 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
     loadingEl.style.display = 'block';
     document.getElementById('cars-table').style.display = 'none';
     try {
-      const res  = await fetch(SCRIPT_URL);
-      const cars = await res.json();
-      const list = Array.isArray(cars) ? cars : [];
+      const rm = ensureDb();
+      const snap = await rm.getDocs(rm.query(rm.collection(rm.db, 'cars'), rm.orderBy('submittedAt','desc'), rm.limit(500)));
+      const list = [];
+      snap.forEach(d => {
+        const entry = d.data() || {};
+        if (entry.data) list.push({ _id: d.id, ...entry.data });
+      });
       const tbody = document.getElementById('cars-tbody');
       tbody.innerHTML = '';
       let count = 0;
       list.forEach((car, i) => {
         if (!car.Make) return;
         count++;
-        const row     = Number(car._row);
         const photos  = String(car.Photos || '').trim();
         const photo   = photos.split(',')[0].trim();
         const photoArr = photos.split(',').map(p => p.trim()).filter(Boolean);
@@ -1227,10 +1324,7 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
             </td>
             <td>
               <div class="manage-cell-stack">
-                <button type="button" class="edit-btn" onclick="openEditModal(${row},'car','${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','${escapeQ(car.Year)}','${escapeQ(car.Mileage)}','${escapeQ(car.Fuel)}','${escapeQ(car.Color)}','${escapeQ(car.Engine)}','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photos)}','${escapeQ(status)}')">
-                  <i class="fa-solid fa-pen"></i> Edit
-                </button>
-                <button type="button" class="delete-btn" onclick="deleteCar(${row})">
+                <button type="button" class="delete-btn" onclick="deleteCar('${escapeQ(car._id)}')">
                   <i class="fa-solid fa-trash"></i> Delete
                 </button>
               </div>
@@ -1273,9 +1367,12 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
 
   async function loadCarsCount() {
     try {
-      const res  = await fetch(SCRIPT_URL);
-      const cars = await res.json();
-      document.getElementById('total-cars').textContent = Array.isArray(cars) ? cars.filter(c=>c.Make).length : '—';
+      const rm = window.__RM || {};
+      if (!rm.ok || !rm.db) { document.getElementById('total-cars').textContent = '—'; return; }
+      const snap = await rm.getDocs(rm.query(rm.collection(rm.db, 'cars'), rm.orderBy('submittedAt','desc'), rm.limit(500)));
+      let count = 0;
+      snap.forEach(d => { const e = d.data() || {}; if (e.data && e.data.Make) count++; });
+      document.getElementById('total-cars').textContent = count;
     } catch(err) {}
   }
 
@@ -1288,10 +1385,11 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
   }
 
   // ── DELETE CAR ─────────────────────────────────────────────────────────────
-  async function deleteCar(row) {
+  async function deleteCar(docId) {
     if (!confirm('Are you sure you want to delete this car?')) return;
     try {
-      await fetch(SCRIPT_URL + '?type=delete-car&row=' + Number(row));  // ← new type
+      const rm = ensureDb();
+      await rm.deleteDoc(rm.doc(rm.db, 'cars', String(docId)));
       showPopup('Car deleted successfully.', 'success');
       loadCars();
     } catch(err) {
@@ -1306,16 +1404,19 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
     loadingEl.style.display = 'block';
     document.getElementById('rentals-table').style.display = 'none';
     try {
-      const res     = await fetch(SCRIPT_URL + '?type=rentals');
-      const rentals = await res.json();
-      const list    = Array.isArray(rentals) ? rentals : [];
+      const rm = ensureDb();
+      const snap = await rm.getDocs(rm.query(rm.collection(rm.db, 'rentals'), rm.orderBy('submittedAt','desc'), rm.limit(500)));
+      const list = [];
+      snap.forEach(d => {
+        const entry = d.data() || {};
+        if (entry.data) list.push({ _id: d.id, ...entry.data });
+      });
       const tbody   = document.getElementById('rentals-tbody');
       tbody.innerHTML = '';
       let count = 0;
       list.forEach((car, i) => {
         if (!car.Make) return;
         count++;
-        const row    = Number(car._row);
         const photos = String(car.Photos || '').trim();
         const photo  = photos.split(',')[0].trim();
         tbody.innerHTML += `
@@ -1328,14 +1429,11 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
             </td>
             <td>
               <div class="manage-cell-stack">
-                <button type="button" class="edit-btn" onclick="openEditModal(${row},'rental','${escapeQ(car.Make)}','${escapeQ(car.Model)}','${escapeQ(car.Price)}','','','${escapeQ(car.Fuel)}','','','${escapeQ(car.Seats)}','${escapeQ(car.Trans)}','${escapeQ(car.Badge)}','${escapeQ(car.Description)}','${escapeQ(photos)}','')">
-                  <i class="fa-solid fa-pen"></i> Edit
-                </button>
               </div>
             </td>
             <td>
               <div class="manage-cell-stack">
-                <button type="button" class="delete-btn" onclick="deleteRental(${row})">
+                <button type="button" class="delete-btn" onclick="deleteRental('${escapeQ(car._id)}')">
                   <i class="fa-solid fa-trash"></i> Delete
                 </button>
               </div>
@@ -1357,11 +1455,79 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
   async function deleteRental(row) {
     if (!confirm('Are you sure you want to delete this rental car?')) return;
     try {
-      await fetch(SCRIPT_URL + '?type=delete-rental&row=' + Number(row));
+      const rm = ensureDb();
+      await rm.deleteDoc(rm.doc(rm.db, 'rentals', String(row)));
       showPopup('Rental car deleted.', 'success');
       loadRentalCars();
     } catch(err) {
       showPopup('Could not delete. Please try again.', 'error');
+    }
+  }
+
+  // ── LOAD PARTS TABLE ───────────────────────────────────────────────────────
+  async function loadPartsTable() {
+    const loadingEl = document.getElementById('parts-loading');
+    loadingEl.innerHTML = '<i class="fa-solid fa-spinner"></i> Loading parts...';
+    loadingEl.style.display = 'block';
+    document.getElementById('parts-table').style.display = 'none';
+    try {
+      const rm = ensureDb();
+      const snap = await rm.getDocs(rm.query(rm.collection(rm.db, 'parts'), rm.orderBy('submittedAt','desc'), rm.limit(500)));
+      const list = [];
+      snap.forEach(d => {
+        const entry = d.data() || {};
+        if (entry.data) list.push({ _id: d.id, ...entry.data });
+      });
+      const tbody = document.getElementById('parts-tbody');
+      tbody.innerHTML = '';
+      let count = 0;
+      list.forEach((part) => {
+        if (!part._id || !part.Name) return;
+        count++;
+        const photos = String(part.Photos || '').trim();
+        const photo = photos.split(',')[0].trim();
+        tbody.innerHTML += `
+          <tr>
+            <td>${photo ? `<img src="${escapeHtml(photo)}" onerror="this.style.display='none'">` : '—'}</td>
+            <td>
+              <div style="font-size:11px;color:var(--gray);text-transform:uppercase;">${escapeHtml(part.Category||'')}</div>
+              <strong>${escapeHtml(part.Name||'—')}</strong>
+              <div style="font-size:11px;color:var(--gray);">${escapeHtml(part.Brand||'')}</div>
+            </td>
+            <td>
+              <div style="font-size:12px;color:var(--gray);">${escapeHtml(part.Stock||'')}</div>
+              <div style="font-size:18px;color:var(--red);font-family:var(--font-display);letter-spacing:1px;">${escapeHtml(part.Price||'—')}</div>
+            </td>
+            <td>
+              <div class="manage-cell-stack">
+                <button type="button" class="delete-btn" onclick="deletePart('${escapeQ(part._id)}')">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </div>
+            </td>
+          </tr>`;
+      });
+      if (count === 0) {
+        loadingEl.innerHTML = '<p style="color:var(--gray);padding:40px;text-align:center;">No parts added yet.</p>';
+        return;
+      }
+      loadingEl.style.display = 'none';
+      document.getElementById('parts-table').style.display = 'table';
+    } catch (err) {
+      loadingEl.innerHTML = '<p style="color:var(--red);padding:40px;">Could not load parts.</p>';
+    }
+  }
+
+  // ── DELETE PART ────────────────────────────────────────────────────────────
+  async function deletePart(row) {
+    if (!confirm('Are you sure you want to delete this part?')) return;
+    try {
+      const rm = ensureDb();
+      await rm.deleteDoc(rm.doc(rm.db, 'parts', String(row)));
+      showPopup('Part deleted.', 'success');
+      loadPartsTable();
+    } catch (err) {
+      showPopup('Could not delete part. Please try again.', 'error');
     }
   }
 
@@ -1439,6 +1605,8 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
   }
 
   async function saveEdit() {
+    alert('Editing is temporarily disabled in the secure Firebase version. Please delete and re-add the item.');
+    return;
     const row    = Number(document.getElementById('edit-row').value);
     const type   = document.getElementById('edit-type').value;
     const make   = document.getElementById('edit-make').value.trim();
@@ -1479,6 +1647,8 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
     if (type === 'car') {
       payload.type   = 'edit-car';   // not used by script yet — handled below
       payload.status = document.getElementById('edit-status').value;  // "In Stock" | "Coming Soon"
+    } else if (type === 'part') {
+      payload.type = 'edit-part';
     } else {
       payload.type = 'edit-rental';
     }
@@ -1508,6 +1678,18 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
           photos,
           status:      payload.status  // "In Stock" or "Coming Soon" — always correct
         });
+      } else if (type === 'part') {
+        await postToScript({
+          type: 'edit-part',
+          row,
+          category: payload.make,
+          name: payload.model,
+          brand: payload.fuel,
+          price: payload.price,
+          description: payload.description,
+          photos,
+          stock: payload.seats
+        });
       } else {
         // Rentals: use the edit-rental endpoint
         payload.type = 'edit-rental';
@@ -1516,7 +1698,9 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYs
       showMessage('edit-message', 'success', 'Saved! Refreshing list...');
       setTimeout(() => {
         closeEditModal();
-        if (type === 'rental') loadRentalCars(); else loadCars();
+        if (type === 'rental') loadRentalCars();
+        else if (type === 'part') loadPartsTable();
+        else loadCars();
       }, 1800);
     } catch(err) {
       showMessage('edit-message', 'error', 'Could not save. Please try again.');

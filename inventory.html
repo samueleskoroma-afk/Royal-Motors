@@ -229,17 +229,47 @@
 </div>
 
 <!-- JAVASCRIPT -->
-<script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYsSi6o3cKHXA8ggdvWbK5XQteNc4xblr6bxHiS_GnMhLK2bqfqQ/exec';  let allCars = [];
+<script src="firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6PdmM_RvqVVq0s2zYsSi6o3cKHXA8ggdvWbK5XQteNc4xblr6bxHiS_GnMhLK2bqfqQ/exec';
+let allCars = [];
+let firebaseDb = null;
+
+function initFirebaseDb() {
+  try {
+    const cfg = window.ROYALMOTORS_FIREBASE_CONFIG || {};
+    const ok = cfg && cfg.apiKey && cfg.apiKey !== 'PASTE_ME' && cfg.projectId && cfg.projectId !== 'PASTE_ME';
+    if (!ok) return null;
+    const app = initializeApp(cfg);
+    return getFirestore(app);
+  } catch (e) {
+    return null;
+  }
+}
+firebaseDb = initFirebaseDb();
   let currentPhotos = [];
   let currentPhotoIndex = 0;
+  const WHATSAPP_NUMBER = '23290777888';
 
   /* --- LOAD CARS FROM GOOGLE SHEET --- */
   async function loadInventory() {
     try {
-      const res = await fetch(SCRIPT_URL);
-      const data = await res.json();
-      const cars = Array.isArray(data) ? data : [];
+      let cars = [];
+      if (firebaseDb) {
+        const q = query(collection(firebaseDb, 'cars'), orderBy('submittedAt', 'desc'), limit(500));
+        const snap = await getDocs(q);
+        snap.forEach(d => {
+          const entry = d.data() || {};
+          if (entry.data) cars.push(entry.data);
+        });
+      } else {
+        const res = await fetch(SCRIPT_URL);
+        const data = await res.json();
+        cars = Array.isArray(data) ? data : [];
+      }
       allCars = cars.filter(c => c.Make);
       populateBrandFilter();
       renderCars(allCars);
@@ -414,7 +444,7 @@ function renderCars(cars) {
         e.stopPropagation();
         if (soon) {
           const t = `Hello Royal Motors!%0A%0AI want to *pre-order* the *${car.Make} ${car.Model}* (${car.Price}).%0A%0APlease confirm availability!`;
-          window.open(`https://wa.me/23276784937?text=${t}`, '_blank');
+          window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${t}`, '_blank');
         } else {
           enquireCar(`${car.Make} ${car.Model}`, car.Price);
         }
@@ -517,7 +547,7 @@ function renderCars(cars) {
       const text = preorder
         ? `Hello Royal Motors! %0A%0AI want to *pre-order* the *${make} ${model}* (${price}).%0A%0APlease confirm availability!`
         : `Hello Royal Motors! %0A%0AI am interested in the *${make} ${model}* priced at *${price}*%0A%0APlease send me more information!`;
-      window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
     };
     document.getElementById('carModal').classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -546,7 +576,7 @@ function renderCars(cars) {
 
   function enquireCar(name, price) {
     const text = `Hello Royal Motors! %0A%0AI am interested in the *${name}* priced at *${price}*%0A%0APlease send me more information!`;
-    window.open(`https://wa.me/23276784937?text=${text}`, '_blank');
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank');
   }
 
   function toggleMenu() {
