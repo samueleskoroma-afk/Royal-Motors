@@ -901,7 +901,7 @@
   <script src="firebase-config.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDocs, query, orderBy, limit, serverTimestamp, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
     const cfg = window.ROYALMOTORS_FIREBASE_CONFIG || {};
@@ -910,10 +910,16 @@
       const app = initializeApp(cfg);
       const auth = getAuth(app);
       const db = getFirestore(app);
-      window.__RM = { ok, auth, db, collection, addDoc, deleteDoc, doc, updateDoc, getDocs, query, orderBy, limit, serverTimestamp, getCountFromServer, signInWithEmailAndPassword, signOut, onAuthStateChanged };
-      onAuthStateChanged(auth, (user) => {
-        if (typeof window.__rmOnAuth === 'function') window.__rmOnAuth(user);
-      });
+      function wireAuth() {
+        window.__RM = { ok, auth, db, collection, addDoc, deleteDoc, doc, updateDoc, getDocs, query, orderBy, limit, serverTimestamp, getCountFromServer, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+        onAuthStateChanged(auth, (user) => {
+          if (typeof window.__rmOnAuth === 'function') window.__rmOnAuth(user);
+        });
+      }
+      setPersistence(auth, inMemoryPersistence)
+        .then(() => signOut(auth))
+        .catch(() => {})
+        .finally(wireAuth);
     } else {
       window.__RM = { ok: false };
     }

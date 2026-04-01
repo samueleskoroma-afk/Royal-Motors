@@ -266,7 +266,7 @@
   </div>
 </div>
 
-<!-- Hero video: force autoplay on mobile (inline script — modules are not in global scope for browser policies) -->
+<!-- Hero video: autoplay + iOS/Safari unlock (first touch starts playback without visible play UI) -->
 <script>
 (function () {
   function heroVideoAutoplay() {
@@ -276,6 +276,7 @@
     v.defaultMuted = true;
     v.setAttribute('muted', '');
     v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
     v.playsInline = true;
     function attempt() {
       var p = v.play();
@@ -288,6 +289,13 @@
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) attempt();
     });
+    var once = function () {
+      attempt();
+      document.removeEventListener('touchstart', once, true);
+      document.removeEventListener('click', once, true);
+    };
+    document.addEventListener('touchstart', once, { passive: true, capture: true });
+    document.addEventListener('click', once, { capture: true });
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', heroVideoAutoplay);
