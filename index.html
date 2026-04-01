@@ -51,7 +51,7 @@
     </div>
   </div>
   <div class="hero-visual">
-    <video class="hero-car-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" disablepictureinpicture onerror="this.closest('.hero').classList.add('hero-no-video'); this.parentElement.style.display='none';">
+    <video class="hero-car-video" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture controlslist="nodownload noremoteplayback" onerror="this.closest('.hero').classList.add('hero-no-video'); this.parentElement.style.display='none';">
       <source src="images/Hero-video.mp4" type="video/mp4">
     </video>
   </div>
@@ -265,6 +265,37 @@
     </div>
   </div>
 </div>
+
+<!-- Hero video: force autoplay on mobile (inline script — modules are not in global scope for browser policies) -->
+<script>
+(function () {
+  function heroVideoAutoplay() {
+    var v = document.querySelector('.hero-car-video');
+    if (!v) return;
+    v.muted = true;
+    v.defaultMuted = true;
+    v.setAttribute('muted', '');
+    v.setAttribute('playsinline', '');
+    v.playsInline = true;
+    function attempt() {
+      var p = v.play();
+      if (p && typeof p.catch === 'function') p.catch(function () {});
+    }
+    attempt();
+    if (v.readyState >= 2) attempt();
+    v.addEventListener('loadeddata', attempt, { once: true });
+    v.addEventListener('canplay', attempt, { once: true });
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) attempt();
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', heroVideoAutoplay);
+  } else {
+    heroVideoAutoplay();
+  }
+})();
+</script>
 
 <!-- JAVASCRIPT -->
 <script src="firebase-config.js"></script>
